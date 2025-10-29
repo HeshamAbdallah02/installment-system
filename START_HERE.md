@@ -33,6 +33,7 @@ A complete, production-ready foundation with:
 3. Replace `[YOUR-PASSWORD]` with your actual password
 
 Example:
+
 ```
 postgresql://postgres:YourPassword@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres
 ```
@@ -46,11 +47,13 @@ copy .env.example .env
 ```
 
 **Edit `backend/.env`** and paste your Supabase connection string:
+
 ```env
 DATABASE_URL=postgresql://postgres:YourPassword@db.xxx.supabase.co:5432/postgres
 ```
 
 Then run:
+
 ```bash
 npx prisma generate
 npx prisma migrate dev --name init
@@ -78,8 +81,10 @@ Navigate to: http://localhost:5173
 
 ## 📚 Documentation
 
-- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** ← **RECOMMENDED** - Cloud database setup (no installation!)
-- **[SIMPLE_SETUP.md](SIMPLE_SETUP.md)** - Local PostgreSQL setup (if you prefer)
+- **[QUICK_START_SUPABASE.md](QUICK_START_SUPABASE.md)** ← **START HERE** - Your specific setup (3 min)
+- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** - Detailed cloud database guide
+- **[MCP_SUPABASE.md](MCP_SUPABASE.md)** - Supabase MCP server integration (AI-powered database access)
+- **[SIMPLE_SETUP.md](SIMPLE_SETUP.md)** - Local PostgreSQL setup (alternative)
 - **[README.md](README.md)** - Project overview and reference
 - **[VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md)** - Testing and verification
 - **[SCAFFOLD_SUMMARY.md](SCAFFOLD_SUMMARY.md)** - Technical details
@@ -225,12 +230,13 @@ installment-system/
 
 ## 🎓 Next Steps
 
-1. ✅ **Follow [SUPABASE_SETUP.md](SUPABASE_SETUP.md)** for detailed Supabase instructions
-2. ✅ **Explore Supabase Dashboard** - View your tables and data
-3. ✅ **Check database schema** - `backend/prisma/schema.prisma`
-4. ✅ **Review API structure** - `backend/src/routes/`
-5. ✅ **Customize UI** - `frontend/src/pages/`
-6. ✅ **Start building features!**
+1. ✅ **Follow [QUICK_START_SUPABASE.md](QUICK_START_SUPABASE.md)** - Get running in 3 minutes
+2. ✅ **Try MCP integration** - Ask Kiro: "Show me all tables in my database"
+3. ✅ **Explore Supabase Dashboard** - View your tables and data
+4. ✅ **Check database schema** - `backend/prisma/schema.prisma`
+5. ✅ **Review API structure** - `backend/src/routes/`
+6. ✅ **Customize UI** - `frontend/src/pages/`
+7. ✅ **Start building features!**
 
 ---
 

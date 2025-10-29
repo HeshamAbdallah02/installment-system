@@ -54,6 +54,7 @@ This guide shows you how to set up the installment system using Supabase (cloud 
    - Scroll to "Connection string"
    - Select "URI" tab
    - Copy the connection string (looks like):
+
    ```
    postgresql://postgres:[YOUR-PASSWORD]@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres
    ```
@@ -106,6 +107,7 @@ npx prisma generate
 ```
 
 Expected output:
+
 ```
 ✔ Generated Prisma Client
 ```
@@ -117,10 +119,12 @@ npx prisma migrate dev --name init
 ```
 
 This will:
+
 - Create all database tables in Supabase
 - Apply the schema from `prisma/schema.prisma`
 
 Expected output:
+
 ```
 ✔ Database migrations applied
 ```
@@ -132,6 +136,7 @@ npm run seed
 ```
 
 Expected output:
+
 ```
 Created user: owner@example.com
 Created customer: John Doe
@@ -145,6 +150,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 Server running on http://localhost:4000
 Environment: development
@@ -175,6 +181,7 @@ copy .env.example .env
 ```
 
 The default values are fine:
+
 ```env
 VITE_API_URL=http://localhost:4000
 ```
@@ -186,6 +193,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 VITE v5.x.x  ready in xxx ms
 
@@ -207,18 +215,21 @@ curl http://localhost:4000/health
 ```
 
 Expected response:
+
 ```json
-{"status":"ok","timestamp":"2025-10-29T..."}
+{ "status": "ok", "timestamp": "2025-10-29T..." }
 ```
 
 ### Test Frontend
 
 Open browser:
+
 ```
 http://localhost:5173
 ```
 
 You should see:
+
 - ✅ Dashboard page loads
 - ✅ Sidebar navigation works
 - ✅ Can navigate to Customers and Installments pages
@@ -337,6 +348,7 @@ npx prisma migrate reset
 ```
 
 This will:
+
 - Drop all tables
 - Recreate them
 - Run migrations
@@ -405,6 +417,7 @@ When ready to deploy:
 ### Backend (Railway, Render, or Vercel)
 
 1. **Push to GitHub**
+
    ```bash
    git push origin init/scaffold
    ```
@@ -436,7 +449,7 @@ When ready to deploy:
 ✅ **Automatic backups** - Free tier includes daily backups  
 ✅ **Monitoring** - See database performance  
 ✅ **Scalable** - Upgrade as you grow  
-✅ **Free tier** - 500MB database, 2GB bandwidth  
+✅ **Free tier** - 500MB database, 2GB bandwidth
 
 ---
 
@@ -475,7 +488,7 @@ When ready to deploy:
 ✅ **Backend connected to Supabase**  
 ✅ **Database migrated and seeded**  
 ✅ **Frontend running**  
-✅ **No local PostgreSQL needed!**  
+✅ **No local PostgreSQL needed!**
 
 **You're ready to develop! 🚀**
 

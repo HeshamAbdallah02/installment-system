@@ -68,11 +68,13 @@ copy .env.example .env
 ```
 
 **Edit `backend/.env`** and add your Supabase connection string:
+
 ```env
 DATABASE_URL=postgresql://postgres:YourPassword@db.xxx.supabase.co:5432/postgres
 ```
 
 Then continue:
+
 ```bash
 # Generate Prisma client
 npx prisma generate

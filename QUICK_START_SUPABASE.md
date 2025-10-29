@@ -1,6 +1,7 @@
 # Quick Start with Your Supabase Database
 
 Your Supabase connection string:
+
 ```
 postgresql://postgres:[YOUR_PASSWORD]@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres
 ```
@@ -18,6 +19,7 @@ copy .env.example .env
 ```
 
 **Edit `backend/.env`** and add:
+
 ```env
 DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres
 PORT=4000
@@ -27,6 +29,7 @@ NODE_ENV=development
 **Replace `YOUR_PASSWORD`** with your actual Supabase database password!
 
 Then run:
+
 ```bash
 npx prisma generate
 npx prisma migrate dev --name init
@@ -35,6 +38,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 ✔ Generated Prisma Client
 ✔ Database migrations applied
@@ -57,6 +61,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 VITE v5.x.x  ready in xxx ms
 ➜  Local:   http://localhost:5173/
@@ -69,6 +74,7 @@ VITE v5.x.x  ready in xxx ms
 ### 3. Verify
 
 **Test Backend:**
+
 ```bash
 curl http://localhost:4000/health
 ```
@@ -85,16 +91,19 @@ You should see the Dashboard!
 ## View Your Database
 
 ### Option 1: Supabase Dashboard
+
 1. Go to https://supabase.com/dashboard
 2. Select your project
 3. Click "Table Editor"
 4. View all tables and data
 
 ### Option 2: Prisma Studio (Local GUI)
+
 ```bash
 cd backend
 npx prisma studio
 ```
+
 Opens at: http://localhost:5555
 
 ---
@@ -102,17 +111,19 @@ Opens at: http://localhost:5555
 ## Daily Workflow
 
 ### Start Development
+
 ```bash
 # Terminal 1: Backend
 cd backend
 npm run dev
 
-# Terminal 2: Frontend  
+# Terminal 2: Frontend
 cd frontend
 npm run dev
 ```
 
 ### Stop Development
+
 - Press `Ctrl + C` in each terminal
 - Your Supabase database stays running (it's in the cloud!)
 
@@ -121,15 +132,18 @@ npm run dev
 ## Common Issues
 
 ### "Connection refused"
+
 - Check your DATABASE_URL in `backend/.env`
 - Ensure password is correct (no brackets)
 - Verify Supabase project is active
 
 ### "password authentication failed"
+
 - Update password in `backend/.env`
 - Make sure there are no `[brackets]` around password
 
 ### Supabase project paused
+
 - Free tier projects pause after inactivity
 - Go to dashboard and click "Restore"
 - Wait ~2 minutes
@@ -139,6 +153,7 @@ npm run dev
 ## Your Database Tables
 
 After migration, you'll have:
+
 - ✅ users
 - ✅ customers
 - ✅ products
