@@ -3,6 +3,7 @@
 ## Problem Identified
 
 Your Supabase database hostname resolves to **IPv6 only**:
+
 ```
 db.qtjjelgkzafbgqpuchkr.supabase.co → 2a05:d016:571:a40d:5dd:6f71:c0e:37c0
 ```
@@ -23,6 +24,7 @@ Supabase provides a connection pooler that typically has better IPv4/IPv6 suppor
 4. Copy the **URI** connection string
 
 It should look like:
+
 ```
 postgresql://postgres.qtjjelgkzafbgqpuchkr:[PASSWORD]@aws-0-[region].pooler.supabase.com:6543/postgres
 ```
@@ -61,6 +63,7 @@ Add to your `hosts` file to force IPv4:
 ### Option B: Use Direct IP Connection
 
 If you can get the IPv4 address from Supabase support, use it directly:
+
 ```env
 DATABASE_URL=postgresql://postgres:3CGT7nXs3nRnf14i@[IPv4_ADDRESS]:5432/postgres?sslmode=require
 ```
@@ -68,6 +71,7 @@ DATABASE_URL=postgresql://postgres:3CGT7nXs3nRnf14i@[IPv4_ADDRESS]:5432/postgres
 ### Option C: Enable IPv6 on Your System
 
 If your ISP supports IPv6:
+
 1. Check Windows network settings
 2. Enable IPv6 on your network adapter
 3. Restart network adapter
@@ -77,6 +81,7 @@ If your ISP supports IPv6:
 ## Recommended: Use Connection Pooler
 
 **The connection pooler is the best solution** because:
+
 - ✅ Better compatibility with IPv4/IPv6
 - ✅ Connection pooling improves performance
 - ✅ Recommended by Supabase for Prisma
@@ -97,16 +102,19 @@ If your ISP supports IPv6:
 ### Example URLs by Region:
 
 **US East:**
+
 ```
 postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-0-us-east-1.pooler.supabase.com:6543/postgres
 ```
 
 **EU West:**
+
 ```
 postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-0-eu-west-1.pooler.supabase.com:6543/postgres
 ```
 
 **Asia Pacific:**
+
 ```
 postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
 ```
