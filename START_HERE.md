@@ -81,13 +81,10 @@ Navigate to: http://localhost:5173
 
 ## 📚 Documentation
 
-- **[QUICK_START_SUPABASE.md](QUICK_START_SUPABASE.md)** ← **START HERE** - Your specific setup (3 min)
-- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** - Detailed cloud database guide
-- **[MCP_SUPABASE.md](MCP_SUPABASE.md)** - Supabase MCP server integration (AI-powered database access)
-- **[SIMPLE_SETUP.md](SIMPLE_SETUP.md)** - Local PostgreSQL setup (alternative)
-- **[README.md](README.md)** - Project overview and reference
-- **[VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md)** - Testing and verification
-- **[SCAFFOLD_SUMMARY.md](SCAFFOLD_SUMMARY.md)** - Technical details
+- **[README.md](README.md)** - Project overview and setup guide
+- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** - Detailed Supabase configuration
+- **[MCP_SUPABASE.md](MCP_SUPABASE.md)** - AI-powered database access
+- **[QUICK_START_SUPABASE.md](QUICK_START_SUPABASE.md)** - Quick reference
 
 ---
 
