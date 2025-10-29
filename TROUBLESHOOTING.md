@@ -3,6 +3,7 @@
 ## Current Issue: Cannot Connect to Supabase Database
 
 ### Error Message
+
 ```
 Error: P1001: Can't reach database server at `db.qtjjelgkzafbgqpuchkr.supabase.co:5432`
 ```
@@ -33,6 +34,7 @@ Error: P1001: Can't reach database server at `db.qtjjelgkzafbgqpuchkr.supabase.c
 ### Step 2: Verify Connection String
 
 Your current connection string in `backend/.env`:
+
 ```env
 DATABASE_URL=postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres?sslmode=require
 ```
@@ -57,6 +59,7 @@ npx prisma migrate dev --name init
 ```
 
 If successful, you should see:
+
 ```
 ✔ Database migrations applied
 ```
@@ -77,6 +80,7 @@ Get the **Transaction** pooler connection string:
 4. Copy the URI
 
 Update `backend/.env`:
+
 ```env
 DATABASE_URL=postgresql://postgres.qtjjelgkzafbgqpuchkr:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
 ```
@@ -100,6 +104,7 @@ DATABASE_URL=postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzafbgqpuchkr.supa
 If you're behind a corporate firewall or VPN:
 
 1. **Check if port 5432 is blocked**
+
    ```bash
    telnet db.qtjjelgkzafbgqpuchkr.supabase.co 5432
    ```
@@ -156,6 +161,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 ✔ Database migrations applied
 Created user: owner@example.com
@@ -190,6 +196,7 @@ If issues persist:
    - Look for connection errors
 
 2. **Test with psql**
+
    ```bash
    psql "postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres?sslmode=require"
    ```
@@ -206,18 +213,22 @@ If issues persist:
 ## Common Error Messages
 
 ### "Can't reach database server"
+
 - **Cause**: Project paused or network issue
 - **Solution**: Restore project in dashboard, check network
 
 ### "password authentication failed"
+
 - **Cause**: Wrong password in connection string
 - **Solution**: Verify password is `3CGT7nXs3nRnf14i`
 
 ### "SSL connection required"
+
 - **Cause**: Missing SSL parameter
 - **Solution**: Add `?sslmode=require` to connection string
 
 ### "Connection timeout"
+
 - **Cause**: Firewall or slow network
 - **Solution**: Check firewall, try different network
 
@@ -230,7 +241,7 @@ If issues persist:
 **Port**: 5432  
 **Database**: postgres  
 **User**: postgres  
-**Password**: 3CGT7nXs3nRnf14i  
+**Password**: 3CGT7nXs3nRnf14i
 
 **Dashboard**: https://supabase.com/dashboard/project/qtjjelgkzafbgqpuchkr
 
