@@ -10,28 +10,31 @@ A complete, production-ready foundation with:
 
 - ✅ **React** frontend with TypeScript + Vite + Tailwind CSS
 - ✅ **Express.js** backend with TypeScript + Prisma ORM
-- ✅ **PostgreSQL** database with complete schema
-- ✅ **Simple setup** - No Docker, no Redis, no complications
+- ✅ **PostgreSQL** database with complete schema (via Supabase)
+- ✅ **Cloud-first** - No local database installation needed!
 - ✅ **Zero business logic** - Ready for your implementation
 
 ---
 
-## 🎯 Quick Start (5 Minutes)
+## 🎯 Quick Start (3 Minutes)
 
-### Step 1: Install PostgreSQL
+### Step 1: Create Supabase Account
 
-Download from: https://www.postgresql.org/download/windows/
+1. Go to: https://supabase.com
+2. Sign up (free)
+3. Create new project: `installment-system`
+4. Set database password (save it!)
+5. Wait ~2 minutes for provisioning
 
-- Password: `postgres` (or your choice)
-- Port: `5432`
-- Install pgAdmin 4
+### Step 2: Get Connection String
 
-### Step 2: Create Database
+1. Go to Settings → Database
+2. Copy "Connection string" (URI format)
+3. Replace `[YOUR-PASSWORD]` with your actual password
 
-```bash
-psql -U postgres
-CREATE DATABASE myapp_dev;
-\q
+Example:
+```
+postgresql://postgres:YourPassword@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres
 ```
 
 ### Step 3: Setup Backend
@@ -40,6 +43,15 @@ CREATE DATABASE myapp_dev;
 cd backend
 npm install
 copy .env.example .env
+```
+
+**Edit `backend/.env`** and paste your Supabase connection string:
+```env
+DATABASE_URL=postgresql://postgres:YourPassword@db.xxx.supabase.co:5432/postgres
+```
+
+Then run:
+```bash
 npx prisma generate
 npx prisma migrate dev --name init
 npm run seed
@@ -60,14 +72,15 @@ npm run dev
 Navigate to: http://localhost:5173
 
 ✅ You should see the Dashboard!
+✅ Your database is in the cloud (Supabase)!
 
 ---
 
 ## 📚 Documentation
 
-- **[SIMPLE_SETUP.md](SIMPLE_SETUP.md)** ← **START HERE** for detailed step-by-step guide
+- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** ← **RECOMMENDED** - Cloud database setup (no installation!)
+- **[SIMPLE_SETUP.md](SIMPLE_SETUP.md)** - Local PostgreSQL setup (if you prefer)
 - **[README.md](README.md)** - Project overview and reference
-- **[DOCKER_OPTIONAL.md](DOCKER_OPTIONAL.md)** - Optional Docker setup (not recommended)
 - **[VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md)** - Testing and verification
 - **[SCAFFOLD_SUMMARY.md](SCAFFOLD_SUMMARY.md)** - Technical details
 
@@ -132,9 +145,10 @@ npx prisma migrate reset
 
 ### Simple & Clean
 
+- ✅ No local database installation
 - ✅ No Docker required
 - ✅ No Redis needed
-- ✅ Direct PostgreSQL installation
+- ✅ Cloud-hosted PostgreSQL (Supabase)
 - ✅ Minimal dependencies
 - ✅ Easy to understand
 
@@ -160,25 +174,28 @@ npx prisma migrate reset
 
 ## 🚨 Common Issues
 
-### "psql: command not found"
+### "Connection refused" or "ECONNREFUSED"
 
-Add PostgreSQL to PATH:
-`C:\Program Files\PostgreSQL\15\bin`
+Check your Supabase connection string in `backend/.env`:
 
-### "Connection refused"
-
-PostgreSQL not running:
-
-1. Open Services (`services.msc`)
-2. Start "postgresql-x64-15"
+```env
+# Make sure password has no [brackets]
+DATABASE_URL=postgresql://postgres:YourPassword@db.xxx.supabase.co:5432/postgres
+```
 
 ### "password authentication failed"
 
-Update `backend/.env`:
+1. Go to Supabase Dashboard → Settings → Database
+2. Reset database password if needed
+3. Update connection string in `backend/.env`
 
-```env
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/myapp_dev
-```
+### Supabase project paused
+
+Free tier projects pause after inactivity:
+
+1. Go to Supabase dashboard
+2. Click "Restore" on your project
+3. Wait ~2 minutes
 
 ---
 
@@ -208,8 +225,8 @@ installment-system/
 
 ## 🎓 Next Steps
 
-1. ✅ **Follow [SIMPLE_SETUP.md](SIMPLE_SETUP.md)** for detailed instructions
-2. ✅ **Explore the codebase** - All files are documented
+1. ✅ **Follow [SUPABASE_SETUP.md](SUPABASE_SETUP.md)** for detailed Supabase instructions
+2. ✅ **Explore Supabase Dashboard** - View your tables and data
 3. ✅ **Check database schema** - `backend/prisma/schema.prisma`
 4. ✅ **Review API structure** - `backend/src/routes/`
 5. ✅ **Customize UI** - `frontend/src/pages/`

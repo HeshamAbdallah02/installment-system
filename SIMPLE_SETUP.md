@@ -137,6 +137,7 @@ npm run seed
 ```
 
 Expected output:
+
 ```
 ✔ Generated Prisma Client
 ✔ Database migrations applied
@@ -152,6 +153,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 Server running on http://localhost:4000
 Environment: development
@@ -179,6 +181,7 @@ npm run dev
 ```
 
 Expected output:
+
 ```
 VITE v5.x.x  ready in xxx ms
 
@@ -201,8 +204,9 @@ curl http://localhost:4000/health
 ```
 
 Expected response:
+
 ```json
-{"status":"ok","timestamp":"2025-10-29T..."}
+{ "status": "ok", "timestamp": "2025-10-29T..." }
 ```
 
 Or open in browser: http://localhost:4000/health
@@ -210,11 +214,13 @@ Or open in browser: http://localhost:4000/health
 ### Test Frontend
 
 Open your browser and navigate to:
+
 ```
 http://localhost:5173
 ```
 
 You should see:
+
 - ✅ Dashboard page loads
 - ✅ Sidebar navigation works
 - ✅ Can navigate to Customers and Installments pages
@@ -234,6 +240,7 @@ npx prisma studio
 Opens at: http://localhost:5555
 
 You can:
+
 - View all tables
 - Browse data
 - Edit records
@@ -431,6 +438,6 @@ If you encounter issues:
 ✅ **No Redis needed** - Simple app doesn't need caching  
 ✅ **Simple setup** - Just PostgreSQL + Node.js  
 ✅ **Easy to reset** - `npx prisma migrate reset`  
-✅ **GUI tools** - pgAdmin and Prisma Studio  
+✅ **GUI tools** - pgAdmin and Prisma Studio
 
 You're ready to develop! 🚀

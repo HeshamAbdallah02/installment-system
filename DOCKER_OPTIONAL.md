@@ -9,6 +9,7 @@ This guide is only for users who prefer using Docker instead of installing Postg
 ## Why You Might Skip Docker
 
 For this simple installment-tracking app:
+
 - ✅ **Simpler**: Direct PostgreSQL installation is faster
 - ✅ **Lighter**: No virtualization overhead
 - ✅ **Easier**: Fewer moving parts to troubleshoot
@@ -54,6 +55,7 @@ docker compose down
 ```
 
 **Note**: Update `backend/.env` to use Docker credentials:
+
 ```env
 DATABASE_URL=postgresql://devuser:devpass@localhost:5432/myapp_dev
 ```
@@ -65,6 +67,7 @@ DATABASE_URL=postgresql://devuser:devpass@localhost:5432/myapp_dev
 **Use the simple setup instead**: [SIMPLE_SETUP.md](SIMPLE_SETUP.md)
 
 Direct PostgreSQL installation is:
+
 - Faster to set up
 - Easier to manage
 - More than sufficient for this application

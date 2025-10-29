@@ -6,45 +6,46 @@ A minimal scaffold for an installment-tracking web application with React, Expre
 
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS
 - **Backend**: Express.js + TypeScript + Prisma
-- **Database**: PostgreSQL
-- **Simple & Lightweight**: No Docker required, no Redis, no complications
+- **Database**: PostgreSQL (via Supabase - cloud-hosted)
+- **Simple & Cloud-First**: No local database installation needed!
 
 ## Prerequisites
 
 - Node.js 18+ and npm
-- PostgreSQL 15+ (direct installation)
+- Supabase account (free tier)
 - Git
 
-## Quick Start (Recommended)
+## Quick Start (Recommended - Supabase)
 
-**👉 See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for the easiest setup guide without Docker!**
+**👉 See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for cloud database setup (no installation needed)!**
 
 ### Summary:
 
-1. Install PostgreSQL from https://www.postgresql.org/download/windows/
-2. Create database `myapp_dev`
-3. Run backend: `cd backend && npm install && npx prisma migrate dev && npm run dev`
-4. Run frontend: `cd frontend && npm install && npm run dev`
-5. Open http://localhost:5173
+1. Create Supabase account at https://supabase.com
+2. Create new project and get connection string
+3. Update `backend/.env` with Supabase connection string
+4. Run backend: `cd backend && npm install && npx prisma migrate dev && npm run dev`
+5. Run frontend: `cd frontend && npm install && npm run dev`
+6. Open http://localhost:5173
+
+**Alternative**: See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for local PostgreSQL installation
 
 ---
 
 ## Detailed Setup
 
-### 1. Install PostgreSQL
+### 1. Setup Database (Supabase - Recommended)
 
-Download and install from: https://www.postgresql.org/download/windows/
+1. Create account at https://supabase.com
+2. Create new project: `installment-system`
+3. Set database password (save it!)
+4. Go to Settings → Database
+5. Copy "Connection string" (URI format)
+6. Replace `[YOUR-PASSWORD]` with your actual password
 
-- Set password: `postgres` (or remember your own)
-- Port: `5432` (default)
-- Install pgAdmin 4 (included)
+**No local installation needed!**
 
-Create database:
-```bash
-psql -U postgres
-CREATE DATABASE myapp_dev;
-\q
-```
+**Alternative**: See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for local PostgreSQL installation
 
 ### 2. Clone and Install
 
@@ -63,12 +64,20 @@ cd backend
 npm install
 
 # Copy environment file
-cp .env.example .env
+copy .env.example .env
+```
 
+**Edit `backend/.env`** and add your Supabase connection string:
+```env
+DATABASE_URL=postgresql://postgres:YourPassword@db.xxx.supabase.co:5432/postgres
+```
+
+Then continue:
+```bash
 # Generate Prisma client
 npx prisma generate
 
-# Run database migrations
+# Run database migrations (creates tables in Supabase)
 npx prisma migrate dev --name init
 
 # Seed database with sample data
@@ -206,7 +215,8 @@ See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for deployment options.
 ### Backend (.env)
 
 ```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/myapp_dev
+# Your Supabase connection string
+DATABASE_URL=postgresql://postgres:YourPassword@db.xxx.supabase.co:5432/postgres
 PORT=4000
 NODE_ENV=development
 ```
