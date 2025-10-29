@@ -5,6 +5,7 @@ Since the direct connection isn't working, try these alternative connection stri
 ## Option 1: Connection Pooler (Transaction Mode)
 
 Update `backend/.env` with:
+
 ```env
 DATABASE_URL=postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-0-us-east-1.pooler.supabase.com:6543/postgres
 ```
@@ -32,12 +33,14 @@ DATABASE_URL=postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzafbgqpuchkr.supa
 ## Test Connection
 
 After updating `.env`, test with:
+
 ```bash
 cd backend
 npx prisma migrate dev --name init
 ```
 
 If it works, you'll see:
+
 ```
 ✔ Database migrations applied
 ```

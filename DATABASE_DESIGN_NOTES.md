@@ -10,6 +10,7 @@
 ## Arabic Language Support
 
 PostgreSQL (Supabase) fully supports Arabic text:
+
 - ✅ UTF-8 encoding (default)
 - ✅ Arabic characters in all text fields
 - ✅ Right-to-left (RTL) text storage
@@ -27,6 +28,7 @@ I'm ready to update the Prisma schema with your database design. Please provide:
 ## Current Placeholder Schema
 
 The current schema has these models (will be replaced with your design):
+
 - User
 - Customer
 - Product
@@ -48,7 +50,7 @@ model Customer {
   notes     String?  // Can store: "عميل مميز"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("customers")
 }
 ```
