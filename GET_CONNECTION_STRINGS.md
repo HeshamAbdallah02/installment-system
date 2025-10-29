@@ -65,18 +65,21 @@ npx prisma migrate dev --name init
 ## Example Configurations
 
 ### Example 1: US East Region
+
 ```env
 DATABASE_URL="postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 DIRECT_URL="postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
 ```
 
 ### Example 2: EU North Region
+
 ```env
 DATABASE_URL="postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-1-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 DIRECT_URL="postgresql://postgres.qtjjelgkzafbgqpuchkr:3CGT7nXs3nRnf14i@aws-1-eu-north-1.pooler.supabase.com:5432/postgres"
 ```
 
 ### Example 3: Direct Connection (Alternative)
+
 ```env
 DATABASE_URL="postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres"
 DIRECT_URL="postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzafbgqpuchkr.supabase.co:5432/postgres"
