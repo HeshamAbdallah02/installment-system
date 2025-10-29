@@ -20,6 +20,7 @@ This creates the migration file without trying to connect to the database.
 ### Step 2: Copy the SQL
 
 The migration SQL will be in:
+
 ```
 backend/prisma/migrations/XXXXXX_init/migration.sql
 ```
@@ -48,6 +49,7 @@ npx prisma db push
 ```
 
 This will:
+
 - Try to connect and create tables
 - Skip migration history
 - Good for development, not for production
@@ -70,6 +72,7 @@ Since your machine can't connect directly, we can:
 The error "Can't reach database server" suggests:
 
 ### Possible Causes:
+
 1. **Corporate/School Firewall** blocking port 5432
 2. **Windows Firewall** blocking outbound PostgreSQL connections
 3. **Antivirus** blocking database connections
@@ -79,15 +82,18 @@ The error "Can't reach database server" suggests:
 ### Quick Tests:
 
 **Test 1: Check if port 5432 is reachable**
+
 ```bash
 Test-NetConnection -ComputerName db.qtjjelgkzafbgqpuchkr.supabase.co -Port 5432
 ```
 
 **Test 2: Try with VPN off/on**
+
 - If you're using VPN, try disconnecting
 - Or try connecting
 
 **Test 3: Try from mobile hotspot**
+
 - Connect to mobile data instead of WiFi
 - Test if migration works
 
@@ -110,6 +116,7 @@ We can develop the application structure without running migrations:
 ### 2. Use Supabase Dashboard
 
 For viewing/editing data:
+
 - Use Supabase Table Editor
 - Use Supabase SQL Editor
 - No local connection needed
@@ -117,6 +124,7 @@ For viewing/editing data:
 ### 3. Deploy Backend to Test
 
 Deploy to Railway/Vercel/Render:
+
 - Cloud servers CAN connect to Supabase
 - Test the full stack from deployment
 - No local database connection needed
@@ -128,21 +136,25 @@ Deploy to Railway/Vercel/Render:
 We can still build your application! Here's what we'll do:
 
 ### 1. Design Your Database Schema
+
 - I'll update `prisma/schema.prisma` with your design
 - Generate TypeScript types locally
 - No database connection needed
 
 ### 2. Build the Application
+
 - Create API endpoints
 - Build frontend UI in Arabic
 - Everything works without database connection
 
 ### 3. Create Tables Manually
+
 - I'll give you the SQL to run in Supabase SQL Editor
 - You paste and run it
 - Tables created!
 
 ### 4. Deploy and Test
+
 - Deploy backend to Railway (free)
 - It will connect to Supabase successfully
 - Test the full application
@@ -154,6 +166,7 @@ We can still build your application! Here's what we'll do:
 **Let's focus on your database design!**
 
 Share your requirements:
+
 1. What tables do you need?
 2. What fields for each table?
 3. What relationships?

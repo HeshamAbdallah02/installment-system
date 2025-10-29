@@ -15,12 +15,14 @@ We'll develop your application completely, then handle the database through Supa
 ## What We'll Do Now
 
 ### 1. **Design Your Database** (No connection needed)
+
 - You tell me what tables and fields you need
 - I'll create the Prisma schema
 - Generate TypeScript types for frontend/backend
 - Everything typed and ready!
 
 ### 2. **Build Your API** (No connection needed)
+
 - Create all API endpoints
 - Full TypeScript types
 - Request/response validation
@@ -28,6 +30,7 @@ We'll develop your application completely, then handle the database through Supa
 - Everything works locally!
 
 ### 3. **Build Your UI** (No connection needed)
+
 - Arabic interface
 - All pages and components
 - Forms and validation
@@ -37,11 +40,13 @@ We'll develop your application completely, then handle the database through Supa
 ### 4. **Create Database Tables** (Two options)
 
 **Option A: Supabase SQL Editor**
+
 - I'll give you the SQL
 - You paste it in Supabase SQL Editor
 - Tables created in 30 seconds!
 
 **Option B: Deploy Backend**
+
 - Deploy to Railway/Render (free, 5 minutes)
 - Run migrations from cloud
 - Cloud servers CAN connect to Supabase
@@ -52,12 +57,14 @@ We'll develop your application completely, then handle the database through Supa
 ## Why This Works
 
 ### Development Without Database:
+
 - ✅ Prisma generates types from schema (no DB needed)
 - ✅ API endpoints work with types (no DB needed)
 - ✅ Frontend uses API types (no DB needed)
 - ✅ Everything compiles and runs!
 
 ### Testing:
+
 - ✅ Use mock data for development
 - ✅ Test UI flows without backend
 - ✅ Deploy backend to test with real database
@@ -72,6 +79,7 @@ We'll develop your application completely, then handle the database through Supa
 Tell me about your installment system:
 
 **Example:**
+
 ```
 Tables I need:
 1. Customers (العملاء)
@@ -102,6 +110,7 @@ Tables I need:
 ### Step 2: I'll Create Everything
 
 Once you share your design, I'll create:
+
 - ✅ Prisma schema with all your tables
 - ✅ TypeScript types for frontend/backend
 - ✅ API endpoints for all operations
@@ -112,6 +121,7 @@ Once you share your design, I'll create:
 ### Step 3: You Create Tables
 
 Two easy options:
+
 1. **Paste SQL in Supabase** (30 seconds)
 2. **Deploy backend** (5 minutes, automatic)
 
@@ -150,6 +160,7 @@ Everything works! 🎉
 ## Real-World Example
 
 Many developers work this way:
+
 1. Design schema in Prisma
 2. Generate types
 3. Build application
@@ -165,6 +176,7 @@ Many developers work this way:
 **Share your database design and let's create your Arabic installment tracking system!**
 
 Include:
+
 - Table names (Arabic or English)
 - Fields for each table
 - Data types (text, number, date, etc.)
