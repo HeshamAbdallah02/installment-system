@@ -6,33 +6,52 @@ A minimal scaffold for an installment-tracking web application with React, Expre
 
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS
 - **Backend**: Express.js + TypeScript + Prisma
-- **Database**: PostgreSQL (local via Docker, production via Supabase)
-- **Cache**: Redis (optional)
+- **Database**: PostgreSQL
+- **Simple & Lightweight**: No Docker required, no Redis, no complications
 
 ## Prerequisites
 
 - Node.js 18+ and npm
-- Docker and Docker Compose
+- PostgreSQL 15+ (direct installation)
 - Git
 
-## Local Development Setup
+## Quick Start (Recommended)
 
-### 1. Clone and Install
+**👉 See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for the easiest setup guide without Docker!**
+
+### Summary:
+
+1. Install PostgreSQL from https://www.postgresql.org/download/windows/
+2. Create database `myapp_dev`
+3. Run backend: `cd backend && npm install && npx prisma migrate dev && npm run dev`
+4. Run frontend: `cd frontend && npm install && npm run dev`
+5. Open http://localhost:5173
+
+---
+
+## Detailed Setup
+
+### 1. Install PostgreSQL
+
+Download and install from: https://www.postgresql.org/download/windows/
+
+- Set password: `postgres` (or remember your own)
+- Port: `5432` (default)
+- Install pgAdmin 4 (included)
+
+Create database:
+```bash
+psql -U postgres
+CREATE DATABASE myapp_dev;
+\q
+```
+
+### 2. Clone and Install
 
 ```bash
 git clone <repository-url>
 cd installment-system
 npm install
-```
-
-### 2. Start Infrastructure
-
-```bash
-# Start PostgreSQL, Redis, and pgAdmin
-docker compose up -d
-
-# Verify services are running
-docker compose ps
 ```
 
 ### 3. Setup Backend
@@ -70,11 +89,13 @@ cd frontend
 npm install
 
 # Copy environment file
-cp .env.example .env
+copy .env.example .env
 
 # Start development server (runs on port 5173)
 npm run dev
 ```
+
+---
 
 ## Verification Steps
 
@@ -106,16 +127,11 @@ npx prisma studio
 
 ### 5. Access pgAdmin (Optional)
 
-Navigate to http://localhost:8081
-- Email: admin@admin.com
-- Password: admin
+Open pgAdmin 4 (installed with PostgreSQL):
 
-Add server connection:
-- Host: postgres
-- Port: 5432
-- Database: myapp_dev
-- Username: devuser
-- Password: devpass
+- Connect to local PostgreSQL server
+- Browse `myapp_dev` database
+- View tables and data
 
 ## Project Structure
 
@@ -139,8 +155,9 @@ installment-system/
 │   │   ├── schema.prisma # Database schema
 │   │   └── seed.ts       # Seed script
 │   └── package.json
-├── docker-compose.yml    # Local infrastructure
+├── docker-compose.yml    # Optional (not required for simple setup)
 ├── .env.example          # Environment template
+├── SIMPLE_SETUP.md       # Easy setup guide (recommended)
 └── README.md
 ```
 
@@ -168,38 +185,30 @@ installment-system/
 - `npm run preview` - Preview production build
 - `npm run lint` - Lint TypeScript code
 
-## Production Deployment (Supabase)
+## Production Deployment
 
-### 1. Create Supabase Project
+### Recommended: Supabase (Free Tier)
 
-1. Go to https://supabase.com
-2. Create a new project
-3. Copy the connection string from Settings > Database
+1. Create account at https://supabase.com
+2. Create new project
+3. Copy connection string from Settings → Database
+4. Update `DATABASE_URL` in production environment
+5. Run migrations: `npx prisma migrate deploy`
 
-### 2. Update Backend Environment
+### Alternative: Railway, Render, or Vercel
 
-```bash
-# In backend/.env
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
-```
+See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for deployment options.
 
-### 3. Run Migrations
-
-```bash
-cd backend
-npx prisma migrate deploy
-npm run seed
-```
+---
 
 ## Environment Variables
 
 ### Backend (.env)
 
 ```
-DATABASE_URL=postgresql://devuser:devpass@localhost:5432/myapp_dev
-REDIS_URL=redis://localhost:6379
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/myapp_dev
 PORT=4000
-JWT_SECRET=changeme
+NODE_ENV=development
 ```
 
 ### Frontend (.env)
@@ -223,6 +232,7 @@ The Prisma schema includes minimal models:
 ## CI/CD
 
 GitHub Actions workflow runs on push:
+
 - Install dependencies
 - Lint code
 - Build frontend and backend
@@ -230,9 +240,12 @@ GitHub Actions workflow runs on push:
 ## Notes
 
 - This is a **scaffold only** - no business logic or authentication implemented
+- **Simple setup** - No Docker required, just PostgreSQL
+- **No Redis** - Not needed for simple applications
 - Desktop/tablet responsive design only (no mobile optimization)
 - All API endpoints are placeholders
 - UI components are empty shells
+- **See [SIMPLE_SETUP.md](SIMPLE_SETUP.md) for detailed step-by-step guide**
 
 ## License
 

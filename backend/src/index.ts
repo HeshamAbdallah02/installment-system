@@ -11,10 +11,12 @@ dotenv.config();
 const app: Application = express();
 
 // Middleware
-app.use(cors({
-  origin: process.env.VITE_API_URL || 'http://localhost:5173',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.VITE_API_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
