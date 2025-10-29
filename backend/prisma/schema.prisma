@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      String   @default("owner")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Customer {
+  id               String            @id @default(uuid())
+  name             String
+  email            String?
+  phone            String?
+  address          String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  sales            Sale[]
+  installmentPlans InstallmentPlan[]
+
+  @@map("customers")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  sales       Sale[]
+
+  @@map("products")
+}
+
+model Sale {
+  id               String            @id @default(uuid())
+  customerId       String
+  productId        String?
+  totalAmount      Decimal           @db.Decimal(10, 2)
+  saleDate         DateTime          @default(now())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  customer         Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product          Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  installmentPlans InstallmentPlan[]
+
+  @@map("sales")
+}
+
+model InstallmentPlan {
+  id                  String        @id @default(uuid())
+  saleId              String
+  customerId          String
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  numberOfInstallments Int
+  frequency           String        @default("monthly")
+  startDate           DateTime
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  sale                Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  customer            Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  installments        Installment[]
+
+  @@map("installment_plans")
+}
+
+model Installment {
+  id                String          @id @default(uuid())
+  installmentPlanId String
+  amount            Decimal         @db.Decimal(10, 2)
+  dueDate           DateTime
+  status            String          @default("pending")
+  installmentNumber Int
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  installmentPlan   InstallmentPlan @relation(fields: [installmentPlanId], references: [id], onDelete: Cascade)
+  payments          Payment[]
+
+  @@map("installments")
+}
+
+model Payment {
+  id            String      @id @default(uuid())
+  installmentId String
+  amount        Decimal     @db.Decimal(10, 2)
+  paymentDate   DateTime    @default(now())
+  paymentMethod String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  installment   Installment @relation(fields: [installmentId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
