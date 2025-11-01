@@ -1,0 +1,262 @@
+// ============================================================================
+// Egyptian Retail Installments - Entity Relationship Diagram
+// Generate PNG: dot -Tpng er_diagram.dot -o er_diagram.png
+// Generate SVG: dot -Tsvg er_diagram.dot -o er_diagram.svg
+// ============================================================================
+
+digraph InstallmentSystem {
+    // Graph settings
+    rankdir=LR;
+    node [shape=record, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
+    
+    // Color scheme
+    node [style=filled];
+    
+    // ========================================================================
+    // ENTITIES
+    // ========================================================================
+    
+    // Users & Branches
+    branches [fillcolor="#E3F2FD", label="{<b>branches|
+        + branch_id : INT [PK]|
+        branch_name : VARCHAR|
+        branch_code : VARCHAR [UK]|
+        address : TEXT|
+        city : VARCHAR|
+        phone : VARCHAR|
+        is_active : BOOLEAN|
+        created_at : TIMESTAMPTZ}"];
+    
+    users [fillcolor="#E3F2FD", label="{<u>users|
+        + user_id : INT [PK]|
+        username : VARCHAR [UK]|
+        full_name : VARCHAR|
+        email : VARCHAR|
+        role : VARCHAR|
+        branch_id : INT [FK]|
+        is_active : BOOLEAN|
+        created_at : TIMESTAMPTZ|
+        updated_at : TIMESTAMPTZ}"];
+    
+    // Customers & Files
+    customers [fillcolor="#FFF3E0", label="{<c>customers|
+        + customer_id : INT [PK]|
+        full_name : VARCHAR|
+        national_id : CHAR(14) [UK]|
+        phone : VARCHAR|
+        phone_secondary : VARCHAR|
+        address : TEXT|
+        city : VARCHAR|
+        created_by : INT [FK]|
+        created_at : TIMESTAMPTZ|
+        updated_at : TIMESTAMPTZ}"];
+    
+    file_storage [fillcolor="#FFF3E0", label="{<f>file_storage|
+        + file_id : INT [PK]|
+        entity_type : VARCHAR|
+        entity_id : INT|
+        storage_path : VARCHAR|
+        file_name : VARCHAR|
+        mime_type : VARCHAR|
+        file_size_bytes : BIGINT|
+        file_hash : VARCHAR|
+        uploaded_by : INT [FK]|
+        uploaded_at : TIMESTAMPTZ}"];
+    
+    // Products & Pricing
+    products [fillcolor="#E8F5E9", label="{<p>products|
+        + product_id : INT [PK]|
+        product_code : VARCHAR [UK]|
+        product_name : VARCHAR|
+        description : TEXT|
+        cash_price : NUMERIC(12,2)|
+        requires_deposit : BOOLEAN|
+        min_deposit_amount : NUMERIC(12,2)|
+        category : VARCHAR|
+        is_active : BOOLEAN|
+        created_at : TIMESTAMPTZ|
+        updated_at : TIMESTAMPTZ}"];
+    
+    installment_ratios [fillcolor="#E8F5E9", label="{<r>installment_ratios|
+        + ratio_id : INT [PK]|
+        period_months : INT [UK]|
+        ratio_multiplier : NUMERIC(5,4)|
+        description : TEXT|
+        is_active : BOOLEAN|
+        created_at : TIMESTAMPTZ}"];
+    
+    // Orders
+    orders [fillcolor="#FCE4EC", label="{<o>orders|
+        + order_id : INT [PK]|
+        order_number : VARCHAR [UK]|
+        customer_id : INT [FK]|
+        branch_id : INT [FK]|
+        order_date : DATE|
+        total_amount : NUMERIC(12,2)|
+        payment_type : VARCHAR|
+        status : VARCHAR|
+        created_by : INT [FK]|
+        created_at : TIMESTAMPTZ|
+        updated_at : TIMESTAMPTZ}"];
+    
+    order_items [fillcolor="#FCE4EC", label="{<oi>order_items|
+        + order_item_id : INT [PK]|
+        order_id : INT [FK]|
+        product_id : INT [FK]|
+        quantity : INT|
+        unit_price : NUMERIC(12,2)|
+        line_total : NUMERIC(12,2)}"];
+    
+    // Installment Plans
+    installment_plans [fillcolor="#F3E5F5", label="{<ip>installment_plans|
+        + plan_id : INT [PK]|
+        order_id : INT [FK] [UK]|
+        customer_id : INT [FK]|
+        total_amount : NUMERIC(12,2)|
+        deposit_amount : NUMERIC(12,2)|
+        financed_amount : NUMERIC(12,2)|
+        period_months : INT|
+        ratio_multiplier : NUMERIC(5,4)|
+        total_with_ratio : NUMERIC(12,2)|
+        monthly_amount : NUMERIC(12,2)|
+        start_date : DATE|
+        end_date : DATE|
+        status : VARCHAR|
+        created_by : INT [FK]|
+        created_at : TIMESTAMPTZ|
+        updated_at : TIMESTAMPTZ}"];
+    
+    installment_schedule [fillcolor="#F3E5F5", label="{<is>installment_schedule|
+        + schedule_id : INT [PK]|
+        plan_id : INT [FK]|
+        sequence_number : INT|
+        due_date : DATE|
+        total_amount : NUMERIC(12,2)|
+        principal_amount : NUMERIC(12,2)|
+        extra_amount : NUMERIC(12,2)|
+        paid_amount : NUMERIC(12,2)|
+        status : VARCHAR|
+        paid_date : DATE|
+        created_at : TIMESTAMPTZ|
+        updated_at : TIMESTAMPTZ}"];
+    
+    // Payments
+    payments [fillcolor="#E0F2F1", label="{<pay>payments|
+        + payment_id : INT [PK]|
+        payment_number : VARCHAR [UK]|
+        customer_id : INT [FK]|
+        order_id : INT [FK]|
+        amount : NUMERIC(12,2)|
+        payment_method : VARCHAR|
+        payment_date : DATE|
+        is_reversal : BOOLEAN|
+        reversed_payment_id : INT [FK]|
+        reversal_reason : TEXT|
+        collected_by : INT [FK]|
+        created_at : TIMESTAMPTZ}"];
+    
+    payment_allocations [fillcolor="#E0F2F1", label="{<pa>payment_allocations|
+        + allocation_id : INT [PK]|
+        payment_id : INT [FK]|
+        schedule_id : INT [FK]|
+        allocation_type : VARCHAR|
+        amount : NUMERIC(12,2)|
+        created_at : TIMESTAMPTZ}"];
+    
+    // Penalties
+    penalty_rules [fillcolor="#FFEBEE", label="{<pr>penalty_rules|
+        + rule_id : INT [PK]|
+        rule_name : VARCHAR|
+        days_overdue_from : INT|
+        days_overdue_to : INT|
+        penalty_type : VARCHAR|
+        penalty_amount : NUMERIC(12,2)|
+        is_active : BOOLEAN|
+        created_at : TIMESTAMPTZ}"];
+    
+    penalties [fillcolor="#FFEBEE", label="{<pen>penalties|
+        + penalty_id : INT [PK]|
+        schedule_id : INT [FK]|
+        rule_id : INT [FK]|
+        penalty_amount : NUMERIC(12,2)|
+        days_overdue : INT|
+        applied_date : DATE|
+        paid_amount : NUMERIC(12,2)|
+        status : VARCHAR|
+        created_at : TIMESTAMPTZ}"];
+    
+    // Audit
+    event_log [fillcolor="#ECEFF1", label="{<el>event_log|
+        + event_id : BIGINT [PK]|
+        event_type : VARCHAR|
+        entity_type : VARCHAR|
+        entity_id : INT|
+        user_id : INT [FK]|
+        event_data : JSONB|
+        ip_address : INET|
+        created_at : TIMESTAMPTZ}"];
+    
+    // ========================================================================
+    // RELATIONSHIPS
+    // ========================================================================
+    
+    // Users & Branches
+    users:branch_id -> branches:b [label="belongs to"];
+    
+    // Customers
+    customers:created_by -> users:u [label="created by"];
+    file_storage:uploaded_by -> users:u [label="uploaded by"];
+    file_storage:entity_id -> customers:c [label="customer docs", style=dashed];
+    
+    // Orders
+    orders:customer_id -> customers:c [label="placed by"];
+    orders:branch_id -> branches:b [label="at branch"];
+    orders:created_by -> users:u [label="created by"];
+    order_items:order_id -> orders:o [label="belongs to"];
+    order_items:product_id -> products:p [label="contains"];
+    
+    // Installment Plans
+    installment_plans:order_id -> orders:o [label="finances"];
+    installment_plans:customer_id -> customers:c [label="for customer"];
+    installment_plans:created_by -> users:u [label="created by"];
+    installment_schedule:plan_id -> installment_plans:ip [label="schedule for"];
+    
+    // Payments
+    payments:customer_id -> customers:c [label="from customer"];
+    payments:order_id -> orders:o [label="for order"];
+    payments:collected_by -> users:u [label="collected by"];
+    payments:reversed_payment_id -> payments:pay [label="reverses", style=dashed];
+    payment_allocations:payment_id -> payments:pay [label="allocates"];
+    payment_allocations:schedule_id -> installment_schedule:is [label="to installment"];
+    
+    // Penalties
+    penalties:schedule_id -> installment_schedule:is [label="penalty for"];
+    penalties:rule_id -> penalty_rules:pr [label="based on rule"];
+    
+    // Audit
+    event_log:user_id -> users:u [label="performed by"];
+    
+    // ========================================================================
+    // LEGEND
+    // ========================================================================
+    
+    subgraph cluster_legend {
+        label="Legend";
+        style=filled;
+        fillcolor="#FAFAFA";
+        
+        legend [shape=plaintext, label=<
+            <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+                <tr><td bgcolor="#E3F2FD">Users & Branches</td></tr>
+                <tr><td bgcolor="#FFF3E0">Customers & Files</td></tr>
+                <tr><td bgcolor="#E8F5E9">Products & Pricing</td></tr>
+                <tr><td bgcolor="#FCE4EC">Orders</td></tr>
+                <tr><td bgcolor="#F3E5F5">Installment Plans</td></tr>
+                <tr><td bgcolor="#E0F2F1">Payments</td></tr>
+                <tr><td bgcolor="#FFEBEE">Penalties</td></tr>
+                <tr><td bgcolor="#ECEFF1">Audit Log</td></tr>
+            </table>
+        >];
+    }
+}
