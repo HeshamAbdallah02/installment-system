@@ -25,7 +25,7 @@ DECLARE
 BEGIN
     -- Find all overdue installments without penalties applied today
     FOR v_schedule_row IN
-        SELECT 
+        SELECT
             s.schedule_id,
             s.plan_id,
             s.due_date,
@@ -44,7 +44,7 @@ BEGIN
         )
     LOOP
         v_days_overdue := v_schedule_row.days_overdue;
-        
+
         -- Find applicable penalty rule
         SELECT * INTO v_rule_row
         FROM penalty_rules
@@ -53,19 +53,19 @@ BEGIN
         AND (days_overdue_to IS NULL OR days_overdue_to >= v_days_overdue)
         ORDER BY days_overdue_from DESC
         LIMIT 1;
-        
+
         IF FOUND THEN
             -- Calculate penalty amount
             IF v_rule_row.penalty_type = 'FIXED' THEN
                 v_penalty_amount := v_rule_row.penalty_amount;
             ELSE -- PERCENTAGE
-                v_penalty_amount := (v_schedule_row.total_amount - v_schedule_row.paid_amount) 
+                v_penalty_amount := (v_schedule_row.total_amount - v_schedule_row.paid_amount)
                                   * v_rule_row.penalty_amount;
             END IF;
-            
+
             -- Apply penalty
             INSERT INTO penalties (
-                schedule_id, rule_id, penalty_amount, 
+                schedule_id, rule_id, penalty_amount,
                 days_overdue, applied_date
             ) VALUES (
                 v_schedule_row.schedule_id,
@@ -74,12 +74,12 @@ BEGIN
                 v_days_overdue,
                 CURRENT_DATE
             );
-            
-            RAISE NOTICE 'Applied penalty % to schedule_id %', 
+
+            RAISE NOTICE 'Applied penalty % to schedule_id %',
                 v_penalty_amount, v_schedule_row.schedule_id;
         END IF;
     END LOOP;
-    
+
     -- Log event
     INSERT INTO event_log (event_type, entity_type, entity_id, user_id, event_data)
     VALUES (
@@ -90,7 +90,7 @@ BEGIN
         jsonb_build_object(
             'date', CURRENT_DATE,
             'penalties_applied', (
-                SELECT COUNT(*) FROM penalties 
+                SELECT COUNT(*) FROM penalties
                 WHERE applied_date = CURRENT_DATE
             )
         )
@@ -99,6 +99,7 @@ END $$;
 ```
 
 **Cron Entry**:
+
 ```bash
 0 1 * * * psql -d installments_db -f /path/to/apply_daily_penalties.sql >> /var/log/penalties.log 2>&1
 ```
@@ -113,7 +114,7 @@ END $$;
 
 ```sql
 -- Generate payment reminders for installments due in next 3 days
-SELECT 
+SELECT
     c.customer_id,
     c.full_name,
     c.phone,
@@ -129,7 +130,7 @@ SELECT
     -- Days until due
     s.due_date - CURRENT_DATE AS days_until_due,
     -- Reminder type
-    CASE 
+    CASE
         WHEN s.due_date - CURRENT_DATE = 3 THEN 'ADVANCE_REMINDER'
         WHEN s.due_date - CURRENT_DATE = 1 THEN 'URGENT_REMINDER'
         WHEN s.due_date = CURRENT_DATE THEN 'DUE_TODAY'
@@ -148,6 +149,7 @@ ORDER BY s.due_date, c.customer_id;
 ```
 
 **Cron Entry**:
+
 ```bash
 0 9 * * * psql -d installments_db -f /path/to/generate_payment_reminders.sql && /path/to/send_reminders.sh
 ```
@@ -178,8 +180,8 @@ VALUES (
     jsonb_build_object(
         'date', CURRENT_DATE,
         'updated_count', (
-            SELECT COUNT(*) FROM installment_schedule 
-            WHERE status = 'OVERDUE' 
+            SELECT COUNT(*) FROM installment_schedule
+            WHERE status = 'OVERDUE'
             AND due_date = CURRENT_DATE - INTERVAL '1 day'
         )
     )
@@ -187,6 +189,7 @@ VALUES (
 ```
 
 **Cron Entry**:
+
 ```bash
 0 2 * * * psql -d installments_db -f /path/to/update_overdue_status.sql
 ```
@@ -204,7 +207,7 @@ VALUES (
 SELECT refresh_daily_collections();
 
 -- Verify refresh
-SELECT 
+SELECT
     'mv_daily_collections' AS view_name,
     MAX(payment_date) AS latest_date,
     COUNT(*) AS row_count
@@ -212,6 +215,7 @@ FROM mv_daily_collections;
 ```
 
 **Cron Entry**:
+
 ```bash
 0 23 * * * psql -d installments_db -c "SELECT refresh_daily_collections();" >> /var/log/mv_refresh.log 2>&1
 ```
@@ -251,6 +255,7 @@ VALUES (
 ```
 
 **Cron Entry**:
+
 ```bash
 0 3 * * * psql -d installments_db -f /path/to/daily_maintenance.sql
 ```
@@ -301,6 +306,7 @@ echo "Backup completed: backup_$DATE.dump.gpg"
 ```
 
 **Cron Entry**:
+
 ```bash
 0 4 * * * /path/to/daily_backup.sh >> /var/log/backup.log 2>&1
 ```
@@ -337,12 +343,12 @@ WHERE created_at < CURRENT_DATE - INTERVAL '12 months';
 
 Penalties are configured in the `penalty_rules` table:
 
-| Days Overdue | Penalty Type | Amount | Description |
-|--------------|--------------|--------|-------------|
-| 1-7 days | FIXED | 50.00 EGP | First week late |
-| 8-14 days | FIXED | 100.00 EGP | Second week late |
-| 15-30 days | PERCENTAGE | 2% | Third week late |
-| 31+ days | PERCENTAGE | 5% | Over one month |
+| Days Overdue | Penalty Type | Amount     | Description      |
+| ------------ | ------------ | ---------- | ---------------- |
+| 1-7 days     | FIXED        | 50.00 EGP  | First week late  |
+| 8-14 days    | FIXED        | 100.00 EGP | Second week late |
+| 15-30 days   | PERCENTAGE   | 2%         | Third week late  |
+| 31+ days     | PERCENTAGE   | 5%         | Over one month   |
 
 ### Adjusting Penalty Policies
 
@@ -371,13 +377,13 @@ WHERE rule_name = 'Third Week Late';
 
 ```sql
 -- Simulate penalty for specific schedule
-SELECT 
+SELECT
     s.schedule_id,
     s.due_date,
     CURRENT_DATE - s.due_date AS days_overdue,
     pr.rule_name,
     pr.penalty_type,
-    CASE 
+    CASE
         WHEN pr.penalty_type = 'FIXED' THEN pr.penalty_amount
         ELSE (s.total_amount - s.paid_amount) * pr.penalty_amount
     END AS calculated_penalty
@@ -397,8 +403,8 @@ AND (pr.days_overdue_to IS NULL OR pr.days_overdue_to >= (CURRENT_DATE - s.due_d
 
 ```sql
 -- 1. Overdue amount by age
-SELECT 
-    CASE 
+SELECT
+    CASE
         WHEN CURRENT_DATE - due_date <= 7 THEN '1-7 days'
         WHEN CURRENT_DATE - due_date <= 14 THEN '8-14 days'
         WHEN CURRENT_DATE - due_date <= 30 THEN '15-30 days'
@@ -412,7 +418,7 @@ GROUP BY overdue_bucket
 ORDER BY overdue_bucket;
 
 -- 2. Daily collection vs target
-SELECT 
+SELECT
     payment_date,
     SUM(amount) AS daily_collection,
     -- Target: 100,000 EGP per day
@@ -425,7 +431,7 @@ GROUP BY payment_date
 ORDER BY payment_date DESC;
 
 -- 3. Active plans by status
-SELECT 
+SELECT
     status,
     COUNT(*) AS plan_count,
     SUM(total_with_ratio - (
@@ -443,22 +449,24 @@ GROUP BY status;
 Set up alerts for:
 
 1. **Critical Overdues**: Installments > 30 days overdue
+
    ```sql
-   SELECT COUNT(*) FROM installment_schedule 
-   WHERE status = 'OVERDUE' 
+   SELECT COUNT(*) FROM installment_schedule
+   WHERE status = 'OVERDUE'
    AND CURRENT_DATE - due_date > 30;
    ```
 
 2. **Low Daily Collection**: < 70% of target
+
    ```sql
-   SELECT SUM(amount) FROM payments 
-   WHERE payment_date = CURRENT_DATE 
+   SELECT SUM(amount) FROM payments
+   WHERE payment_date = CURRENT_DATE
    AND is_reversal = FALSE;
    ```
 
 3. **High Reversal Rate**: > 5% of payments
    ```sql
-   SELECT 
+   SELECT
        COUNT(CASE WHEN is_reversal THEN 1 END)::FLOAT / COUNT(*) AS reversal_rate
    FROM payments
    WHERE payment_date >= CURRENT_DATE - INTERVAL '7 days';
@@ -471,6 +479,7 @@ Set up alerts for:
 ### Issue: Penalties not being applied
 
 **Check:**
+
 1. Cron job is running: `grep "apply_daily_penalties" /var/log/cron`
 2. Penalty rules are active: `SELECT * FROM penalty_rules WHERE is_active = TRUE;`
 3. Event log for errors: `SELECT * FROM event_log WHERE event_type = 'DAILY_PENALTIES_APPLIED' ORDER BY created_at DESC LIMIT 5;`
@@ -478,6 +487,7 @@ Set up alerts for:
 ### Issue: Reminders not being sent
 
 **Check:**
+
 1. Query returns results: Run `generate_payment_reminders.sql` manually
 2. CSV file created: `ls -l /tmp/payment_reminders.csv`
 3. SMS/email service logs
@@ -485,6 +495,7 @@ Set up alerts for:
 ### Issue: Materialized views out of date
 
 **Fix:**
+
 ```sql
 -- Force refresh
 REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_collections;
@@ -496,6 +507,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_monthly_performance;
 ## Summary
 
 **Daily Tasks (Automated):**
+
 - 01:00 - Apply late fees
 - 02:00 - Update overdue status
 - 03:00 - Database maintenance
@@ -504,16 +516,19 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_monthly_performance;
 - 23:00 - Refresh materialized views
 
 **Monthly Tasks:**
+
 - 1st at 01:00 - Refresh monthly performance view
 - 1st at 05:00 - Archive old event logs
 
 **Manual Tasks:**
+
 - Review overdue reports weekly
 - Adjust penalty policies as needed
 - Monitor alert thresholds daily
 - Test backup restore monthly
 
 **Configuration Files:**
+
 - Penalty rules: `penalty_rules` table
 - Reminder timing: Cron schedule
 - Backup retention: 30 days

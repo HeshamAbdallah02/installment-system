@@ -62,32 +62,39 @@ dot -Tsvg er_diagram.dot -o er_diagram.svg
 ### Core Tables
 
 #### Users & Branches
+
 - **users**: System users (sellers, managers) who perform actions
 - **branches**: Physical store locations
 
 #### Customers & PII
+
 - **customers**: Customer master data with Egyptian national ID (14 digits)
 - **file_storage**: Metadata for files in object storage (S3)
 
 #### Products & Pricing
+
 - **products**: Product catalog with deposit requirements
 - **installment_ratios**: Configurable pricing ratios by period (3, 6, 12, 24 months)
 
 #### Orders & Plans
+
 - **orders**: Customer orders (CASH or INSTALLMENT)
 - **order_items**: Order line items
 - **installment_plans**: Financing plans for orders
 - **installment_schedule**: Individual installment due dates and amounts
 
 #### Payments
+
 - **payments**: All payment records (positive and negative for reversals)
 - **payment_allocations**: Detailed allocation to schedule lines
 
 #### Penalties
+
 - **penalty_rules**: Configurable late payment penalty rules
 - **penalties**: Applied penalties on overdue installments
 
 #### Audit
+
 - **event_log**: Immutable audit trail of all actions
 
 ### Key Constraints
@@ -114,6 +121,7 @@ SELECT * FROM create_installment_plan(
 ```
 
 **Business Rules:**
+
 - Validates deposit requirements per product
 - Applies ratio from `installment_ratios` table
 - Generates schedule with principal/extra split
@@ -134,6 +142,7 @@ SELECT * FROM record_payment(
 ```
 
 **Allocation Algorithm:**
+
 1. **PENALTIES**: Late fees, earliest first
 2. **EXTRA**: Ratio portion of earliest unpaid installments
 3. **PRINCIPAL**: Principal portion of earliest unpaid installments
@@ -154,6 +163,7 @@ SELECT * FROM reverse_payment(
 ```
 
 **Behavior:**
+
 - Creates reversal payment with negative amount
 - Creates negative allocations
 - Updates schedule paid_amount and status
@@ -188,6 +198,7 @@ Returns breakdown: principal, extra, penalties, total.
 - **mv_monthly_performance**: Monthly performance metrics
 
 **Refresh Commands:**
+
 ```sql
 -- Daily (run at 23:00)
 REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_collections;
@@ -222,6 +233,7 @@ idx_schedule_pending (plan_id, due_date) WHERE status IN ('PENDING', 'PARTIAL', 
 ### File Storage Security
 
 **Recommendations:**
+
 1. Enable S3 server-side encryption (SSE-S3 or SSE-KMS)
 2. Set bucket ACLs to private
 3. Use signed URLs for temporary access
@@ -231,6 +243,7 @@ idx_schedule_pending (plan_id, due_date) WHERE status IN ('PENDING', 'PARTIAL', 
 ### National ID Protection
 
 **Compliance:**
+
 1. Encrypt database at rest
 2. Restrict SELECT permissions on `customers` table
 3. Audit all access via `event_log`
@@ -260,6 +273,7 @@ REVOKE DELETE ON payments, event_log FROM app_user;
 ### Isolation Levels
 
 **Recommended:**
+
 - **READ COMMITTED**: Default for most operations
 - **SERIALIZABLE**: For payment allocation to prevent race conditions
 
@@ -274,6 +288,7 @@ COMMIT;
 ### Deadlock Prevention
 
 **Rules:**
+
 1. Always acquire locks in consistent order: customer → order → plan → schedule
 2. Keep transactions short
 3. Avoid user interaction within transactions
@@ -348,6 +363,7 @@ max_connections = 100
 ### Partitioning Strategy
 
 **When to partition:**
+
 - `event_log`: When exceeds 10M rows (partition by month)
 - `payments`: When exceeds 5M rows (partition by year)
 
@@ -389,6 +405,7 @@ All tests include inline comments with expected outputs. Review console output f
 ### Common Issues
 
 **Issue: Slow queries on vw_customer_outstanding**
+
 ```sql
 -- Solution: Ensure indexes exist
 \d installment_schedule
@@ -396,12 +413,14 @@ All tests include inline comments with expected outputs. Review console output f
 ```
 
 **Issue: Deadlocks during payment allocation**
+
 ```sql
 -- Solution: Use SERIALIZABLE isolation
 BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 ```
 
 **Issue: Materialized views out of date**
+
 ```sql
 -- Solution: Refresh manually or check cron job
 REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_collections;
@@ -416,14 +435,14 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_collections;
 SELECT COUNT(*) FROM installment_plans WHERE status = 'ACTIVE';
 
 -- Overdue amount
-SELECT SUM(total_amount - paid_amount) 
-FROM installment_schedule 
+SELECT SUM(total_amount - paid_amount)
+FROM installment_schedule
 WHERE status = 'OVERDUE';
 
 -- Daily collection
-SELECT SUM(amount) 
-FROM payments 
-WHERE payment_date = CURRENT_DATE 
+SELECT SUM(amount)
+FROM payments
+WHERE payment_date = CURRENT_DATE
 AND is_reversal = FALSE;
 
 -- Database size
@@ -433,6 +452,7 @@ SELECT pg_size_pretty(pg_database_size('installments_db'));
 ### Alerts
 
 Set up monitoring for:
+
 1. Overdue installments > 30 days
 2. Failed payment allocations
 3. Database size > 80% capacity
@@ -452,6 +472,7 @@ Set up monitoring for:
 ### Contact
 
 For issues or questions:
+
 1. Review inline SQL comments
 2. Check test suite for examples
 3. Consult ER diagram for relationships
