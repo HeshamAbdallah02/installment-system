@@ -69,6 +69,7 @@ supabase db push --db-url "postgresql://postgres:3CGT7nXs3nRnf14i@db.qtjjelgkzaf
 You should see these 16 tables in Supabase:
 
 ### Core Tables
+
 1. **branches** - Store locations
 2. **users** - System users (sellers/employees)
 3. **customers** - Customer master data
@@ -86,6 +87,7 @@ You should see these 16 tables in Supabase:
 15. **event_log** - Audit trail
 
 ### Views
+
 - vw_customer_outstanding
 - vw_overdues
 - vw_seller_activity
@@ -99,9 +101,9 @@ Run these in SQL Editor to verify:
 
 ```sql
 -- Check all tables exist
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
 AND table_type = 'BASE TABLE'
 ORDER BY table_name;
 
@@ -116,9 +118,9 @@ SELECT * FROM vw_customer_outstanding LIMIT 5;
 SELECT * FROM vw_seller_activity;
 
 -- Check procedures exist
-SELECT routine_name 
-FROM information_schema.routines 
-WHERE routine_schema = 'public' 
+SELECT routine_name
+FROM information_schema.routines
+WHERE routine_schema = 'public'
 AND routine_type = 'FUNCTION'
 ORDER BY routine_name;
 ```
@@ -126,17 +128,21 @@ ORDER BY routine_name;
 ## Troubleshooting
 
 ### Error: "relation already exists"
+
 This is normal if running scripts multiple times. The DDL is idempotent (safe to re-run).
 
 ### Error: "permission denied"
+
 Make sure you're using the postgres role with full permissions.
 
 ### Error: "syntax error"
+
 - Make sure you copied the entire file content
 - Check for any copy/paste issues
 - Try running smaller sections at a time
 
 ### Tables not showing in Schema Visualizer
+
 - Refresh the page
 - Go to Table Editor and back to Schema Visualizer
 - Wait a few seconds for Supabase to update
@@ -157,9 +163,9 @@ CREATE POLICY "Users see own branch data" ON customers
     FOR SELECT
     USING (
         created_by IN (
-            SELECT user_id FROM users 
+            SELECT user_id FROM users
             WHERE branch_id = (
-                SELECT branch_id FROM users 
+                SELECT branch_id FROM users
                 WHERE user_id = auth.uid()::int
             )
         )
@@ -186,6 +192,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE installment_schedule;
 ## Support
 
 If you encounter issues:
+
 1. Check Supabase logs: Dashboard → Logs → Postgres Logs
 2. Review error messages carefully
 3. Try running scripts in smaller sections
