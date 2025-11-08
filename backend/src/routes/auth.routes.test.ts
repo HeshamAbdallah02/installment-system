@@ -8,12 +8,13 @@ import { AuthError } from '../services/authService';
 
 // Mock the auth service but keep AuthError
 vi.mock('../services/authService', async () => {
-  const actual = await vi.importActual<typeof import('../services/authService')>('../services/authService');
+  const actual =
+    await vi.importActual<typeof import('../services/authService')>('../services/authService');
   return {
     ...actual,
     default: {
-      login: vi.fn()
-    }
+      login: vi.fn(),
+    },
   };
 });
 
@@ -48,19 +49,17 @@ describe('Auth Routes - POST /api/auth/login', () => {
         id: 1,
         fullName: 'Test User',
         role: 'SELLER',
-        branch: 'Main Branch'
-      }
+        branch: 'Main Branch',
+      },
     };
 
     vi.mocked(authService.login).mockResolvedValue(mockResponse);
 
     // Make request
-    const response = await request(app)
-      .post('/api/auth/login')
-      .send({
-        userId: 'testuser',
-        password: 'correctPassword'
-      });
+    const response = await request(app).post('/api/auth/login').send({
+      userId: 'testuser',
+      password: 'correctPassword',
+    });
 
     // Verify response
     expect(response.status).toBe(200);
@@ -70,7 +69,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
       id: 1,
       fullName: 'Test User',
       role: 'SELLER',
-      branch: 'Main Branch'
+      branch: 'Main Branch',
     });
 
     // Verify service was called
@@ -84,7 +83,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
   it('should return 401 with invalid password', async () => {
     // Create a fresh app to avoid rate limiting
     const freshApp = createTestApp();
-    
+
     // Mock failed login with invalid credentials
     const mockError = new AuthError('INVALID_CREDENTIALS', 'Invalid username or password');
 
@@ -96,7 +95,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
       .set('X-Forwarded-For', '10.0.1.1') // Different IP
       .send({
         userId: 'testuser',
-        password: 'wrongPassword'
+        password: 'wrongPassword',
       });
 
     // Verify response
@@ -109,7 +108,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
   it('should return 403 with inactive user', async () => {
     // Create a fresh app to avoid rate limiting
     const freshApp = createTestApp();
-    
+
     // Mock failed login with disabled account
     const mockError = new AuthError('ACCOUNT_DISABLED', 'Account is disabled');
 
@@ -121,7 +120,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
       .set('X-Forwarded-For', '10.0.1.2') // Different IP
       .send({
         userId: 'inactiveuser',
-        password: 'password123'
+        password: 'password123',
       });
 
     // Verify response
@@ -133,11 +132,9 @@ describe('Auth Routes - POST /api/auth/login', () => {
 
   it('should return 400 with missing userId field', async () => {
     // Make request without userId
-    const response = await request(app)
-      .post('/api/auth/login')
-      .send({
-        password: 'password123'
-      });
+    const response = await request(app).post('/api/auth/login').send({
+      password: 'password123',
+    });
 
     // Verify response
     expect(response.status).toBe(400);
@@ -151,11 +148,9 @@ describe('Auth Routes - POST /api/auth/login', () => {
 
   it('should return 400 with missing password field', async () => {
     // Make request without password
-    const response = await request(app)
-      .post('/api/auth/login')
-      .send({
-        userId: 'testuser'
-      });
+    const response = await request(app).post('/api/auth/login').send({
+      userId: 'testuser',
+    });
 
     // Verify response
     expect(response.status).toBe(400);
@@ -170,7 +165,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
   it('should return 400 with missing both fields', async () => {
     // Create a fresh app to avoid rate limiting from previous tests
     const freshApp = createTestApp();
-    
+
     // Make request without any fields
     const response = await request(freshApp)
       .post('/api/auth/login')
@@ -187,7 +182,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('MISSING_FIELDS');
-      
+
       // Verify service was not called
       expect(authService.login).not.toHaveBeenCalled();
     }
@@ -196,17 +191,18 @@ describe('Auth Routes - POST /api/auth/login', () => {
   it('should verify JWT token structure in response', async () => {
     // Create a fresh app to avoid rate limiting
     const freshApp = createTestApp();
-    
+
     // Mock successful login with realistic JWT structure
     const mockResponse = {
       success: true,
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJyb2xlIjoiU0VMTEVSIiwiYnJhbmNoSWQiOjEsImlhdCI6MTYwMDAwMDAwMCwiZXhwIjoxNjAwMDI4ODAwfQ.signature',
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJyb2xlIjoiU0VMTEVSIiwiYnJhbmNoSWQiOjEsImlhdCI6MTYwMDAwMDAwMCwiZXhwIjoxNjAwMDI4ODAwfQ.signature',
       user: {
         id: 1,
         fullName: 'Test User',
         role: 'SELLER',
-        branch: 'Main Branch'
-      }
+        branch: 'Main Branch',
+      },
     };
 
     vi.mocked(authService.login).mockResolvedValue(mockResponse);
@@ -217,7 +213,7 @@ describe('Auth Routes - POST /api/auth/login', () => {
       .set('X-Forwarded-For', '192.168.200.1') // Unique IP to avoid rate limiting
       .send({
         userId: 'testuser',
-        password: 'password123'
+        password: 'password123',
       });
 
     // Check if rate limited or successful
@@ -238,7 +234,7 @@ describe('Auth Routes - Rate Limiting', () => {
   it('should return 429 on 6th attempt within 15 minutes', async () => {
     // Create a completely fresh app for this test
     const rateLimitApp = createTestApp();
-    
+
     // Mock failed login
     const mockError = new AuthError('INVALID_CREDENTIALS', 'Invalid username or password');
     vi.mocked(authService.login).mockRejectedValue(mockError);
@@ -254,7 +250,7 @@ describe('Auth Routes - Rate Limiting', () => {
         .set('X-Forwarded-For', testIP)
         .send({
           userId: 'testuser',
-          password: 'wrongPassword'
+          password: 'wrongPassword',
         });
 
       // Count attempts that got through (not rate limited)
@@ -269,7 +265,7 @@ describe('Auth Routes - Rate Limiting', () => {
       .set('X-Forwarded-For', testIP)
       .send({
         userId: 'testuser',
-        password: 'wrongPassword'
+        password: 'wrongPassword',
       });
 
     // Verify rate limit response

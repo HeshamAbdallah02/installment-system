@@ -74,10 +74,8 @@ export default function ToastNotification({
         role="alert"
       >
         <div className="flex-shrink-0">{getIcon()}</div>
-        
-        <p className={`flex-1 text-sm font-medium text-right ${getTextColor()}`}>
-          {message}
-        </p>
+
+        <p className={`flex-1 text-sm font-medium text-right ${getTextColor()}`}>{message}</p>
 
         <button
           onClick={onClose}

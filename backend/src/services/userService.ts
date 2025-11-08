@@ -13,23 +13,23 @@ class UserService {
     try {
       const users = await prisma.user.findMany({
         where: {
-          isActive: true
+          isActive: true,
         },
         include: {
-          branch: true
+          branch: true,
         },
         orderBy: {
-          fullName: 'asc'
-        }
+          fullName: 'asc',
+        },
       });
 
       // Map to UserListItem format
-      return users.map(user => ({
+      return users.map((user) => ({
         id: user.id.toString(),
         username: user.username,
         fullName: user.fullName,
         branchName: user.branch?.name || 'No Branch',
-        isActive: user.isActive
+        isActive: user.isActive,
       }));
     } catch (error) {
       throw new Error('Failed to fetch active users');
@@ -46,8 +46,8 @@ class UserService {
       const user = await prisma.user.findUnique({
         where: { id },
         include: {
-          branch: true
-        }
+          branch: true,
+        },
       });
       return user;
     } catch (error) {
@@ -65,8 +65,8 @@ class UserService {
       await prisma.user.update({
         where: { id: userId },
         data: {
-          lastLoginAt: new Date()
-        }
+          lastLoginAt: new Date(),
+        },
       });
     } catch (error) {
       throw new Error('Failed to update last login timestamp');

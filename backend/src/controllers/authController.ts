@@ -9,7 +9,7 @@ class AuthController {
   /**
    * Handle user login request
    * POST /api/auth/login
-   * 
+   *
    * @param req - Express request with LoginRequest body
    * @param res - Express response
    */
@@ -23,8 +23,8 @@ class AuthController {
           success: false,
           error: {
             code: 'MISSING_FIELDS',
-            message: 'يرجى إدخال اسم المستخدم وكلمة المرور'
-          }
+            message: 'يرجى إدخال اسم المستخدم وكلمة المرور',
+          },
         });
         return;
       }
@@ -45,8 +45,8 @@ class AuthController {
             success: false,
             error: {
               code: 'INVALID_CREDENTIALS',
-              message: 'اسم المستخدم أو كلمة المرور غير صحيحة'
-            }
+              message: 'اسم المستخدم أو كلمة المرور غير صحيحة',
+            },
           });
           return;
         }
@@ -56,8 +56,8 @@ class AuthController {
             success: false,
             error: {
               code: 'ACCOUNT_DISABLED',
-              message: 'تم تعطيل هذا الحساب. يرجى التواصل مع المسؤول'
-            }
+              message: 'تم تعطيل هذا الحساب. يرجى التواصل مع المسؤول',
+            },
           });
           return;
         }
@@ -69,8 +69,8 @@ class AuthController {
         success: false,
         error: {
           code: 'SERVER_ERROR',
-          message: 'خطأ في الخادم. يرجى المحاولة مرة أخرى'
-        }
+          message: 'خطأ في الخادم. يرجى المحاولة مرة أخرى',
+        },
       });
     }
   }

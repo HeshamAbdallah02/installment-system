@@ -1,5 +1,11 @@
 import axios, { AxiosError } from 'axios';
-import type { User, LoginRequest, LoginResponse, ErrorResponse, UsersListResponse } from '../types/auth';
+import type {
+  User,
+  LoginRequest,
+  LoginResponse,
+  ErrorResponse,
+  UsersListResponse,
+} from '../types/auth';
 
 class AuthService {
   private baseURL: string;
@@ -16,29 +22,29 @@ class AuthService {
   async fetchUsers(): Promise<User[]> {
     try {
       const response = await axios.get<UsersListResponse>(`${this.baseURL}/api/users/list`);
-      
+
       if (response.data.success && response.data.users) {
         return response.data.users;
       }
-      
+
       throw new Error('خطأ في تحميل قائمة المستخدمين');
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>;
-        
+
         if (axiosError.response?.data?.error?.message) {
           throw new Error(axiosError.response.data.error.message);
         }
-        
+
         if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
           throw new Error('انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى');
         }
-        
+
         if (!axiosError.response) {
           throw new Error('خطأ في الاتصال. يرجى المحاولة مرة أخرى');
         }
       }
-      
+
       throw new Error('خطأ في تحميل قائمة المستخدمين');
     }
   }
@@ -54,19 +60,19 @@ class AuthService {
     try {
       const payload: LoginRequest = { userId: username, password };
       const response = await axios.post<LoginResponse>(`${this.baseURL}/api/auth/login`, payload);
-      
+
       if (response.data.success && response.data.token) {
         return response.data;
       }
-      
+
       throw new Error('خطأ في تسجيل الدخول');
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>;
-        
+
         if (axiosError.response?.data?.error) {
           const errorCode = axiosError.response.data.error.code;
-          
+
           // Map error codes to Arabic messages
           switch (errorCode) {
             case 'INVALID_CREDENTIALS':
@@ -77,16 +83,16 @@ class AuthService {
               throw new Error(axiosError.response.data.error.message || 'خطأ في تسجيل الدخول');
           }
         }
-        
+
         if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
           throw new Error('انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى');
         }
-        
+
         if (!axiosError.response) {
           throw new Error('خطأ في الاتصال. يرجى المحاولة مرة أخرى');
         }
       }
-      
+
       throw new Error('خطأ في تسجيل الدخول');
     }
   }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import UserDropdown from './UserDropdown';
 import type { User } from '../types/auth';
@@ -33,7 +33,7 @@ describe('UserDropdown', () => {
     render(<UserDropdown users={mockUsers} selectedUserId={null} onSelect={onSelect} />);
 
     const input = screen.getByPlaceholderText('ابحث عن المستخدم...');
-    
+
     await user.click(input);
     await user.type(input, 'أحمد');
 
@@ -49,7 +49,7 @@ describe('UserDropdown', () => {
     render(<UserDropdown users={mockUsers} selectedUserId={null} onSelect={onSelect} />);
 
     const input = screen.getByPlaceholderText('ابحث عن المستخدم...');
-    
+
     await user.click(input);
     await user.type(input, 'الإسكندرية');
 
@@ -65,7 +65,7 @@ describe('UserDropdown', () => {
     render(<UserDropdown users={mockUsers} selectedUserId={null} onSelect={onSelect} />);
 
     const input = screen.getByPlaceholderText('ابحث عن المستخدم...');
-    
+
     await user.click(input);
     await user.type(input, 'xyz123');
 
@@ -99,7 +99,9 @@ describe('UserDropdown', () => {
 
   it('should be disabled when disabled prop is true', () => {
     const onSelect = vi.fn();
-    render(<UserDropdown users={mockUsers} selectedUserId={null} onSelect={onSelect} disabled={true} />);
+    render(
+      <UserDropdown users={mockUsers} selectedUserId={null} onSelect={onSelect} disabled={true} />
+    );
 
     const input = screen.getByPlaceholderText('ابحث عن المستخدم...') as HTMLInputElement;
     expect(input).toBeDisabled();

@@ -9,7 +9,10 @@ import { LoginResponse } from '../types/auth.types';
  * Custom error class for authentication errors
  */
 class AuthError extends Error {
-  constructor(public code: string, message: string) {
+  constructor(
+    public code: string,
+    message: string
+  ) {
     super(message);
     this.name = 'AuthError';
   }
@@ -33,8 +36,8 @@ class AuthService {
       const user = await prisma.user.findUnique({
         where: { username: userId },
         include: {
-          branch: true
-        }
+          branch: true,
+        },
       });
 
       // Step 2: Check if user exists
@@ -63,7 +66,7 @@ class AuthService {
 
       // Step 4: Verify password
       const isPasswordValid = await passwordService.comparePassword(password, user.passwordHash);
-      
+
       if (!isPasswordValid) {
         // Log failed login attempt
         await auditService.logEvent(
@@ -80,19 +83,14 @@ class AuthService {
         userId: user.id,
         username: user.username,
         role: user.role,
-        branchId: user.branchId
+        branchId: user.branchId,
       });
 
       // Step 6: Update lastLoginAt timestamp
       await userService.updateLastLogin(user.id);
 
       // Step 7: Log successful login
-      await auditService.logEvent(
-        EventType.USER_LOGIN,
-        user.id,
-        { username: userId },
-        ipAddress
-      );
+      await auditService.logEvent(EventType.USER_LOGIN, user.id, { username: userId }, ipAddress);
 
       // Step 8: Return success response
       return {
@@ -102,15 +100,15 @@ class AuthService {
           id: user.id,
           fullName: user.fullName,
           role: user.role as 'SELLER' | 'MANAGER' | 'ADMIN',
-          branch: user.branch?.name || 'No Branch'
-        }
+          branch: user.branch?.name || 'No Branch',
+        },
       };
     } catch (error) {
       // Re-throw AuthError as-is
       if (error instanceof AuthError) {
         throw error;
       }
-      
+
       // Wrap other errors
       console.error('Login error:', error);
       throw new Error('Authentication failed');
@@ -127,8 +125,8 @@ class AuthService {
       const user = await prisma.user.findUnique({
         where: { username: userId },
         include: {
-          branch: true
-        }
+          branch: true,
+        },
       });
 
       if (!user || !user.isActive) {

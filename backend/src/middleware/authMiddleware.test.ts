@@ -17,7 +17,7 @@ describe('Auth Middleware', () => {
   beforeEach(() => {
     // Setup mock request
     mockRequest = {
-      headers: {}
+      headers: {},
     };
 
     // Setup mock response
@@ -25,7 +25,7 @@ describe('Auth Middleware', () => {
     statusMock = vi.fn().mockReturnValue({ json: jsonMock });
     mockResponse = {
       status: statusMock,
-      json: jsonMock
+      json: jsonMock,
     };
 
     // Setup mock next function
@@ -47,21 +47,17 @@ describe('Auth Middleware', () => {
       role: 'SELLER',
       branchId: 1,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 28800 // 8 hours
+      exp: Math.floor(Date.now() / 1000) + 28800, // 8 hours
     };
 
     mockRequest.headers = {
-      authorization: 'Bearer valid-jwt-token'
+      authorization: 'Bearer valid-jwt-token',
     };
 
     vi.mocked(tokenService.verifyToken).mockReturnValue(mockPayload);
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify token was verified
     expect(tokenService.verifyToken).toHaveBeenCalledWith('valid-jwt-token');
@@ -81,11 +77,7 @@ describe('Auth Middleware', () => {
     mockRequest.headers = {};
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify response
     expect(statusMock).toHaveBeenCalledWith(401);
@@ -93,8 +85,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'NO_TOKEN',
-        message: 'لم يتم توفير رمز المصادقة'
-      }
+        message: 'لم يتم توفير رمز المصادقة',
+      },
     });
 
     // Verify next was not called
@@ -107,17 +99,13 @@ describe('Auth Middleware', () => {
   it('should reject request with expired token (401)', () => {
     // Mock expired token
     mockRequest.headers = {
-      authorization: 'Bearer expired-jwt-token'
+      authorization: 'Bearer expired-jwt-token',
     };
 
     vi.mocked(tokenService.verifyToken).mockReturnValue(null);
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify token was verified
     expect(tokenService.verifyToken).toHaveBeenCalledWith('expired-jwt-token');
@@ -128,8 +116,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح أو منتهي الصلاحية'
-      }
+        message: 'رمز المصادقة غير صالح أو منتهي الصلاحية',
+      },
     });
 
     // Verify next was not called
@@ -142,17 +130,13 @@ describe('Auth Middleware', () => {
   it('should reject request with invalid token (401)', () => {
     // Mock invalid token
     mockRequest.headers = {
-      authorization: 'Bearer invalid-jwt-token'
+      authorization: 'Bearer invalid-jwt-token',
     };
 
     vi.mocked(tokenService.verifyToken).mockReturnValue(null);
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify token was verified
     expect(tokenService.verifyToken).toHaveBeenCalledWith('invalid-jwt-token');
@@ -163,8 +147,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح أو منتهي الصلاحية'
-      }
+        message: 'رمز المصادقة غير صالح أو منتهي الصلاحية',
+      },
     });
 
     // Verify next was not called
@@ -179,21 +163,17 @@ describe('Auth Middleware', () => {
       role: 'MANAGER',
       branchId: 5,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 28800
+      exp: Math.floor(Date.now() / 1000) + 28800,
     };
 
     mockRequest.headers = {
-      authorization: 'Bearer valid-token'
+      authorization: 'Bearer valid-token',
     };
 
     vi.mocked(tokenService.verifyToken).mockReturnValue(mockPayload);
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify user payload was attached correctly
     expect(mockRequest.user).toBeDefined();
@@ -211,15 +191,11 @@ describe('Auth Middleware', () => {
   it('should reject token without Bearer scheme', () => {
     // Authorization header without Bearer scheme
     mockRequest.headers = {
-      authorization: 'invalid-token-format'
+      authorization: 'invalid-token-format',
     };
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify response
     expect(statusMock).toHaveBeenCalledWith(401);
@@ -227,8 +203,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح'
-      }
+        message: 'رمز المصادقة غير صالح',
+      },
     });
 
     // Verify token service was not called
@@ -241,15 +217,11 @@ describe('Auth Middleware', () => {
   it('should reject malformed Bearer token', () => {
     // Malformed Bearer token (extra parts)
     mockRequest.headers = {
-      authorization: 'Bearer token extra-part'
+      authorization: 'Bearer token extra-part',
     };
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify response
     expect(statusMock).toHaveBeenCalledWith(401);
@@ -257,8 +229,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح'
-      }
+        message: 'رمز المصادقة غير صالح',
+      },
     });
 
     // Verify token service was not called
@@ -268,7 +240,7 @@ describe('Auth Middleware', () => {
   it('should handle token service errors gracefully', () => {
     // Mock token service throwing error
     mockRequest.headers = {
-      authorization: 'Bearer valid-token'
+      authorization: 'Bearer valid-token',
     };
 
     vi.mocked(tokenService.verifyToken).mockImplementation(() => {
@@ -276,11 +248,7 @@ describe('Auth Middleware', () => {
     });
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify error response
     expect(statusMock).toHaveBeenCalledWith(401);
@@ -288,8 +256,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح'
-      }
+        message: 'رمز المصادقة غير صالح',
+      },
     });
 
     // Verify next was not called
@@ -299,17 +267,13 @@ describe('Auth Middleware', () => {
   it('should handle empty Bearer token', () => {
     // Empty token after Bearer
     mockRequest.headers = {
-      authorization: 'Bearer '
+      authorization: 'Bearer ',
     };
 
     vi.mocked(tokenService.verifyToken).mockReturnValue(null);
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify token was verified with empty string
     expect(tokenService.verifyToken).toHaveBeenCalledWith('');
@@ -320,23 +284,19 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح أو منتهي الصلاحية'
-      }
+        message: 'رمز المصادقة غير صالح أو منتهي الصلاحية',
+      },
     });
   });
 
   it('should handle case-sensitive Bearer scheme', () => {
     // Lowercase bearer (should be rejected)
     mockRequest.headers = {
-      authorization: 'bearer valid-token'
+      authorization: 'bearer valid-token',
     };
 
     // Execute middleware
-    authMiddleware(
-      mockRequest as AuthenticatedRequest,
-      mockResponse as Response,
-      mockNext
-    );
+    authMiddleware(mockRequest as AuthenticatedRequest, mockResponse as Response, mockNext);
 
     // Verify response (Bearer is case-sensitive)
     expect(statusMock).toHaveBeenCalledWith(401);
@@ -344,8 +304,8 @@ describe('Auth Middleware', () => {
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح'
-      }
+        message: 'رمز المصادقة غير صالح',
+      },
     });
 
     // Verify token service was not called

@@ -114,9 +114,9 @@ async function main() {
       code: 'TV-55-001',
       name: 'Samsung 55" Smart TV',
       description: '4K UHD Smart TV with HDR',
-      cashPrice: 15000.00,
+      cashPrice: 15000.0,
       requiresDeposit: true,
-      minDepositAmount: 3000.00,
+      minDepositAmount: 3000.0,
       category: 'Electronics',
     },
   });
@@ -127,9 +127,9 @@ async function main() {
       code: 'FRIDGE-001',
       name: 'LG Refrigerator 450L',
       description: 'Double door refrigerator',
-      cashPrice: 12000.00,
+      cashPrice: 12000.0,
       requiresDeposit: true,
-      minDepositAmount: 2400.00,
+      minDepositAmount: 2400.0,
       category: 'Appliances',
     },
   });
@@ -139,7 +139,7 @@ async function main() {
       code: 'PHONE-001',
       name: 'Samsung Galaxy A54',
       description: 'Smartphone 128GB',
-      cashPrice: 6000.00,
+      cashPrice: 6000.0,
       requiresDeposit: false,
       category: 'Electronics',
     },
@@ -148,10 +148,10 @@ async function main() {
   // Create installment ratios
   await prisma.installmentRatio.createMany({
     data: [
-      { periodMonths: 3, ratioMultiplier: 1.0300, description: '3 months - 3% increase' },
-      { periodMonths: 6, ratioMultiplier: 1.0500, description: '6 months - 5% increase' },
-      { periodMonths: 12, ratioMultiplier: 1.0800, description: '12 months - 8% increase' },
-      { periodMonths: 24, ratioMultiplier: 1.1200, description: '24 months - 12% increase' },
+      { periodMonths: 3, ratioMultiplier: 1.03, description: '3 months - 3% increase' },
+      { periodMonths: 6, ratioMultiplier: 1.05, description: '6 months - 5% increase' },
+      { periodMonths: 12, ratioMultiplier: 1.08, description: '12 months - 8% increase' },
+      { periodMonths: 24, ratioMultiplier: 1.12, description: '24 months - 12% increase' },
     ],
   });
   console.log('Created installment ratios');

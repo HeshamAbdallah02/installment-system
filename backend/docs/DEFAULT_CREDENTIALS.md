@@ -31,6 +31,7 @@ Password123
 **Status:** Active
 
 **Permissions:**
+
 - Full system access
 - User management
 - Branch management
@@ -50,6 +51,7 @@ Password123
 **Status:** Active
 
 **Permissions:**
+
 - Branch-level operations
 - View and manage transactions
 - Customer management
@@ -61,6 +63,7 @@ Password123
 ### 3. Seller Accounts
 
 #### Seller 1
+
 **Username:** `ahmed.hassan`  
 **Password:** `Password123`  
 **Full Name:** Ahmed Hassan  
@@ -70,6 +73,7 @@ Password123
 **Status:** Active
 
 **Permissions:**
+
 - Create and manage sales
 - Customer registration
 - Payment processing
@@ -78,6 +82,7 @@ Password123
 ---
 
 #### Seller 2
+
 **Username:** `fatima.ali`  
 **Password:** `Password123`  
 **Full Name:** Fatima Ali  
@@ -87,6 +92,7 @@ Password123
 **Status:** Active
 
 **Permissions:**
+
 - Create and manage sales
 - Customer registration
 - Payment processing
@@ -95,6 +101,7 @@ Password123
 ---
 
 #### Seller 3
+
 **Username:** `sara.mahmoud`  
 **Password:** `Password123`  
 **Full Name:** Sara Mahmoud  
@@ -104,6 +111,7 @@ Password123
 **Status:** Active
 
 **Permissions:**
+
 - Create and manage sales
 - Customer registration
 - Payment processing
@@ -121,6 +129,7 @@ When changing passwords, ensure they meet the following requirements:
 - **Best Practice:** Use a password manager to generate and store strong passwords
 
 ### Example Strong Passwords:
+
 - `Sb@y@2024!Secure`
 - `M@nager#Cairo99`
 - `S3ll3r$Alex2024`
@@ -134,10 +143,12 @@ When changing passwords, ensure they meet the following requirements:
 Currently, the system does not have a password change endpoint implemented. To change passwords in development:
 
 1. **Using Prisma Studio:**
+
    ```bash
    cd backend
    npx prisma studio
    ```
+
    - Navigate to the User model
    - Find the user you want to update
    - Generate a new password hash using bcrypt
@@ -145,6 +156,7 @@ Currently, the system does not have a password change endpoint implemented. To c
 
 2. **Using a Script:**
    Create a password update script:
+
    ```typescript
    import { PrismaClient } from '@prisma/client';
    import passwordService from './src/services/passwordService';
@@ -155,7 +167,7 @@ Currently, the system does not have a password change endpoint implemented. To c
      const hash = await passwordService.hashPassword(newPassword);
      await prisma.user.update({
        where: { username },
-       data: { passwordHash: hash }
+       data: { passwordHash: hash },
      });
      console.log(`Password updated for ${username}`);
    }
@@ -239,6 +251,7 @@ Currently, the system does not have a password change endpoint implemented. To c
 **Problem:** Login fails with "Invalid credentials" error
 
 **Solutions:**
+
 1. Verify you're using the correct username (case-sensitive)
 2. Ensure password is exactly `Password123` (case-sensitive)
 3. Check if account is active in database
@@ -254,6 +267,7 @@ Currently, the system does not have a password change endpoint implemented. To c
 **Problem:** Login fails with "Account disabled" error
 
 **Solution:**
+
 1. Contact system administrator
 2. Administrator can enable account in Prisma Studio:
    - Open user record
@@ -265,6 +279,7 @@ Currently, the system does not have a password change endpoint implemented. To c
 **Problem:** "Too many login attempts" error
 
 **Solution:**
+
 1. Wait 15 minutes before trying again
 2. Ensure you're using correct credentials
 3. Check if IP address is being rate-limited
@@ -289,6 +304,7 @@ npx prisma db seed
 ## Contact
 
 For password reset requests or account issues, contact:
+
 - **System Administrator:** admin@store.eg
 - **Technical Support:** support@store.eg
 
@@ -297,6 +313,7 @@ For password reset requests or account issues, contact:
 ## Changelog
 
 ### Version 1.0.0 (Initial Release)
+
 - Created 5 default user accounts (1 ADMIN, 1 MANAGER, 3 SELLERS)
 - Default password: Password123
 - All accounts assigned to branches

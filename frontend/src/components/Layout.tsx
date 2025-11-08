@@ -37,7 +37,7 @@ const Layout = () => {
               </Link>
             ))}
           </nav>
-          
+
           {/* Logout button */}
           <div className="p-6 border-t border-gray-200">
             <button

@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import ToastNotification from './ToastNotification';
 
 describe('ToastNotification', () => {
@@ -48,7 +47,13 @@ describe('ToastNotification', () => {
   it('should render info toast with correct styling', () => {
     const onClose = vi.fn();
     render(
-      <ToastNotification message="معلومة" type="info" isVisible={true} onClose={onClose} duration={0} />
+      <ToastNotification
+        message="معلومة"
+        type="info"
+        isVisible={true}
+        onClose={onClose}
+        duration={0}
+      />
     );
 
     expect(screen.getByText('معلومة')).toBeInTheDocument();
@@ -58,7 +63,13 @@ describe('ToastNotification', () => {
   it('should have close button', () => {
     const onClose = vi.fn();
     render(
-      <ToastNotification message="Test message" type="info" isVisible={true} onClose={onClose} duration={0} />
+      <ToastNotification
+        message="Test message"
+        type="info"
+        isVisible={true}
+        onClose={onClose}
+        duration={0}
+      />
     );
 
     const closeButton = screen.getByLabelText('إغلاق');

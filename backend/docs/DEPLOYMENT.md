@@ -71,26 +71,31 @@ LOG_FILE_PATH="/var/log/sabaya-api/app.log"
 The JWT_SECRET must be a strong, random 256-bit (32-byte) string. Use one of these methods:
 
 **Method 1: Using Node.js**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 **Method 2: Using OpenSSL**
+
 ```bash
 openssl rand -hex 32
 ```
 
 **Method 3: Using Online Generator**
+
 - Visit: https://www.grc.com/passwords.htm
 - Use the "63 random alpha-numeric characters" option
 - Copy the generated string
 
 **Example Output:**
+
 ```
 a7f3e9d2c8b4f1a6e5d9c3b7a2f8e4d1c9b5a3f7e2d8c4b1a6e9f5d2c8b4a1e7
 ```
 
-⚠️ **IMPORTANT:** 
+⚠️ **IMPORTANT:**
+
 - Never commit JWT_SECRET to version control
 - Use different secrets for development, staging, and production
 - Store secrets securely (use secret management service if available)
@@ -102,12 +107,7 @@ Add validation to ensure all required variables are set:
 
 ```typescript
 // src/config/env.ts
-const requiredEnvVars = [
-  'DATABASE_URL',
-  'JWT_SECRET',
-  'NODE_ENV',
-  'FRONTEND_URL'
-];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'NODE_ENV', 'FRONTEND_URL'];
 
 requiredEnvVars.forEach((varName) => {
   if (!process.env[varName]) {
@@ -176,11 +176,13 @@ npx prisma validate
 
 ```typescript
 // src/server.ts (development)
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 ```
 
 ### Production CORS Settings
@@ -190,25 +192,27 @@ app.use(cors({
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'https://your-frontend-domain.com',
-  'https://www.your-frontend-domain.com'
+  'https://www.your-frontend-domain.com',
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  maxAge: 86400 // 24 hours
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    maxAge: 86400, // 24 hours
+  })
+);
 ```
 
 ### CORS Checklist
@@ -226,17 +230,20 @@ app.use(cors({
 ### Option 1: Manual Deployment
 
 1. **Clone Repository on Server**
+
    ```bash
    git clone https://github.com/your-org/sabaya-backend.git
    cd sabaya-backend/backend
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm ci --production
    ```
 
 3. **Set Environment Variables**
+
    ```bash
    # Create .env file
    nano .env
@@ -244,35 +251,40 @@ app.use(cors({
    ```
 
 4. **Run Database Migrations**
+
    ```bash
    npx prisma migrate deploy
    npx prisma generate
    ```
 
 5. **Build Application**
+
    ```bash
    npm run build
    ```
 
 6. **Start Application**
+
    ```bash
    # Using PM2 (recommended)
    npm install -g pm2
    pm2 start dist/server.js --name sabaya-api
    pm2 save
    pm2 startup
-   
+
    # Or using systemd (see below)
    ```
 
 ### Option 2: Docker Deployment
 
 1. **Build Docker Image**
+
    ```bash
    docker build -t sabaya-backend:latest -f backend/Dockerfile .
    ```
 
 2. **Run Container**
+
    ```bash
    docker run -d \
      --name sabaya-api \
@@ -297,11 +309,13 @@ app.use(cors({
    - Generate and set JWT_SECRET
 
 3. **Configure Build Command**
+
    ```bash
    cd backend && npm install && npx prisma generate && npm run build
    ```
 
 4. **Configure Start Command**
+
    ```bash
    cd backend && npx prisma migrate deploy && npm start
    ```
@@ -384,24 +398,26 @@ Create `ecosystem.config.js` in backend directory:
 
 ```javascript
 module.exports = {
-  apps: [{
-    name: 'sabaya-api',
-    script: './dist/server.js',
-    instances: 2,
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 4000
+  apps: [
+    {
+      name: 'sabaya-api',
+      script: './dist/server.js',
+      instances: 2,
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 4000,
+      },
+      error_file: './logs/err.log',
+      out_file: './logs/out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s',
+      max_memory_restart: '500M',
     },
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-    merge_logs: true,
-    autorestart: true,
-    max_restarts: 10,
-    min_uptime: '10s',
-    max_memory_restart: '500M'
-  }]
+  ],
 };
 ```
 
@@ -487,7 +503,7 @@ Create `/etc/nginx/sites-available/sabaya-api`:
 server {
     listen 80;
     server_name api.your-domain.com;
-    
+
     # Redirect HTTP to HTTPS
     return 301 https://$server_name$request_uri;
 }
@@ -495,19 +511,19 @@ server {
 server {
     listen 443 ssl http2;
     server_name api.your-domain.com;
-    
+
     # SSL Configuration
     ssl_certificate /etc/letsencrypt/live/api.your-domain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/api.your-domain.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
-    
+
     # Security Headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    
+
     # Proxy Configuration
     location / {
         proxy_pass http://localhost:4000;
@@ -519,16 +535,16 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-        
+
         # Timeouts
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
     }
-    
+
     # Rate Limiting (additional layer)
     limit_req_zone $binary_remote_addr zone=login:10m rate=10r/m;
-    
+
     location /api/auth/login {
         limit_req zone=login burst=5 nodelay;
         proxy_pass http://localhost:4000;
@@ -538,6 +554,7 @@ server {
 ```
 
 Enable site:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/sabaya-api /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -569,6 +586,7 @@ sudo certbot renew --dry-run
 If deployment fails or issues are discovered:
 
 1. **Stop Application**
+
    ```bash
    pm2 stop sabaya-api
    # or
@@ -576,11 +594,13 @@ If deployment fails or issues are discovered:
    ```
 
 2. **Restore Database Backup**
+
    ```bash
    psql -h hostname -U username -d database_name < backup_YYYYMMDD_HHMMSS.sql
    ```
 
 3. **Revert to Previous Version**
+
    ```bash
    git checkout <previous-version-tag>
    npm ci --production
@@ -668,6 +688,7 @@ psql -h hostname -U username -d database_name -c "SELECT pg_size_pretty(pg_datab
 ## Changelog
 
 ### Version 1.0.0 (Initial Release)
+
 - Initial production deployment guide
 - Environment variable configuration
 - Database migration procedures

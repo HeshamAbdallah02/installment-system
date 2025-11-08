@@ -25,6 +25,7 @@ LoginPage (Container Component)
 ### State Management
 
 **Local Component State (React useState):**
+
 - `selectedUserId: string | null` - Currently selected user ID
 - `password: string` - Password input value
 - `rememberMe: boolean` - Remember me checkbox state
@@ -34,11 +35,13 @@ LoginPage (Container Component)
 - `showPassword: boolean` - Password visibility toggle state
 
 **Form State (React Hook Form):**
+
 - Manages form validation and submission
 - Tracks field-level errors
 - Handles form reset on error
 
 **Persistent State (localStorage):**
+
 - `auth_token` - JWT token for authenticated sessions
 - `remembered_user_id` - User ID when "Remember Me" is checked
 
@@ -70,6 +73,7 @@ LoginPage (Container Component)
 **Props:** None (root page component)
 
 **State Interface:**
+
 ```typescript
 interface LoginFormData {
   userId: string;
@@ -97,6 +101,7 @@ interface AuthResponse {
 ```
 
 **Key Methods:**
+
 - `fetchUsers()` - Fetches user list from API
 - `handleLogin(data: LoginFormData)` - Processes login submission
 - `handleUserSelect(userId: string)` - Handles dropdown selection
@@ -107,6 +112,7 @@ interface AuthResponse {
 **File:** `frontend/src/components/UserDropdown.tsx`
 
 **Props:**
+
 ```typescript
 interface UserDropdownProps {
   users: User[];
@@ -118,6 +124,7 @@ interface UserDropdownProps {
 ```
 
 **Features:**
+
 - Searchable dropdown using Headless UI Combobox
 - Filters users by Arabic name as user types
 - Displays format: "أحمد محمد (فرع القاهرة)"
@@ -129,6 +136,7 @@ interface UserDropdownProps {
 **File:** `frontend/src/components/PasswordInput.tsx`
 
 **Props:**
+
 ```typescript
 interface PasswordInputProps {
   value: string;
@@ -140,6 +148,7 @@ interface PasswordInputProps {
 ```
 
 **Features:**
+
 - Toggle visibility with eye icon (Heroicons)
 - RTL-aware icon positioning (left side)
 - Focus ring with teal color
@@ -150,6 +159,7 @@ interface PasswordInputProps {
 **File:** `frontend/src/components/ToastNotification.tsx`
 
 **Props:**
+
 ```typescript
 interface ToastProps {
   message: string;
@@ -161,6 +171,7 @@ interface ToastProps {
 ```
 
 **Implementation:**
+
 - Uses React Portal for overlay rendering
 - Auto-dismisses after 3 seconds
 - Slide-in animation from top
@@ -169,28 +180,31 @@ interface ToastProps {
 ## Data Models
 
 ### User Model (Frontend)
+
 ```typescript
 interface User {
-  id: string;           // User ID from database
-  fullName: string;     // Arabic full name
-  branchName: string;   // Branch name in Arabic
-  isActive: boolean;    // Account status
+  id: string; // User ID from database
+  fullName: string; // Arabic full name
+  branchName: string; // Branch name in Arabic
+  isActive: boolean; // Account status
 }
 ```
 
 ### Login Request Payload
+
 ```typescript
 interface LoginRequest {
-  userId: string;       // Selected user ID
-  password: string;     // Plain text password (HTTPS required)
+  userId: string; // Selected user ID
+  password: string; // Plain text password (HTTPS required)
 }
 ```
 
 ### Login Response
+
 ```typescript
 interface LoginResponse {
   success: boolean;
-  token: string;        // JWT token
+  token: string; // JWT token
   user: {
     id: string;
     name: string;
@@ -201,12 +215,13 @@ interface LoginResponse {
 ```
 
 ### Error Response
+
 ```typescript
 interface ErrorResponse {
   success: false;
   error: {
-    code: string;       // 'INVALID_CREDENTIALS' | 'ACCOUNT_DISABLED' | 'NETWORK_ERROR'
-    message: string;    // Arabic error message
+    code: string; // 'INVALID_CREDENTIALS' | 'ACCOUNT_DISABLED' | 'NETWORK_ERROR'
+    message: string; // Arabic error message
   };
 }
 ```
@@ -216,9 +231,11 @@ interface ErrorResponse {
 ### Endpoints
 
 **1. GET /api/users/list**
+
 - **Purpose:** Fetch all active users for dropdown
 - **Authentication:** None (public endpoint)
 - **Response:**
+
 ```json
 {
   "success": true,
@@ -234,15 +251,19 @@ interface ErrorResponse {
 ```
 
 **2. POST /api/auth/login**
+
 - **Purpose:** Authenticate user credentials
 - **Request Body:**
+
 ```json
 {
   "userId": "1",
   "password": "userPassword123"
 }
 ```
+
 - **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -255,7 +276,9 @@ interface ErrorResponse {
   }
 }
 ```
+
 - **Error Response (401):**
+
 ```json
 {
   "success": false,
@@ -274,14 +297,14 @@ interface ErrorResponse {
 class AuthService {
   private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-  async fetchUsers(): Promise<User[]>
-  async login(userId: string, password: string): Promise<AuthResponse>
-  storeToken(token: string): void
-  getToken(): string | null
-  clearToken(): void
-  rememberUser(userId: string): void
-  getRememberedUser(): string | null
-  clearRememberedUser(): void
+  async fetchUsers(): Promise<User[]>;
+  async login(userId: string, password: string): Promise<AuthResponse>;
+  storeToken(token: string): void;
+  getToken(): string | null;
+  clearToken(): void;
+  rememberUser(userId: string): void;
+  getRememberedUser(): string | null;
+  clearRememberedUser(): void;
 }
 ```
 
@@ -352,36 +375,43 @@ class AuthService {
 ### Tailwind CSS Classes
 
 **Page Container:**
+
 ```css
 min-h-screen bg-gradient-to-br from-white to-gray-100 flex items-center justify-center p-8 dir-rtl
 ```
 
 **Login Card:**
+
 ```css
 bg-white rounded-lg shadow-xl p-8 w-full max-w-md space-y-6
 ```
 
 **Logo:**
+
 ```css
 w-32 h-32 mx-auto object-contain
 ```
 
 **System Title:**
+
 ```css
 text-2xl font-bold text-center text-gray-800 mt-4
 ```
 
 **Input Fields:**
+
 ```css
 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-right
 ```
 
 **Submit Button:**
+
 ```css
 w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed
 ```
 
 **Error Text:**
+
 ```css
 text-sm text-red-600 mt-1 text-right
 ```
@@ -406,6 +436,7 @@ text-sm text-red-600 mt-1 text-right
 ### Unit Tests
 
 **Component Tests (React Testing Library):**
+
 1. LoginPage renders correctly with all elements
 2. UserDropdown filters users by Arabic text input
 3. PasswordInput toggles visibility correctly
@@ -413,6 +444,7 @@ text-sm text-red-600 mt-1 text-right
 5. RememberMe checkbox stores/retrieves userId
 
 **Service Tests (Jest):**
+
 1. AuthService.fetchUsers() calls correct endpoint
 2. AuthService.login() sends correct payload
 3. Token storage/retrieval works correctly

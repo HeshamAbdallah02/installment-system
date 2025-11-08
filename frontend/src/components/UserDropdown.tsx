@@ -36,16 +36,12 @@ export default function UserDropdown({
 
   return (
     <div className="w-full">
-      <Combobox
-        value={selectedUserId}
-        onChange={onSelect}
-        disabled={disabled}
-      >
+      <Combobox value={selectedUserId} onChange={onSelect} disabled={disabled}>
         <div className="relative">
           <Combobox.Label className="block text-sm font-semibold text-brand-primary-900 mb-2 text-right">
             اختر المستخدم
           </Combobox.Label>
-          
+
           <div className="relative">
             <Combobox.Input
               className={`w-full px-4 py-3 pr-10 border rounded-lg text-right transition-all duration-300 text-brand-offwhite-900 ${
@@ -54,20 +50,15 @@ export default function UserDropdown({
                   : 'border-brand-offwhite-400 focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900'
               } ${disabled ? 'bg-brand-offwhite-200 cursor-not-allowed' : 'bg-brand-offwhite-100'}`}
               displayValue={() =>
-                selectedUser
-                  ? `${selectedUser.fullName} (${selectedUser.branchName})`
-                  : ''
+                selectedUser ? `${selectedUser.fullName} (${selectedUser.branchName})` : ''
               }
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ابحث عن المستخدم..."
               autoComplete="off"
             />
-            
+
             <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-brand-offwhite-600"
-                aria-hidden="true"
-              />
+              <ChevronUpDownIcon className="h-5 w-5 text-brand-offwhite-600" aria-hidden="true" />
             </Combobox.Button>
           </div>
 
@@ -90,16 +81,16 @@ export default function UserDropdown({
                     value={user.id}
                     className={({ active }) =>
                       `relative cursor-pointer select-none py-3 px-4 pr-10 text-right transition-colors duration-300 ${
-                        active ? 'bg-brand-secondary-100 text-brand-primary-900' : 'text-brand-offwhite-900'
+                        active
+                          ? 'bg-brand-secondary-100 text-brand-primary-900'
+                          : 'text-brand-offwhite-900'
                       }`
                     }
                   >
                     {({ selected, active }) => (
                       <>
                         <span
-                          className={`block truncate ${
-                            selected ? 'font-semibold' : 'font-normal'
-                          }`}
+                          className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
                         >
                           {user.fullName} ({user.branchName})
                         </span>

@@ -8,7 +8,7 @@ class UserController {
   /**
    * Handle request to get all active users
    * GET /api/users/list
-   * 
+   *
    * @param req - Express request
    * @param res - Express response
    */
@@ -20,7 +20,7 @@ class UserController {
       // Return success response
       res.status(200).json({
         success: true,
-        users
+        users,
       });
     } catch (error) {
       // Handle errors
@@ -29,8 +29,8 @@ class UserController {
         success: false,
         error: {
           code: 'SERVER_ERROR',
-          message: 'خطأ في تحميل قائمة المستخدمين'
-        }
+          message: 'خطأ في تحميل قائمة المستخدمين',
+        },
       });
     }
   }

@@ -9,7 +9,7 @@ import userService from './userService';
 
 // Mock the prisma client
 vi.mock('../prismaClient', () => ({
-  default: mockDeep<PrismaClient>()
+  default: mockDeep<PrismaClient>(),
 }));
 
 // Mock the services
@@ -50,8 +50,8 @@ describe('AuthService', () => {
         phone: '123-456-7890',
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     };
 
     it('should succeed with valid credentials', async () => {
@@ -76,14 +76,17 @@ describe('AuthService', () => {
       // Verify service calls
       expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { username: 'testuser' },
-        include: { branch: true }
+        include: { branch: true },
       });
-      expect(passwordService.comparePassword).toHaveBeenCalledWith('correctPassword', mockUser.passwordHash);
+      expect(passwordService.comparePassword).toHaveBeenCalledWith(
+        'correctPassword',
+        mockUser.passwordHash
+      );
       expect(tokenService.generateToken).toHaveBeenCalledWith({
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       });
       expect(userService.updateLastLogin).toHaveBeenCalledWith(1);
       expect(auditService.logEvent).toHaveBeenCalledWith(
@@ -101,15 +104,15 @@ describe('AuthService', () => {
       vi.mocked(auditService.logEvent).mockResolvedValue(undefined);
 
       // Execute login and expect error
-      await expect(
-        authService.login('testuser', 'wrongPassword', '127.0.0.1')
-      ).rejects.toThrow(AuthError);
+      await expect(authService.login('testuser', 'wrongPassword', '127.0.0.1')).rejects.toThrow(
+        AuthError
+      );
 
       await expect(
         authService.login('testuser', 'wrongPassword', '127.0.0.1')
       ).rejects.toMatchObject({
         code: 'INVALID_CREDENTIALS',
-        message: 'Invalid username or password'
+        message: 'Invalid username or password',
       });
 
       // Verify failed login was logged
@@ -132,15 +135,13 @@ describe('AuthService', () => {
       vi.mocked(auditService.logEvent).mockResolvedValue(undefined);
 
       // Execute login and expect error
-      await expect(
-        authService.login('testuser', 'password', '127.0.0.1')
-      ).rejects.toThrow(AuthError);
+      await expect(authService.login('testuser', 'password', '127.0.0.1')).rejects.toThrow(
+        AuthError
+      );
 
-      await expect(
-        authService.login('testuser', 'password', '127.0.0.1')
-      ).rejects.toMatchObject({
+      await expect(authService.login('testuser', 'password', '127.0.0.1')).rejects.toMatchObject({
         code: 'ACCOUNT_DISABLED',
-        message: 'Account is disabled'
+        message: 'Account is disabled',
       });
 
       // Verify disabled account login was logged
@@ -162,16 +163,16 @@ describe('AuthService', () => {
       vi.mocked(auditService.logEvent).mockResolvedValue(undefined);
 
       // Execute login and expect error
-      await expect(
-        authService.login('nonexistent', 'password', '127.0.0.1')
-      ).rejects.toThrow(AuthError);
+      await expect(authService.login('nonexistent', 'password', '127.0.0.1')).rejects.toThrow(
+        AuthError
+      );
 
-      await expect(
-        authService.login('nonexistent', 'password', '127.0.0.1')
-      ).rejects.toMatchObject({
-        code: 'INVALID_CREDENTIALS',
-        message: 'Invalid username or password'
-      });
+      await expect(authService.login('nonexistent', 'password', '127.0.0.1')).rejects.toMatchObject(
+        {
+          code: 'INVALID_CREDENTIALS',
+          message: 'Invalid username or password',
+        }
+      );
 
       // Verify failed login was logged with userId 0
       expect(auditService.logEvent).toHaveBeenCalledWith(
@@ -256,8 +257,8 @@ describe('AuthService', () => {
           phone: '123-456-7890',
           isActive: true,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       };
 
       mockPrisma.user.findUnique.mockResolvedValue(mockUser);
@@ -290,7 +291,7 @@ describe('AuthService', () => {
         lastLoginAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        branch: null
+        branch: null,
       };
 
       mockPrisma.user.findUnique.mockResolvedValue(inactiveUser);

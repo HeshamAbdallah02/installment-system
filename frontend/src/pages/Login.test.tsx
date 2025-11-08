@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Login from './Login';
-import type { User, LoginResponse, UsersListResponse, ErrorResponse } from '../types/auth';
+import type { User, UsersListResponse, ErrorResponse } from '../types/auth';
 
 // Mock useNavigate
 const mockNavigate = vi.fn();

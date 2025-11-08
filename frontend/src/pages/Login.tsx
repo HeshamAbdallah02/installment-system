@@ -31,8 +31,6 @@ const Login = () => {
     formState: { errors },
     setValue,
     watch,
-    reset,
-    trigger,
   } = useForm<LoginFormData>({
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -57,7 +55,6 @@ const Login = () => {
   // Watch form values
   const selectedUserId = watch('userId');
   const password = watch('password');
-  const rememberMe = watch('rememberMe');
 
   // Configure RTL direction on component mount
   useEffect(() => {
@@ -92,7 +89,8 @@ const Login = () => {
           }
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'خطأ في تحميل قائمة المستخدمين';
+        const errorMessage =
+          error instanceof Error ? error.message : 'خطأ في تحميل قائمة المستخدمين';
         setFetchError(errorMessage);
       } finally {
         setIsFetchingUsers(false);
@@ -105,7 +103,7 @@ const Login = () => {
   // Handle user selection from dropdown
   const handleUserSelect = (userId: string) => {
     setValue('userId', userId, { shouldValidate: true, shouldDirty: true });
-    
+
     // Auto-focus password field when user is selected
     setTimeout(() => {
       passwordInputRef.current?.focus();
@@ -118,7 +116,7 @@ const Login = () => {
       setIsLoading(true);
 
       // Find the selected user to get their username
-      const selectedUser = users.find(user => user.id === data.userId);
+      const selectedUser = users.find((user) => user.id === data.userId);
       if (!selectedUser) {
         throw new Error('المستخدم المحدد غير موجود');
       }
@@ -160,12 +158,12 @@ const Login = () => {
 
       // Clear password field on authentication failure
       setValue('password', '', { shouldValidate: false });
-      
+
       // Re-focus password field for retry
       setTimeout(() => {
         passwordInputRef.current?.focus();
       }, 100);
-      
+
       setIsLoading(false);
     }
   };
@@ -246,7 +244,9 @@ const Login = () => {
                 <PasswordInput
                   ref={passwordInputRef}
                   value={password}
-                  onChange={(value) => setValue('password', value, { shouldValidate: true, shouldDirty: true })}
+                  onChange={(value) =>
+                    setValue('password', value, { shouldValidate: true, shouldDirty: true })
+                  }
                   error={errors.password?.message}
                   disabled={isLoading}
                   autoFocus={false}
@@ -262,7 +262,9 @@ const Login = () => {
               {/* Remember Me Checkbox */}
               <div className="flex items-center justify-end">
                 <label htmlFor="rememberMe" className="flex items-center cursor-pointer group">
-                  <span className="text-sm text-brand-offwhite-800 ml-2 group-hover:text-brand-primary-900 transition-colors">تذكرني</span>
+                  <span className="text-sm text-brand-offwhite-800 ml-2 group-hover:text-brand-primary-900 transition-colors">
+                    تذكرني
+                  </span>
                   <input
                     id="rememberMe"
                     type="checkbox"
@@ -281,13 +283,31 @@ const Login = () => {
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     جاري التحميل...
                   </span>
-                ) : 'دخول'}
+                ) : (
+                  'دخول'
+                )}
               </button>
             </>
           )}

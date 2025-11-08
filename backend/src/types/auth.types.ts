@@ -49,8 +49,8 @@ export interface JWTPayload {
   username: string;
   role: string;
   branchId: number | null;
-  iat: number;  // Issued at timestamp
-  exp: number;  // Expiration timestamp
+  iat: number; // Issued at timestamp
+  exp: number; // Expiration timestamp
 }
 
 /**

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import authService from './authService';
@@ -51,13 +51,17 @@ describe('AuthService', () => {
     it('should throw network error message when connection fails', async () => {
       mock.onGet(`${baseURL}/api/users/list`).networkError();
 
-      await expect(authService.fetchUsers()).rejects.toThrow('خطأ في الاتصال. يرجى المحاولة مرة أخرى');
+      await expect(authService.fetchUsers()).rejects.toThrow(
+        'خطأ في الاتصال. يرجى المحاولة مرة أخرى'
+      );
     });
 
     it('should throw timeout error message when request times out', async () => {
       mock.onGet(`${baseURL}/api/users/list`).timeout();
 
-      await expect(authService.fetchUsers()).rejects.toThrow('انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى');
+      await expect(authService.fetchUsers()).rejects.toThrow(
+        'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى'
+      );
     });
   });
 
@@ -74,7 +78,9 @@ describe('AuthService', () => {
         },
       };
 
-      mock.onPost(`${baseURL}/api/auth/login`, { userId: '1', password: 'password123' }).reply(200, mockResponse);
+      mock
+        .onPost(`${baseURL}/api/auth/login`, { userId: '1', password: 'password123' })
+        .reply(200, mockResponse);
 
       const response = await authService.login('1', 'password123');
 

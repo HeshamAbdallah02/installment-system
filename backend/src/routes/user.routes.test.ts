@@ -34,27 +34,26 @@ describe('User Routes - GET /api/users/list', () => {
         id: '1',
         fullName: 'Ahmed Hassan',
         branchName: 'Cairo Branch',
-        isActive: true
+        isActive: true,
       },
       {
         id: '2',
         fullName: 'Fatima Ali',
         branchName: 'Alexandria Branch',
-        isActive: true
+        isActive: true,
       },
       {
         id: '3',
         fullName: 'Mohamed Ibrahim',
         branchName: 'Cairo Branch',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     vi.mocked(userService.getActiveUsers).mockResolvedValue(mockUsers);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify response
     expect(response.status).toBe(200);
@@ -73,26 +72,25 @@ describe('User Routes - GET /api/users/list', () => {
         id: '1',
         fullName: 'Ahmed Hassan',
         branchName: 'Cairo Branch',
-        isActive: true
+        isActive: true,
       },
       {
         id: '2',
         fullName: 'Fatima Ali',
         branchName: 'Alexandria Branch',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     vi.mocked(userService.getActiveUsers).mockResolvedValue(mockUsers);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify each user has a branch name
     expect(response.status).toBe(200);
     expect(response.body.users).toHaveLength(2);
-    
+
     response.body.users.forEach((user: any) => {
       expect(user).toHaveProperty('branchName');
       expect(typeof user.branchName).toBe('string');
@@ -107,26 +105,25 @@ describe('User Routes - GET /api/users/list', () => {
         id: '1',
         fullName: 'Ahmed Hassan',
         branchName: 'Cairo Branch',
-        isActive: true
+        isActive: true,
       },
       {
         id: '3',
         fullName: 'Mohamed Ibrahim',
         branchName: 'Cairo Branch',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     vi.mocked(userService.getActiveUsers).mockResolvedValue(mockActiveUsers);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify response contains only active users
     expect(response.status).toBe(200);
     expect(response.body.users).toHaveLength(2);
-    
+
     // All returned users should have isActive: true
     response.body.users.forEach((user: any) => {
       expect(user.isActive).toBe(true);
@@ -138,8 +135,7 @@ describe('User Routes - GET /api/users/list', () => {
     vi.mocked(userService.getActiveUsers).mockResolvedValue([]);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify response
     expect(response.status).toBe(200);
@@ -157,8 +153,7 @@ describe('User Routes - GET /api/users/list', () => {
     vi.mocked(userService.getActiveUsers).mockRejectedValue(mockError);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify error response
     expect(response.status).toBe(500);
@@ -177,15 +172,14 @@ describe('User Routes - GET /api/users/list', () => {
         id: '1',
         fullName: 'Ahmed Hassan',
         branchName: 'Cairo Branch',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     vi.mocked(userService.getActiveUsers).mockResolvedValue(mockUsers);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify data structure
     expect(response.status).toBe(200);
@@ -193,7 +187,7 @@ describe('User Routes - GET /api/users/list', () => {
     expect(response.body.users[0]).toHaveProperty('fullName');
     expect(response.body.users[0]).toHaveProperty('branchName');
     expect(response.body.users[0]).toHaveProperty('isActive');
-    
+
     // Verify data types
     expect(typeof response.body.users[0].id).toBe('string');
     expect(typeof response.body.users[0].fullName).toBe('string');
@@ -208,27 +202,26 @@ describe('User Routes - GET /api/users/list', () => {
         id: '1',
         fullName: 'Ahmed Hassan',
         branchName: 'Cairo Branch',
-        isActive: true
+        isActive: true,
       },
       {
         id: '2',
         fullName: 'Fatima Ali',
         branchName: 'Alexandria Branch',
-        isActive: true
+        isActive: true,
       },
       {
         id: '3',
         fullName: 'Mohamed Ibrahim',
         branchName: 'Giza Branch',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     vi.mocked(userService.getActiveUsers).mockResolvedValue(mockUsers);
 
     // Make request
-    const response = await request(app)
-      .get('/api/users/list');
+    const response = await request(app).get('/api/users/list');
 
     // Verify different branches are included
     expect(response.status).toBe(200);

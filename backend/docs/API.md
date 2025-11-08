@@ -28,11 +28,13 @@ Authenticates a user and returns a JWT token for subsequent requests.
 **Rate Limiting:** 5 attempts per 15 minutes per IP address
 
 **Request Headers:**
+
 ```
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "userId": "string",
@@ -41,6 +43,7 @@ Content-Type: application/json
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -57,6 +60,7 @@ Content-Type: application/json
 **Error Responses:**
 
 **400 Bad Request - Missing Fields:**
+
 ```json
 {
   "success": false,
@@ -68,6 +72,7 @@ Content-Type: application/json
 ```
 
 **401 Unauthorized - Invalid Credentials:**
+
 ```json
 {
   "success": false,
@@ -79,6 +84,7 @@ Content-Type: application/json
 ```
 
 **403 Forbidden - Account Disabled:**
+
 ```json
 {
   "success": false,
@@ -90,6 +96,7 @@ Content-Type: application/json
 ```
 
 **429 Too Many Requests - Rate Limit Exceeded:**
+
 ```json
 {
   "success": false,
@@ -101,6 +108,7 @@ Content-Type: application/json
 ```
 
 **500 Internal Server Error:**
+
 ```json
 {
   "success": false,
@@ -112,6 +120,7 @@ Content-Type: application/json
 ```
 
 **Example Request:**
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -130,11 +139,13 @@ Retrieves a list of all active users with their branch information. This endpoin
 **Endpoint:** `GET /api/users/list`
 
 **Request Headers:**
+
 ```
 Content-Type: application/json
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -156,6 +167,7 @@ Content-Type: application/json
 ```
 
 **Success Response - No Active Users (200 OK):**
+
 ```json
 {
   "success": true,
@@ -164,6 +176,7 @@ Content-Type: application/json
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -175,6 +188,7 @@ Content-Type: application/json
 ```
 
 **Example Request:**
+
 ```bash
 curl -X GET http://localhost:4000/api/users/list \
   -H "Content-Type: application/json"
@@ -198,6 +212,7 @@ The JWT token returned from the login endpoint contains the following payload:
 ```
 
 **Token Properties:**
+
 - `userId` (number): The unique identifier of the user
 - `username` (string): The username of the authenticated user
 - `role` (string): User role - one of: `SELLER`, `MANAGER`, `ADMIN`
@@ -220,17 +235,17 @@ curl -X GET http://localhost:4000/api/protected-endpoint \
 
 ## Error Codes Reference
 
-| Error Code | HTTP Status | Arabic Message | Description |
-|------------|-------------|----------------|-------------|
-| `MISSING_FIELDS` | 400 | يرجى إدخال اسم المستخدم وكلمة المرور | Required fields are missing from request |
-| `INVALID_CREDENTIALS` | 401 | اسم المستخدم أو كلمة المرور غير صحيحة | Username or password is incorrect |
-| `NO_TOKEN` | 401 | لم يتم توفير رمز المصادقة | No authentication token provided |
-| `INVALID_TOKEN` | 401 | رمز المصادقة غير صالح | Token is malformed or signature is invalid |
-| `TOKEN_EXPIRED` | 401 | انتهت صلاحية رمز المصادقة. يرجى تسجيل الدخول مرة أخرى | Token has expired |
-| `ACCOUNT_DISABLED` | 403 | تم تعطيل هذا الحساب. يرجى التواصل مع المسؤول | User account is disabled |
-| `RATE_LIMIT_EXCEEDED` | 429 | تم تجاوز عدد المحاولات المسموح بها. يرجى المحاولة بعد 15 دقيقة | Too many login attempts |
-| `SERVER_ERROR` | 500 | خطأ في الخادم. يرجى المحاولة مرة أخرى | Internal server error |
-| `DATABASE_ERROR` | 500 | خطأ في قاعدة البيانات | Database operation failed |
+| Error Code            | HTTP Status | Arabic Message                                                 | Description                                |
+| --------------------- | ----------- | -------------------------------------------------------------- | ------------------------------------------ |
+| `MISSING_FIELDS`      | 400         | يرجى إدخال اسم المستخدم وكلمة المرور                           | Required fields are missing from request   |
+| `INVALID_CREDENTIALS` | 401         | اسم المستخدم أو كلمة المرور غير صحيحة                          | Username or password is incorrect          |
+| `NO_TOKEN`            | 401         | لم يتم توفير رمز المصادقة                                      | No authentication token provided           |
+| `INVALID_TOKEN`       | 401         | رمز المصادقة غير صالح                                          | Token is malformed or signature is invalid |
+| `TOKEN_EXPIRED`       | 401         | انتهت صلاحية رمز المصادقة. يرجى تسجيل الدخول مرة أخرى          | Token has expired                          |
+| `ACCOUNT_DISABLED`    | 403         | تم تعطيل هذا الحساب. يرجى التواصل مع المسؤول                   | User account is disabled                   |
+| `RATE_LIMIT_EXCEEDED` | 429         | تم تجاوز عدد المحاولات المسموح بها. يرجى المحاولة بعد 15 دقيقة | Too many login attempts                    |
+| `SERVER_ERROR`        | 500         | خطأ في الخادم. يرجى المحاولة مرة أخرى                          | Internal server error                      |
+| `DATABASE_ERROR`      | 500         | خطأ في قاعدة البيانات                                          | Database operation failed                  |
 
 ---
 
@@ -247,22 +262,26 @@ The system supports three user roles with different permission levels:
 ## Security Considerations
 
 ### Password Security
+
 - Passwords are hashed using bcrypt with 10 salt rounds
 - Plain text passwords are never stored or logged
 - Minimum password length: 8 characters
 
 ### Token Security
+
 - JWT tokens are signed with a secret key
 - Tokens expire after 8 hours
 - Use HTTPS in production to prevent token interception
 - Store tokens securely in client (localStorage or httpOnly cookies)
 
 ### Rate Limiting
+
 - Login endpoint is rate-limited to 5 attempts per 15 minutes per IP
 - Prevents brute force attacks
 - Failed attempts are logged for security monitoring
 
 ### CORS
+
 - API is configured to accept requests only from authorized frontend origins
 - Credentials are supported for cookie-based authentication
 - Preflight requests are handled automatically
@@ -274,6 +293,7 @@ The system supports three user roles with different permission levels:
 ### Using cURL
 
 **Login:**
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -281,6 +301,7 @@ curl -X POST http://localhost:4000/api/auth/login \
 ```
 
 **Get Users:**
+
 ```bash
 curl -X GET http://localhost:4000/api/users/list
 ```
@@ -304,6 +325,7 @@ curl -X GET http://localhost:4000/api/users/list
 ## Changelog
 
 ### Version 1.0.0 (Initial Release)
+
 - POST /api/auth/login - User authentication
 - GET /api/users/list - Retrieve active users
 - JWT token-based authentication

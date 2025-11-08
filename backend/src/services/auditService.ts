@@ -6,7 +6,7 @@ import prisma from '../prismaClient';
 export enum EventType {
   USER_LOGIN = 'USER_LOGIN',
   LOGIN_FAILED = 'LOGIN_FAILED',
-  LOGIN_DISABLED_ACCOUNT = 'LOGIN_DISABLED_ACCOUNT'
+  LOGIN_DISABLED_ACCOUNT = 'LOGIN_DISABLED_ACCOUNT',
 }
 
 /**
@@ -38,8 +38,8 @@ class AuditService {
           entityId: userId,
           userId,
           eventData: sanitizedData,
-          ipAddress: ipAddress || null
-        }
+          ipAddress: ipAddress || null,
+        },
       });
     } catch (error) {
       // Log error but don't throw - audit logging should not break the main flow
@@ -57,7 +57,7 @@ class AuditService {
 
     // Remove sensitive fields
     const sensitiveFields = ['password', 'passwordHash', 'token', 'secret', 'authorization'];
-    
+
     for (const field of sensitiveFields) {
       if (field in sanitized) {
         delete sanitized[field];

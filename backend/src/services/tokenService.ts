@@ -25,7 +25,7 @@ class TokenService {
   generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
     try {
       const token = jwt.sign(payload, this.SECRET_KEY, {
-        expiresIn: this.EXPIRATION
+        expiresIn: this.EXPIRATION,
       });
       return token;
     } catch (error) {

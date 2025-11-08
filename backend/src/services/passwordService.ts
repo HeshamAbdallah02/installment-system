@@ -47,7 +47,7 @@ class PasswordService {
     if (!password || password.length < this.MIN_PASSWORD_LENGTH) {
       return {
         valid: false,
-        message: `Password must be at least ${this.MIN_PASSWORD_LENGTH} characters long`
+        message: `Password must be at least ${this.MIN_PASSWORD_LENGTH} characters long`,
       };
     }
 

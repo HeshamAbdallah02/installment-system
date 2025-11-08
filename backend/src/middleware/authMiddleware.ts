@@ -20,8 +20,8 @@ export const authMiddleware = (
         success: false,
         error: {
           code: 'NO_TOKEN',
-          message: 'لم يتم توفير رمز المصادقة'
-        }
+          message: 'لم يتم توفير رمز المصادقة',
+        },
       });
       return;
     }
@@ -33,8 +33,8 @@ export const authMiddleware = (
         success: false,
         error: {
           code: 'INVALID_TOKEN',
-          message: 'رمز المصادقة غير صالح'
-        }
+          message: 'رمز المصادقة غير صالح',
+        },
       });
       return;
     }
@@ -49,8 +49,8 @@ export const authMiddleware = (
         success: false,
         error: {
           code: 'INVALID_TOKEN',
-          message: 'رمز المصادقة غير صالح أو منتهي الصلاحية'
-        }
+          message: 'رمز المصادقة غير صالح أو منتهي الصلاحية',
+        },
       });
       return;
     }
@@ -65,8 +65,8 @@ export const authMiddleware = (
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'رمز المصادقة غير صالح'
-      }
+        message: 'رمز المصادقة غير صالح',
+      },
     });
   }
 };

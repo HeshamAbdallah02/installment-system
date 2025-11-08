@@ -3,14 +3,13 @@ import jwt from 'jsonwebtoken';
 import tokenService from './tokenService';
 
 describe('TokenService', () => {
-
   describe('generateToken', () => {
     it('should create a valid JWT with correct payload', () => {
       const payload = {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       const token = tokenService.generateToken(payload);
@@ -25,7 +24,7 @@ describe('TokenService', () => {
         userId: 123,
         username: 'johndoe',
         role: 'MANAGER',
-        branchId: 5
+        branchId: 5,
       };
 
       const token = tokenService.generateToken(payload);
@@ -42,7 +41,7 @@ describe('TokenService', () => {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       const token = tokenService.generateToken(payload);
@@ -50,7 +49,7 @@ describe('TokenService', () => {
 
       expect(decoded.exp).toBeDefined();
       expect(decoded.iat).toBeDefined();
-      
+
       // Check that expiration is approximately 8 hours from now
       const expirationTime = decoded.exp - decoded.iat;
       const eightHoursInSeconds = 8 * 60 * 60;
@@ -64,7 +63,7 @@ describe('TokenService', () => {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       const token = tokenService.generateToken(payload);
@@ -81,12 +80,12 @@ describe('TokenService', () => {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       // Create a token that expires immediately
       const expiredToken = jwt.sign(payload, process.env.JWT_SECRET!, {
-        expiresIn: '0s'
+        expiresIn: '0s',
       });
 
       // Wait a moment to ensure expiration
@@ -100,12 +99,12 @@ describe('TokenService', () => {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       // Create token with different secret
       const invalidToken = jwt.sign(payload, 'wrong-secret-key', {
-        expiresIn: '8h'
+        expiresIn: '8h',
       });
 
       const verified = tokenService.verifyToken(invalidToken);
@@ -134,7 +133,7 @@ describe('TokenService', () => {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       const token = tokenService.generateToken(payload);
@@ -150,11 +149,11 @@ describe('TokenService', () => {
         userId: 1,
         username: 'testuser',
         role: 'SELLER',
-        branchId: 1
+        branchId: 1,
       };
 
       const expiredToken = jwt.sign(payload, process.env.JWT_SECRET!, {
-        expiresIn: '0s'
+        expiresIn: '0s',
       });
 
       const decoded = tokenService.decodeToken(expiredToken);

@@ -7,10 +7,12 @@ This document defines the official color palette for the Egyptian Retail Install
 ## Brand Colors
 
 ### Primary Color: Deep Burgundy/Maroon
+
 **Hex:** `#560001`  
 **Tailwind Class:** `brand-primary-900`
 
 **Usage:**
+
 - Primary buttons and CTAs
 - Active navigation items
 - Important headings
@@ -18,6 +20,7 @@ This document defines the official color palette for the Egyptian Retail Install
 - Error states and alerts
 
 **Examples:**
+
 ```jsx
 // Button
 <button className="bg-brand-primary-900 hover:bg-brand-primary-950 text-white">
@@ -36,10 +39,12 @@ This document defines the official color palette for the Egyptian Retail Install
 ```
 
 ### Secondary Color: Warm Gold/Beige
+
 **Hex:** `#eacb95`  
 **Tailwind Class:** `brand-secondary-400`
 
 **Usage:**
+
 - Secondary buttons
 - Hover states
 - Badges and tags
@@ -48,6 +53,7 @@ This document defines the official color palette for the Egyptian Retail Install
 - Decorative elements
 
 **Examples:**
+
 ```jsx
 // Secondary button
 <button className="bg-brand-secondary-400 hover:bg-brand-secondary-500 text-brand-primary-900">
@@ -66,10 +72,12 @@ This document defines the official color palette for the Egyptian Retail Install
 ```
 
 ### Neutral Color: Off-White
+
 **Hex:** `#fafaf9`  
 **Tailwind Class:** `brand-offwhite-100`
 
 **Usage:**
+
 - Page backgrounds
 - Card backgrounds
 - Input field backgrounds
@@ -77,6 +85,7 @@ This document defines the official color palette for the Egyptian Retail Install
 - Light sections
 
 **Examples:**
+
 ```jsx
 // Page background
 <div className="min-h-screen bg-brand-offwhite-100">
@@ -95,6 +104,7 @@ This document defines the official color palette for the Egyptian Retail Install
 ## Color Palette Reference
 
 ### Brand Primary (Burgundy) Scale
+
 ```
 50:  #fef2f2  - Lightest tint
 100: #fee2e2
@@ -110,6 +120,7 @@ This document defines the official color palette for the Egyptian Retail Install
 ```
 
 ### Brand Secondary (Gold) Scale
+
 ```
 50:  #fdfbf7  - Lightest tint
 100: #faf6ed
@@ -124,6 +135,7 @@ This document defines the official color palette for the Egyptian Retail Install
 ```
 
 ### Brand Neutral (Off-White) Scale
+
 ```
 50:  #ffffff  - Pure white
 100: #fafaf9  ← MAIN BRAND COLOR
@@ -204,7 +216,7 @@ This document defines the official color palette for the Egyptian Retail Install
 
 ```jsx
 // Input Field
-<input 
+<input
   className="w-full px-4 py-3 bg-brand-offwhite-100 border border-brand-offwhite-400 rounded-lg focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 text-brand-offwhite-900"
   placeholder="أدخل النص"
 />
@@ -306,26 +318,31 @@ This document defines the official color palette for the Egyptian Retail Install
 ### Contrast Ratios (WCAG AA Compliant)
 
 ✅ **Passing Combinations:**
+
 - White text on `brand-primary-900` (Burgundy) - 12.5:1
 - `brand-primary-900` text on white - 12.5:1
 - `brand-primary-900` text on `brand-secondary-400` (Gold) - 4.8:1
 - `brand-offwhite-900` text on white - 15.2:1
 
 ❌ **Failing Combinations (Avoid):**
+
 - `brand-secondary-400` text on white - Low contrast
 - White text on `brand-secondary-400` - Low contrast
 
 ### Recommended Text Colors
 
 **On White/Light Backgrounds:**
+
 - Headings: `text-brand-primary-900`
 - Body text: `text-brand-offwhite-900` or `text-brand-offwhite-800`
 - Secondary text: `text-brand-offwhite-700`
 
 **On Burgundy Background:**
+
 - All text: `text-white`
 
 **On Gold Background:**
+
 - All text: `text-brand-primary-900`
 
 ## Implementation Checklist
@@ -343,23 +360,23 @@ When creating new components, ensure:
 
 ```jsx
 // Most Common Classes
-bg-brand-primary-900      // Primary button background
-bg-brand-secondary-400    // Secondary button background
-bg-brand-offwhite-100     // Page background
-bg-white                  // Card background
+bg - brand - primary - 900; // Primary button background
+bg - brand - secondary - 400; // Secondary button background
+bg - brand - offwhite - 100; // Page background
+bg - white; // Card background
 
-text-brand-primary-900    // Headings
-text-brand-offwhite-900   // Body text
-text-brand-offwhite-700   // Secondary text
+text - brand - primary - 900; // Headings
+text - brand - offwhite - 900; // Body text
+text - brand - offwhite - 700; // Secondary text
 
-border-brand-primary-900  // Primary borders
-border-brand-offwhite-400 // Neutral borders
+border - brand - primary - 900; // Primary borders
+border - brand - offwhite - 400; // Neutral borders
 
-hover:bg-brand-primary-950   // Primary button hover
-hover:bg-brand-secondary-500 // Secondary button hover
+hover: bg - brand - primary - 950; // Primary button hover
+hover: bg - brand - secondary - 500; // Secondary button hover
 
-focus:ring-brand-primary-900 // Focus ring
-focus:border-brand-primary-900 // Focus border
+focus: ring - brand - primary - 900; // Focus ring
+focus: border - brand - primary - 900; // Focus border
 ```
 
 ## Enforcement
@@ -374,6 +391,7 @@ To ensure brand colors are used consistently:
 ## Questions?
 
 If you're unsure which color to use:
+
 1. **Primary actions** (login, save, submit) → `brand-primary-900`
 2. **Secondary actions** (cancel, back) → `brand-secondary-400`
 3. **Backgrounds** → `brand-offwhite-100` or `white`
