@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend-Backend Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            direction: rtl;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .pending {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+        }
+        h2 {
+            color: #333;
+        }
+        .test-result {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>اختبار تكامل Frontend-Backend</h1>
+    
+    <div class="test-section pending" id="test1">
+        <h2>1. اختبار جلب قائمة المستخدمين (GET /api/users/list)</h2>
+        <button onclick="testFetchUsers()">تشغيل الاختبار</button>
+        <div class="test-result" id="test1-result"></div>
+    </div>
+
+    <div class="test-section pending" id="test2">
+        <h2>2. اختبار تسجيل الدخول (POST /api/auth/login)</h2>
+        <button onclick="testLogin()">تشغيل الاختبار</button>
+        <div class="test-result" id="test2-result"></div>
+    </div>
+
+    <div class="test-section pending" id="test3">
+        <h2>3. اختبار CORS Headers</h2>
+        <button onclick="testCORS()">تشغيل الاختبار</button>
+        <div class="test-result" id="test3-result"></div>
+    </div>
+
+    <div class="test-section pending" id="test4">
+        <h2>4. اختبار تسجيل دخول خاطئ</h2>
+        <button onclick="testInvalidLogin()">تشغيل الاختبار</button>
+        <div class="test-result" id="test4-result"></div>
+    </div>
+
+    <button onclick="runAllTests()" style="background-color: #28a745; font-size: 16px; margin-top: 20px;">
+        تشغيل جميع الاختبارات
+    </button>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:4000';
+
+        async function testFetchUsers() {
+            const testDiv = document.getElementById('test1');
+            const resultDiv = document.getElementById('test1-result');
+            
+            try {
+                testDiv.className = 'test-section pending';
+                resultDiv.innerHTML = '<p>جاري الاختبار...</p>';
+                
+                const response = await fetch(`${API_BASE_URL}/api/users/list`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success && data.users && data.users.length > 0) {
+                    testDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✓ نجح الاختبار!</strong></p>
+                        <p>عدد المستخدمين: ${data.users.length}</p>
+                        <p>مثال على مستخدم:</p>
+                        <pre>${JSON.stringify(data.users[0], null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                testDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <p><strong>✗ فشل الاختبار!</strong></p>
+                    <p>الخطأ: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testLogin() {
+            const testDiv = document.getElementById('test2');
+            const resultDiv = document.getElementById('test2-result');
+            
+            try {
+                testDiv.className = 'test-section pending';
+                resultDiv.innerHTML = '<p>جاري الاختبار...</p>';
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: 'admin',
+                        password: 'Password123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success && data.token) {
+                    testDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✓ نجح الاختبار!</strong></p>
+                        <p>تم الحصول على Token بنجاح</p>
+                        <p>المستخدم: ${data.user.fullName}</p>
+                        <p>الدور: ${data.user.role}</p>
+                        <p>الفرع: ${data.user.branch}</p>
+                        <pre>Token: ${data.token.substring(0, 50)}...</pre>
+                    `;
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                testDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <p><strong>✗ فشل الاختبار!</strong></p>
+                    <p>الخطأ: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testCORS() {
+            const testDiv = document.getElementById('test3');
+            const resultDiv = document.getElementById('test3-result');
+            
+            try {
+                testDiv.className = 'test-section pending';
+                resultDiv.innerHTML = '<p>جاري الاختبار...</p>';
+                
+                const response = await fetch(`${API_BASE_URL}/api/users/list`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const corsOrigin = response.headers.get('Access-Control-Allow-Origin');
+                const corsCredentials = response.headers.get('Access-Control-Allow-Credentials');
+                
+                if (corsOrigin && corsCredentials) {
+                    testDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✓ نجح الاختبار!</strong></p>
+                        <p>CORS Origin: ${corsOrigin}</p>
+                        <p>CORS Credentials: ${corsCredentials}</p>
+                    `;
+                } else {
+                    throw new Error('CORS headers not found');
+                }
+            } catch (error) {
+                testDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <p><strong>✗ فشل الاختبار!</strong></p>
+                    <p>الخطأ: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testInvalidLogin() {
+            const testDiv = document.getElementById('test4');
+            const resultDiv = document.getElementById('test4-result');
+            
+            try {
+                testDiv.className = 'test-section pending';
+                resultDiv.innerHTML = '<p>جاري الاختبار...</p>';
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: 'admin',
+                        password: 'wrongpassword'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok && data.error && data.error.code === 'INVALID_CREDENTIALS') {
+                    testDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✓ نجح الاختبار!</strong></p>
+                        <p>تم رفض تسجيل الدخول بشكل صحيح</p>
+                        <p>رمز الخطأ: ${data.error.code}</p>
+                        <p>رسالة الخطأ: ${data.error.message}</p>
+                    `;
+                } else {
+                    throw new Error('Expected invalid credentials error');
+                }
+            } catch (error) {
+                testDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <p><strong>✗ فشل الاختبار!</strong></p>
+                    <p>الخطأ: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function runAllTests() {
+            await testFetchUsers();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testLogin();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testCORS();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testInvalidLogin();
+        }
+    </script>
+</body>
+</html>

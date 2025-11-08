@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            direction: rtl;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>اختبار تكامل الواجهة الأمامية</h1>
+    
+    <div class="test-section">
+        <h2>1. اختبار جلب قائمة المستخدمين</h2>
+        <button onclick="testGetUsers()">جلب قائمة المستخدمين</button>
+        <div id="users-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. اختبار تسجيل الدخول</h2>
+        <div>
+            <input type="text" id="username" placeholder="اسم المستخدم" value="admin">
+            <input type="password" id="password" placeholder="كلمة المرور" value="Password123">
+            <button onclick="testLogin()">تسجيل الدخول</button>
+        </div>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. اختبار CORS</h2>
+        <p>سيتم اختبار CORS تلقائياً عند استدعاء الـ APIs</p>
+        <div id="cors-result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:4000';
+
+        async function testGetUsers() {
+            const resultDiv = document.getElementById('users-result');
+            resultDiv.innerHTML = '<p>جاري التحميل...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/users/list`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <h3>✓ نجح جلب قائمة المستخدمين</h3>
+                        <p>عدد المستخدمين: ${data.users.length}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    updateCorsStatus(true);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.error?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h3>✗ فشل جلب قائمة المستخدمين</h3>
+                    <p>${error.message}</p>
+                `;
+                updateCorsStatus(false);
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            resultDiv.innerHTML = '<p>جاري تسجيل الدخول...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: username,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <h3>✓ نجح تسجيل الدخول</h3>
+                        <p>المستخدم: ${data.user.fullName}</p>
+                        <p>الدور: ${data.user.role}</p>
+                        <p>الفرع: ${data.user.branch}</p>
+                        <p>تم استلام JWT Token</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    updateCorsStatus(true);
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `
+                        <h3>✗ فشل تسجيل الدخول</h3>
+                        <p>الحالة: ${response.status}</p>
+                        <p>الرسالة: ${data.error?.message || 'خطأ غير معروف'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <h3>✗ فشل تسجيل الدخول</h3>
+                    <p>${error.message}</p>
+                `;
+                updateCorsStatus(false);
+            }
+        }
+
+        function updateCorsStatus(success) {
+            const corsDiv = document.getElementById('cors-result');
+            if (success) {
+                corsDiv.className = 'success';
+                corsDiv.innerHTML = '<h3>✓ CORS يعمل بشكل صحيح</h3><p>تم السماح بالطلبات من الواجهة الأمامية</p>';
+            } else {
+                corsDiv.className = 'error';
+                corsDiv.innerHTML = '<h3>✗ مشكلة في CORS</h3><p>تحقق من إعدادات CORS في الخادم</p>';
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('Frontend Integration Test Page Loaded');
+            console.log('Backend URL:', API_URL);
+        });
+    </script>
+</body>
+</html>

@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
@@ -30,11 +29,13 @@ model Branch {
 model User {
   id                Int               @id @default(autoincrement())
   username          String            @unique @db.VarChar(50)
+  passwordHash      String            @db.VarChar(255)
   fullName          String            @db.VarChar(100)
   email             String?           @db.VarChar(100)
   role              String            @db.VarChar(20) // SELLER, MANAGER, ADMIN
   branchId          Int?
   isActive          Boolean           @default(true)
+  lastLoginAt       DateTime?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   branch            Branch?           @relation(fields: [branchId], references: [id])
@@ -205,7 +206,6 @@ model InstallmentSchedule {
   updatedAt       DateTime            @updatedAt
   plan            InstallmentPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
   allocations     PaymentAllocation[]
-  penalties       Penalty[]
 
   @@unique([planId, sequenceNumber])
   @@index([planId])
@@ -248,7 +248,7 @@ model PaymentAllocation {
   id             Int                 @id @default(autoincrement())
   paymentId      Int
   scheduleId     Int
-  allocationType String              @db.VarChar(20) // PRINCIPAL, EXTRA, PENALTY, PREPAYMENT
+  allocationType String              @db.VarChar(20) // PRINCIPAL, EXTRA, PREPAYMENT
   amount         Decimal             @db.Decimal(12, 2)
   createdAt      DateTime            @default(now())
   payment        Payment             @relation(fields: [paymentId], references: [id])
@@ -257,42 +257,6 @@ model PaymentAllocation {
   @@index([paymentId])
   @@index([scheduleId])
   @@map("payment_allocations")
-}
-
-// ============================================================================
-// PENALTIES
-// ============================================================================
-
-model PenaltyRule {
-  id              Int       @id @default(autoincrement())
-  ruleName        String    @db.VarChar(100)
-  daysOverdueFrom Int
-  daysOverdueTo   Int?
-  penaltyType     String    @db.VarChar(20) // FIXED, PERCENTAGE
-  penaltyAmount   Decimal   @db.Decimal(12, 2)
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  penalties       Penalty[]
-
-  @@map("penalty_rules")
-}
-
-model Penalty {
-  id            Int                 @id @default(autoincrement())
-  scheduleId    Int
-  ruleId        Int
-  penaltyAmount Decimal             @db.Decimal(12, 2)
-  daysOverdue   Int
-  appliedDate   DateTime            @default(now()) @db.Date
-  paidAmount    Decimal             @default(0) @db.Decimal(12, 2)
-  status        String              @default("PENDING") @db.VarChar(20) // PENDING, PAID, WAIVED
-  createdAt     DateTime            @default(now())
-  schedule      InstallmentSchedule @relation(fields: [scheduleId], references: [id])
-  rule          PenaltyRule         @relation(fields: [ruleId], references: [id])
-
-  @@index([scheduleId])
-  @@index([status])
-  @@map("penalties")
 }
 
 // ============================================================================
