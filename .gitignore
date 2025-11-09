@@ -43,6 +43,15 @@ prisma/migrations/
 # Testing
 coverage/
 .nyc_output/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/test/
+**/tests/
+
+# Kiro IDE
+.kiro/
 
 # OS
 Thumbs.db
