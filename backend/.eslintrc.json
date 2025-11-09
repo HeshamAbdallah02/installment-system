@@ -10,7 +10,14 @@
     "node": true,
     "es6": true
   },
-  "ignorePatterns": ["**/*.test.ts", "**/*.spec.ts", "**/test/**", "**/tests/**", "vitest.config.ts", "vitest.setup.ts"],
+  "ignorePatterns": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/test/**",
+    "**/tests/**",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ],
   "rules": {
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/explicit-module-boundary-types": "off"
