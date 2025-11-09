@@ -68,7 +68,7 @@ export const errorHandler = (err: AppError, _req: Request, res: Response, _next:
 
   // Handle custom application errors with status codes
   const statusCode = err.statusCode || 500;
-  const errorCode = (err as any).code || 'SERVER_ERROR';
+  const errorCode = (err as { code?: string }).code || 'SERVER_ERROR';
 
   // Map error codes to Arabic messages
   const errorResponse =

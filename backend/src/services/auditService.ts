@@ -24,7 +24,7 @@ class AuditService {
   async logEvent(
     eventType: string,
     userId: number,
-    eventData: Record<string, any>,
+    eventData: Record<string, unknown>,
     ipAddress?: string
   ): Promise<void> {
     try {
@@ -52,7 +52,7 @@ class AuditService {
    * @param data - Raw event data
    * @returns Sanitized event data safe for logging
    */
-  private sanitizeEventData(data: Record<string, any>): Record<string, any> {
+  private sanitizeEventData(data: Record<string, unknown>): Record<string, unknown> {
     const sanitized = { ...data };
 
     // Remove sensitive fields
