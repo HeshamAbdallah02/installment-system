@@ -5,6 +5,10 @@ import healthRouter from './routes/health';
 import exampleRouter from './routes/example';
 import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
+import dashboardRouter from './routes/dashboard.routes';
+import customerRouter from './routes/customer.routes';
+import installmentRouter from './routes/installment.routes';
+import productRouter from './routes/product.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -14,9 +18,24 @@ const app: Application = express();
 
 // Middleware
 // CORS configuration for authentication
+// Dynamic CORS configuration to handle multiple frontend ports
+const corsOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',')
+  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or Postman)
+      if (!origin) return callback(null, true);
+
+      // Check if the origin is in our allowed list
+      if (corsOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true, // Enable credentials (cookies, authorization headers)
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow Authorization header
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
@@ -32,6 +51,10 @@ app.use('/health', healthRouter);
 app.use('/api', exampleRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/customers', customerRouter);
+app.use('/api/installments', installmentRouter);
+app.use('/api/products', productRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);

@@ -211,6 +211,7 @@ model InstallmentSchedule {
   @@index([planId])
   @@index([dueDate])
   @@index([status])
+  @@index([status, dueDate])
   @@map("installment_schedule")
 }
 
@@ -241,6 +242,7 @@ model Payment {
   @@index([customerId])
   @@index([orderId])
   @@index([paymentDate])
+  @@index([createdAt])
   @@map("payments")
 }
 
@@ -278,5 +280,6 @@ model EventLog {
   @@index([userId])
   @@index([createdAt])
   @@index([eventType])
+  @@index([eventType, createdAt])
   @@map("event_log")
 }

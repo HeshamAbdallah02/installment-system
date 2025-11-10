@@ -78,6 +78,7 @@ export default function ToastNotification({
         <p className={`flex-1 text-sm font-medium text-right ${getTextColor()}`}>{message}</p>
 
         <button
+          type="button"
           onClick={onClose}
           className={`flex-shrink-0 hover:opacity-70 transition-opacity ${getTextColor()}`}
           aria-label="إغلاق"

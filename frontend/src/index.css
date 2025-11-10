@@ -32,3 +32,42 @@ code {
     animation: slide-in-top 0.3s ease-out;
   }
 }
+
+/* Print styles for installment agreement */
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Hide all non-printable elements */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Ensure proper page breaks */
+  .print\:break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Force black text for print */
+  .print\:text-black {
+    color: #000 !important;
+  }
+
+  /* Remove backgrounds for print */
+  .print\:bg-white {
+    background-color: #fff !important;
+  }
+
+  /* Ensure borders are visible */
+  .border-black {
+    border-color: #000 !important;
+  }
+}

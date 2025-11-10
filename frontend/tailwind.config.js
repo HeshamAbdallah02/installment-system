@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       screens: {
-        tablet: '768px',
-        desktop: '1024px',
+        tablet: '1024px', // Tablet: 1024px-1279px - Requirement 8.1
+        desktop: '1280px', // Desktop: 1280px+ - Requirement 8.1
       },
       colors: {
         // Brand Colors - Based on Sabaya Logo

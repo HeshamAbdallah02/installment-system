@@ -1,0 +1,9 @@
+export { default as CustomersTable } from './CustomersTable';
+export { default as SearchAndFilters } from './SearchAndFilters';
+export { default as AddCustomerModal } from './AddCustomerModal';
+export { default as PersonalInfoCard } from './PersonalInfoCard';
+export { default as EditCustomerModal } from './EditCustomerModal';
+export { default as ActiveInstallmentsSummary } from './ActiveInstallmentsSummary';
+export { default as InstallmentsGrid } from './InstallmentsGrid';
+export { default as PaymentHistoryTimeline } from './PaymentHistoryTimeline';
+export { default as CustomerDetailSkeleton } from './CustomerDetailSkeleton';

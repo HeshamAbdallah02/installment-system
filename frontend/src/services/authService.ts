@@ -178,10 +178,51 @@ class AuthService {
   }
 
   /**
-   * Logout user by clearing token and remembered user
+   * Get current user information from localStorage
+   * @returns User info or null if not found
+   */
+  getCurrentUser(): { name: string; role: string; branch: string } | null {
+    try {
+      const userStr = localStorage.getItem('current_user');
+      if (userStr) {
+        return JSON.parse(userStr);
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to get current user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Store current user information in localStorage
+   * @param user - User information to store
+   */
+  storeCurrentUser(user: { name: string; role: string; branch: string }): void {
+    try {
+      localStorage.setItem('current_user', JSON.stringify(user));
+    } catch (error) {
+      console.error('Failed to store current user:', error);
+    }
+  }
+
+  /**
+   * Clear current user information from localStorage
+   */
+  clearCurrentUser(): void {
+    try {
+      localStorage.removeItem('current_user');
+    } catch (error) {
+      console.error('Failed to clear current user:', error);
+    }
+  }
+
+  /**
+   * Logout user by clearing token and user data
    */
   logout(): void {
     this.clearToken();
+    this.clearCurrentUser();
     // Optionally clear remembered user on logout
     // this.clearRememberedUser();
   }

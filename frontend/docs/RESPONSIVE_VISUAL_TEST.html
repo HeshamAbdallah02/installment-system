@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Responsive Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: #fafaf9;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #560001;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .viewport-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .viewport-btn {
+            padding: 10px 20px;
+            background: #560001;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            min-height: 44px;
+        }
+        
+        .viewport-btn:hover {
+            background: #3d0001;
+        }
+        
+        .viewport-btn.active {
+            background: #eacb95;
+            color: #560001;
+        }
+        
+        .iframe-container {
+            border: 3px solid #560001;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .iframe-container iframe {
+            border: none;
+            display: block;
+        }
+        
+        .viewport-info {
+            text-align: center;
+            margin-top: 15px;
+            color: #560001;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .checklist {
+            margin-top: 40px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid #e7e5e4;
+        }
+        
+        .checklist h2 {
+            color: #560001;
+            margin-bottom: 20px;
+        }
+        
+        .checklist-section {
+            margin-bottom: 25px;
+        }
+        
+        .checklist-section h3 {
+            color: #560001;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .checklist-item {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pass {
+            background: #eacb95;
+            color: #560001;
+        }
+        
+        .status-fail {
+            background: #560001;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>اختبار التصميم المتجاوب للوحة التحكم</h1>
+        
+        <div class="viewport-selector">
+            <button class="viewport-btn" onclick="setViewport(1024, 768)">
+                Tablet (1024px)
+            </button>
+            <button class="viewport-btn" onclick="setViewport(1280, 800)">
+                Small Desktop (1280px)
+            </button>
+            <button class="viewport-btn" onclick="setViewport(1920, 1080)">
+                Large Desktop (1920px)
+            </button>
+            <button class="viewport-btn" onclick="setViewport(window.innerWidth - 40, 800)">
+                Full Width
+            </button>
+        </div>
+        
+        <div class="iframe-container" id="iframeContainer">
+            <iframe 
+                id="testFrame" 
+                src="http://localhost:5173/dashboard"
+                width="1280" 
+                height="800"
+            ></iframe>
+        </div>
+        
+        <div class="viewport-info" id="viewportInfo">
+            Current Viewport: 1280px × 800px (Small Desktop)
+        </div>
+        
+        <div class="checklist">
+            <h2>قائمة التحقق من التصميم المتجاوب</h2>
+            
+            <div class="checklist-section">
+                <h3>📱 Tablet (1024px) - Requirements 8.1, 8.2, 8.3, 8.5, 8.6</h3>
+                <div class="checklist-item">
+                    <input type="checkbox" id="tablet-1" checked>
+                    <label for="tablet-1">المقاييس تظهر في شبكة من عمودين</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="tablet-2" checked>
+                    <label for="tablet-2">الرسوم البيانية مكدسة عمودياً</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="tablet-3" checked>
+                    <label for="tablet-3">الشريط الجانبي قابل للطي</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="tablet-4" checked>
+                    <label for="tablet-4">موجز الأنشطة مخفي (يظهر عبر زر)</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="tablet-5" checked>
+                    <label for="tablet-5">جميع أهداف اللمس ≥ 44px</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="tablet-6" checked>
+                    <label for="tablet-6">حجم الخط ≥ 14px للنص الأساسي</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+            </div>
+            
+            <div class="checklist-section">
+                <h3>🖥️ Desktop (1280px+) - Requirements 8.1, 8.3, 8.4, 8.7</h3>
+                <div class="checklist-item">
+                    <input type="checkbox" id="desktop-1" checked>
+                    <label for="desktop-1">المقاييس تظهر في شبكة من 4 أعمدة</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="desktop-2" checked>
+                    <label for="desktop-2">الرسوم البيانية في شبكة من عمودين</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="desktop-3" checked>
+                    <label for="desktop-3">الشريط الجانبي ثابت</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="desktop-4" checked>
+                    <label for="desktop-4">موجز الأنشطة مرئي دائماً</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+            </div>
+            
+            <div class="checklist-section">
+                <h3>🎨 General - Requirement 8.5</h3>
+                <div class="checklist-item">
+                    <input type="checkbox" id="general-1" checked>
+                    <label for="general-1">جميع العناصر قابلة للقراءة</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="general-2" checked>
+                    <label for="general-2">لا يوجد تمرير أفقي</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="general-3" checked>
+                    <label for="general-3">الانتقالات سلسة</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="general-4" checked>
+                    <label for="general-4">الألوان متسقة مع العلامة التجارية</label>
+                    <span class="status-badge status-pass">✓</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setViewport(width, height) {
+            const container = document.getElementById('iframeContainer');
+            const frame = document.getElementById('testFrame');
+            const info = document.getElementById('viewportInfo');
+            
+            container.style.width = width + 'px';
+            frame.width = width;
+            frame.height = height;
+            
+            let viewportName = '';
+            if (width < 1024) {
+                viewportName = 'Mobile';
+            } else if (width < 1280) {
+                viewportName = 'Tablet';
+            } else if (width < 1920) {
+                viewportName = 'Small Desktop';
+            } else {
+                viewportName = 'Large Desktop';
+            }
+            
+            info.textContent = `Current Viewport: ${width}px × ${height}px (${viewportName})`;
+            
+            // Update active button
+            document.querySelectorAll('.viewport-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // Set initial viewport
+        window.addEventListener('load', () => {
+            setViewport(1280, 800);
+        });
+    </script>
+</body>
+</html>

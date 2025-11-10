@@ -53,5 +53,14 @@ coverage/
 # Kiro IDE
 .kiro/
 
+# Documentation (personal evaluation/testing)
+*-results.md
+*-test-results.md
+*_SUMMARY.md
+*_RESULTS.md
+*_TEST_RESULTS.md
+QUICK_START_*.md
+MCP_*.md
+
 # OS
 Thumbs.db

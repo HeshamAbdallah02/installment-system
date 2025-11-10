@@ -5,6 +5,7 @@ dotenv.config();
 
 import app from './index';
 import prisma from './prismaClient';
+import websocketService from './services/websocket.service';
 
 const PORT = process.env.PORT || 4000;
 
@@ -12,6 +13,9 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
+
+// Initialize WebSocket server
+websocketService.initialize(server);
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {

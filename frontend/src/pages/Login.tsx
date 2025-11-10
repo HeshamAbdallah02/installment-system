@@ -127,6 +127,13 @@ const Login = () => {
       // Store token
       authService.storeToken(response.token);
 
+      // Store current user information
+      authService.storeCurrentUser({
+        name: response.user.name,
+        role: response.user.role,
+        branch: response.user.branch,
+      });
+
       // Handle Remember Me
       if (data.rememberMe) {
         authService.rememberUser(data.userId);
