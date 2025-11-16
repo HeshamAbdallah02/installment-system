@@ -222,9 +222,6 @@ class ProductController {
         stockQuantity,
       } = req.body;
 
-      // Get image URL from uploaded file
-      const imageUrl = req.file ? `/uploads/products/${req.file.filename}` : undefined;
-
       // Parse availableTerms and ensure they are integers
       let parsedAvailableTerms = undefined;
       if (availableTerms) {
@@ -235,7 +232,7 @@ class ProductController {
       }
 
       // Parse customRates and ensure keys are integers
-      let parsedCustomRates = undefined;
+      let parsedCustomRates: Record<number, number> | undefined = undefined;
       if (customRates) {
         const rates = JSON.parse(customRates);
         if (rates && typeof rates === 'object') {

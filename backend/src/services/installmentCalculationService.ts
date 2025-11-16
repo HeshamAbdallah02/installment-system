@@ -156,15 +156,21 @@ class InstallmentCalculationService {
   /**
    * Get available installment ratios
    * @returns Promise resolving to list of active ratios
+   * @deprecated This method uses installmentRatio model which doesn't exist in current schema
    */
   async getAvailableRatios() {
+    // TODO: Implement this when installmentRatio model is added to schema
+    // or use product customRates instead
+    return [];
+    
+    /* Original implementation - commented out until model exists
     try {
       const ratios = await prisma.installmentRatio.findMany({
         where: { isActive: true },
         orderBy: { periodMonths: 'asc' },
       });
 
-      return ratios.map((ratio) => ({
+      return ratios.map((ratio: any) => ({
         periodMonths: ratio.periodMonths,
         ratioMultiplier: Number(ratio.ratioMultiplier),
         description: ratio.description,
@@ -173,6 +179,7 @@ class InstallmentCalculationService {
       console.error('Get available ratios error:', error);
       throw new Error('Failed to fetch installment ratios');
     }
+    */
   }
 }
 

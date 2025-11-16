@@ -34,6 +34,7 @@ interface ProductFilters {
 interface CreateProductData {
   code: string;
   name: string;
+  size?: string;
   description?: string;
   cashPrice: number;
   minDepositAmount?: number;
