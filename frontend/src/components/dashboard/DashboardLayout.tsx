@@ -4,6 +4,7 @@ import {
   HomeIcon,
   UsersIcon,
   CreditCardIcon,
+  BanknotesIcon,
   ShoppingBagIcon,
   ChartBarIcon,
   DocumentTextIcon,
@@ -36,6 +37,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title }) =>
     { path: '/dashboard', label: 'لوحة التحكم', icon: <HomeIcon className="w-6 h-6" /> },
     { path: '/customers', label: 'العملاء', icon: <UsersIcon className="w-6 h-6" /> },
     { path: '/installments', label: 'الأقساط', icon: <CreditCardIcon className="w-6 h-6" /> },
+    { path: '/payments', label: 'التحصيل', icon: <BanknotesIcon className="w-6 h-6" /> },
     { path: '/products', label: 'المنتجات', icon: <ShoppingBagIcon className="w-6 h-6" /> },
     { path: '/reports', label: 'التقارير', icon: <DocumentTextIcon className="w-6 h-6" /> },
     { path: '/analytics', label: 'التحليلات', icon: <ChartBarIcon className="w-6 h-6" /> },
@@ -112,14 +114,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title }) =>
             <div className="flex items-center gap-3 pr-4 border-r border-brand-offwhite-300">
               <div className="text-right">
                 <p className="text-sm font-semibold text-brand-primary-900">
-                  {user?.username || 'مستخدم'}
+                  {user?.name || 'مستخدم'}
                 </p>
                 <p className="text-xs text-brand-offwhite-700">
                   {user?.role === 'owner' ? 'مالك' : user?.role === 'seller' ? 'بائع' : 'مستخدم'}
                 </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-brand-secondary-400 flex items-center justify-center text-brand-primary-900 font-bold">
-                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
             </div>
           </div>

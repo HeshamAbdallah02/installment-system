@@ -42,9 +42,10 @@ model User {
   customersCreated  Customer[]        @relation("CustomerCreatedBy")
   filesUploaded     FileStorage[]     @relation("FileUploadedBy")
   ordersCreated     Order[]           @relation("OrderCreatedBy")
-  plansCreated      InstallmentPlan[] @relation("PlanCreatedBy")
-  paymentsCollected Payment[]         @relation("PaymentCollectedBy")
-  eventLogs         EventLog[]
+  plansCreated         InstallmentPlan[]     @relation("PlanCreatedBy")
+  paymentsCollected    Payment[]             @relation("PaymentCollectedBy")
+  inventoryAdjustments InventoryAdjustment[] @relation("InventoryAdjustedBy")
+  eventLogs            EventLog[]
 
   @@map("users")
 }
@@ -94,31 +95,50 @@ model FileStorage {
 // ============================================================================
 
 model Product {
-  id               Int         @id @default(autoincrement())
-  code             String      @unique @db.VarChar(50)
-  name             String      @db.VarChar(200)
-  description      String?     @db.Text
-  cashPrice        Decimal     @db.Decimal(12, 2)
-  requiresDeposit  Boolean     @default(false)
-  minDepositAmount Decimal?    @db.Decimal(12, 2)
-  category         String?     @db.VarChar(50)
-  isActive         Boolean     @default(true)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  orderItems       OrderItem[]
+  id                    Int                     @id @default(autoincrement())
+  code                  String                  @unique @db.VarChar(50)
+  name                  String                  @db.VarChar(200)
+  size                  String?                 @db.VarChar(50)
+  description           String?                 @db.Text
+  cashPrice             Decimal                 @db.Decimal(12, 2)
+  requiresDeposit       Boolean                 @default(false)
+  minDepositAmount      Decimal?                @db.Decimal(12, 2)
+  minDepositPercentage  Decimal?                @db.Decimal(5, 2)
+  category              String?                 @db.VarChar(50)
+  imageUrl              String?                 @db.VarChar(500)
+  specifications        Json?                   @db.JsonB
+  availableTerms        Int[]                   @default([3, 6, 12, 24])
+  customRates           Json?                   @db.JsonB
+  stockQuantity         Int                     @default(0)
+  stockStatus           String                  @default("OUT_OF_STOCK") @db.VarChar(20) // IN_STOCK, LOW_STOCK, OUT_OF_STOCK
+  status                String                  @default("ACTIVE") @db.VarChar(20) // ACTIVE, DISCONTINUED
+  isActive              Boolean                 @default(true)
+  deactivationReason    String?                 @db.Text
+  deactivatedAt         DateTime?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  orderItems            OrderItem[]
+  inventoryAdjustments  InventoryAdjustment[]
 
   @@map("products")
 }
 
-model InstallmentRatio {
-  id              Int      @id @default(autoincrement())
-  periodMonths    Int      @unique
-  ratioMultiplier Decimal  @db.Decimal(5, 4)
-  description     String?  @db.Text
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+model InventoryAdjustment {
+  id               Int      @id @default(autoincrement())
+  productId        Int
+  type             String   @db.VarChar(20) // SALE, RESTOCK, DAMAGE, RETURN
+  quantity         Int
+  previousQuantity Int
+  newQuantity      Int
+  reason           String   @db.Text
+  adjustedBy       Int
+  createdAt        DateTime @default(now())
+  product          Product  @relation(fields: [productId], references: [id])
+  adjustedByUser   User     @relation("InventoryAdjustedBy", fields: [adjustedBy], references: [id])
 
-  @@map("installment_ratios")
+  @@index([productId])
+  @@index([createdAt])
+  @@map("inventory_adjustments")
 }
 
 // ============================================================================

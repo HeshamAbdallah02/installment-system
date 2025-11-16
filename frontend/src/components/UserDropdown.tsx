@@ -6,7 +6,7 @@ import type { User } from '../types/auth';
 interface UserDropdownProps {
   users: User[];
   selectedUserId: string | null;
-  onSelect: (userId: string) => void;
+  onSelect: (userId: string | null) => void;
   error?: string;
   disabled?: boolean;
 }

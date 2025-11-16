@@ -1,17 +1,22 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 
 // Lazy load heavy components for code splitting - Requirement 9.6
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
 const Customers = lazy(() => import('./pages/Customers'));
 const CustomerDetail = lazy(() => import('./pages/CustomerDetail'));
 const Installments = lazy(() => import('./pages/Installments'));
+const InstallmentDetail = lazy(() => import('./pages/InstallmentDetail'));
 const InstallmentAgreement = lazy(() => import('./components/installments/InstallmentAgreement'));
+const PaymentCollection = lazy(() => import('./pages/PaymentCollection'));
+const PaymentHistory = lazy(() => import('./pages/PaymentHistory'));
+const CollectionReports = lazy(() => import('./pages/CollectionReports'));
+const ProductCatalog = lazy(() => import('./pages/ProductCatalog'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -47,7 +52,14 @@ function App() {
           }
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route
+            path="dashboard"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <Dashboard />
+              </Suspense>
+            }
+          />
           <Route
             path="customers"
             element={
@@ -76,9 +88,7 @@ function App() {
             path="installments/:id"
             element={
               <Suspense fallback={<PageLoader />}>
-                <div className="p-8 text-center">
-                  <p className="text-brand-offwhite-700">صفحة تفاصيل القسط قيد التطوير</p>
-                </div>
+                <InstallmentDetail />
               </Suspense>
             }
           />
@@ -95,6 +105,38 @@ function App() {
             element={
               <Suspense fallback={<PageLoader />}>
                 <AnalyticsDashboard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="payments"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <PaymentCollection />
+              </Suspense>
+            }
+          />
+          <Route
+            path="payments/history"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <PaymentHistory />
+              </Suspense>
+            }
+          />
+          <Route
+            path="reports"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <CollectionReports />
+              </Suspense>
+            }
+          />
+          <Route
+            path="products"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <ProductCatalog />
               </Suspense>
             }
           />

@@ -2,258 +2,49 @@
 
 ## Overview
 
-This document describes the comprehensive error handling system implemented for the Customer & Installment Management feature. The system provides Arabic error messages, standardized error handling, and consistent user feedback through toast notifications.
+This document describes the comprehensive error handling implementation for the Product & Inventory Management feature.
 
 ## Requirements Addressed
 
-- **Requirement 2.5**: Arabic validation error messages
-- **Requirement 2.9**: Display validation errors in Arabic below each field
-- **Requirement 8.7**: Display error message and allow retry on failure
+- **Requirement 6.9**: Implement Arabic validation error messages, handle image upload errors, handle API errors gracefully
+- **Requirement 8.9**: Handle stock errors, show toast notifications
+- **Requirement 10.9**: Show loading states, validate product data
 
-## Error Handling Utilities
+## Components
 
-### Location
+### 1. Toast Notification System
 
-`frontend/src/utils/errorHandling.ts`
+**Location**: `frontend/src/components/common/Toast.tsx`
 
-### Key Functions
+**Features**:
 
-#### 1. `getErrorMessage(error: any): string`
+- Success, error, and info message types
+- Auto-dismiss after 5 seconds (configurable)
+- Manual close button
+- Smooth slide-down animation
+- Brand-colored styling
 
-Extracts a user-friendly Arabic error message from any error object.
+**Usage**:
 
-**Usage:**
-
-```typescript
-try {
-  await apiCall();
-} catch (err) {
-  const errorMessage = getErrorMessage(err);
-  showToast(errorMessage, 'error');
-}
-```
-
-#### 2. `getErrorCode(error: any): string | undefined`
-
-Extracts the error code from API error responses.
-
-#### 3. `isErrorCode(error: any, code: string): boolean`
-
-Checks if an error matches a specific error code.
-
-**Usage:**
-
-```typescript
-if (isErrorCode(err, 'DUPLICATE_NATIONAL_ID')) {
-  // Handle duplicate national ID
-}
-```
-
-#### 4. `logError(error: any, context?: string): void`
-
-Logs errors with context for debugging.
-
-**Usage:**
-
-```typescript
-logError(err, 'CustomerSelection - fetchCustomers');
-```
-
-#### 5. Validation Functions
-
-- `validateNationalId(value: string): boolean | string`
-- `validatePhone(value: string): boolean | string`
-- `validateRequired(value: any): boolean | string`
-- `validateNumber(value: any, min?: number, max?: number): boolean | string`
-- `validateDeposit(deposit: number, productPrice: number, minDeposit?: number): boolean | string`
-
-**Usage with React Hook Form:**
-
-```typescript
-<input
-  {...register('nationalId', {
-    validate: validateNationalId,
-  })}
-/>
-```
-
-## Error Messages
-
-### Validation Errors (VALIDATION_ERRORS)
-
-```typescript
-REQUIRED_FIELD: 'هذا الحقل مطلوب';
-INVALID_NATIONAL_ID: 'الرقم القومي يجب أن يكون 14 رقماً';
-INVALID_PHONE: 'رقم الهاتف غير صحيح (يجب أن يبدأ بـ 01 ويتكون من 11 رقماً)';
-DUPLICATE_NATIONAL_ID: 'الرقم القومي مسجل بالفعل';
-INVALID_DEPOSIT: 'المقدم يجب أن يكون بين الحد الأدنى وسعر المنتج';
-```
-
-### API Errors (API_ERRORS)
-
-```typescript
-NETWORK_ERROR: 'خطأ في الاتصال بالشبكة. يرجى التحقق من اتصال الإنترنت';
-SERVER_ERROR: 'خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً';
-UNAUTHORIZED: 'غير مصرح. يرجى تسجيل الدخول مرة أخرى';
-NOT_FOUND: 'المورد المطلوب غير موجود';
-VALIDATION_ERROR: 'خطأ في التحقق من البيانات';
-```
-
-### Success Messages (SUCCESS_MESSAGES)
-
-```typescript
-CUSTOMER_CREATED: 'تم إضافة العميل بنجاح';
-CUSTOMER_UPDATED: 'تم تحديث بيانات العميل بنجاح';
-INSTALLMENT_CREATED: 'تم إنشاء خطة التقسيط بنجاح';
-PAYMENT_RECORDED: 'تم تسجيل الدفعة بنجاح';
-```
-
-## Implementation Patterns
-
-### 1. API Call Error Handling
-
-```typescript
-const fetchData = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    const data = await apiService.getData();
-    setData(data);
-  } catch (err) {
-    logError(err, 'ComponentName - fetchData');
-    const errorMessage = getErrorMessage(err);
-    setError(errorMessage);
-    showToast(errorMessage, 'error');
-  } finally {
-    setLoading(false);
-  }
-};
-```
-
-### 2. Form Validation
-
-```typescript
-const {
-  register,
-  handleSubmit,
-  formState: { errors },
-  setError,
-} = useForm<FormData>();
-
-const onSubmit = async (data: FormData) => {
-  try {
-    setIsSubmitting(true);
-    await apiService.submit(data);
-    onSuccess(SUCCESS_MESSAGES.DATA_SAVED);
-  } catch (err) {
-    logError(err, 'FormComponent - submit');
-
-    // Handle specific error codes
-    if (isErrorCode(err, 'DUPLICATE_NATIONAL_ID')) {
-      setError('nationalId', {
-        type: 'manual',
-        message: VALIDATION_ERRORS.DUPLICATE_NATIONAL_ID,
-      });
-    } else {
-      const errorMessage = getErrorMessage(err);
-      onError(errorMessage);
-    }
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-```
-
-### 3. Loading States
-
-```typescript
-{loading ? (
-  <div className="text-center py-4">
-    <div className="w-12 h-12 border-4 border-brand-primary-900 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-    <p className="text-brand-primary-900 font-semibold">جاري التحميل...</p>
-  </div>
-) : error ? (
-  <div className="bg-brand-primary-50 border border-brand-primary-700 rounded-lg p-4">
-    <p className="text-brand-primary-700 mb-4">{error}</p>
-    <button
-      type="button"
-      onClick={retry}
-      className="px-4 py-2 bg-brand-primary-900 text-white rounded-lg hover:bg-brand-primary-950"
-    >
-      إعادة المحاولة
-    </button>
-  </div>
-) : (
-  // Content
-)}
-```
-
-### 4. Submit Button with Loading State
-
-```typescript
-<button
-  type="submit"
-  disabled={isSubmitting}
-  className="flex items-center justify-center gap-2 px-6 py-2 bg-brand-primary-900 text-white rounded-lg hover:bg-brand-primary-950 disabled:opacity-50 disabled:cursor-not-allowed"
->
-  {isSubmitting ? (
-    <>
-      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-      <span>جاري الحفظ...</span>
-    </>
-  ) : (
-    'حفظ'
-  )}
-</button>
-```
-
-## Components Updated
-
-### Pages
-
-- `Customers.tsx` - Customer list page
-- `CustomerDetail.tsx` - Customer detail page
-- `Installments.tsx` - Installments list page
-
-### Modals
-
-- `AddCustomerModal.tsx` - Add customer form
-- `EditCustomerModal.tsx` - Edit customer form
-
-### Wizard Steps
-
-- `CustomerSelection.tsx` - Step 1: Customer selection
-- `ProductSelection.tsx` - Step 2: Product selection
-- `TermsConfiguration.tsx` - Step 3: Terms configuration
-- `ReviewAndConfirm.tsx` - Step 4: Review and confirm
-
-### Shared Components
-
-- `ToastNotification.tsx` - Toast notification component
-
-## Toast Notification System
-
-### Usage with useToast Hook
-
-```typescript
+```tsx
 import { useToast } from '../hooks/useToast';
+import Toast from '../components/common/Toast';
 
-const Component = () => {
-  const { toast, showToast, showSuccess, showError, hideToast } = useToast();
+const MyComponent = () => {
+  const { toast, showSuccess, showError, showInfo, hideToast } = useToast();
 
-  // Show success
-  showSuccess('تم الحفظ بنجاح');
+  const handleSuccess = () => {
+    showSuccess('تم إضافة المنتج بنجاح');
+  };
 
-  // Show error
-  showError('حدث خطأ');
-
-  // Show custom message
-  showToast('رسالة مخصصة', 'info');
+  const handleError = () => {
+    showError('فشل في إضافة المنتج');
+  };
 
   return (
     <>
-      {/* Component content */}
-      <ToastNotification
+      {/* Your component content */}
+      <Toast
         message={toast.message}
         type={toast.type}
         isVisible={toast.isVisible}
@@ -264,48 +55,264 @@ const Component = () => {
 };
 ```
 
+### 2. Loading Spinner
+
+**Location**: `frontend/src/components/common/LoadingSpinner.tsx`
+
+**Features**:
+
+- Three sizes: sm, md, lg
+- Optional loading message
+- Full-screen overlay option
+- Brand-colored spinner
+
+**Usage**:
+
+```tsx
+import LoadingSpinner from '../components/common/LoadingSpinner';
+
+// Inline spinner
+<LoadingSpinner size="md" message="جاري التحميل..." />
+
+// Full-screen spinner
+<LoadingSpinner size="lg" message="جاري التحميل..." fullScreen />
+```
+
+### 3. Validation Utilities
+
+**Location**: `frontend/src/utils/productValidation.ts`
+
+**Features**:
+
+- Arabic error messages for all validation scenarios
+- Image file validation (type and size)
+- Price validation
+- Deposit validation
+- Custom rate validation
+- Inventory quantity validation
+- API error message extraction
+
+**Usage**:
+
+```tsx
+import {
+  validateProductImage,
+  validateProductPrice,
+  validateMinimumDeposit,
+  validateCustomRate,
+  validateInventoryQuantity,
+  extractErrorMessage,
+  PRODUCT_VALIDATION_ERRORS,
+} from '../utils/productValidation';
+
+// Validate image
+const imageError = validateProductImage(file);
+if (imageError) {
+  showError(imageError);
+}
+
+// Validate price
+const priceError = validateProductPrice(price);
+if (priceError) {
+  showError(priceError);
+}
+
+// Extract error from API response
+try {
+  await productService.createProduct(data);
+} catch (error) {
+  const message = extractErrorMessage(error);
+  showError(message);
+}
+```
+
+## Backend Error Messages
+
+**Location**: `backend/src/middleware/errorHandler.ts`
+
+All error messages are defined in Arabic in the `ERROR_MESSAGES` object:
+
+### Product Validation Errors
+
+| Error Code                 | Arabic Message                        | English Translation                            |
+| -------------------------- | ------------------------------------- | ---------------------------------------------- |
+| REQUIRED_NAME              | اسم المنتج مطلوب                      | Product name is required                       |
+| REQUIRED_CODE              | كود المنتج مطلوب                      | Product code is required                       |
+| DUPLICATE_CODE             | كود المنتج موجود بالفعل               | Product code already exists                    |
+| REQUIRED_CATEGORY          | الفئة مطلوبة                          | Category is required                           |
+| INVALID_PRICE              | السعر يجب أن يكون أكبر من صفر         | Price must be greater than zero                |
+| INVALID_DEPOSIT            | المقدم يجب أن يكون أقل من السعر       | Deposit must be less than price                |
+| REQUIRED_IMAGE             | صورة المنتج مطلوبة                    | Product image is required                      |
+| IMAGE_TOO_LARGE            | حجم الصورة يجب أن يكون أقل من 5MB     | Image size must be less than 5MB               |
+| INVALID_IMAGE_FORMAT       | صيغة الصورة غير مدعومة (JPG, PNG فقط) | Invalid image format (JPG, PNG only)           |
+| NO_TERMS_SELECTED          | يجب اختيار شرط تقسيط واحد على الأقل   | At least one installment term must be selected |
+| INVALID_CUSTOM_RATE        | المعدل المخصص يجب أن يكون بين 0-20%   | Custom rate must be between 0-20%              |
+| PRODUCT_NOT_FOUND          | المنتج غير موجود                      | Product not found                              |
+| PRODUCT_OUT_OF_STOCK       | المنتج غير متوفر في المخزون           | Product is out of stock                        |
+| INVALID_STOCK_QUANTITY     | الكمية الجديدة لا يمكن أن تكون سالبة  | New quantity cannot be negative                |
+| REQUIRED_ADJUSTMENT_REASON | سبب التعديل مطلوب                     | Adjustment reason is required                  |
+| INVALID_QUANTITY           | الكمية يجب أن تكون أكبر من صفر        | Quantity must be greater than zero             |
+| REQUIRED_REASON            | السبب مطلوب                           | Reason is required                             |
+| ALREADY_DEACTIVATED        | المنتج موقوف بالفعل                   | Product is already deactivated                 |
+| ALREADY_ACTIVE             | المنتج نشط بالفعل                     | Product is already active                      |
+| NO_PRODUCTS_SELECTED       | لم يتم اختيار أي منتجات               | No products selected                           |
+| INVALID_VALUE              | القيمة غير صالحة                      | Invalid value                                  |
+| NO_PRODUCTS_FOUND          | لم يتم العثور على منتجات              | No products found                              |
+| REQUIRED_FIELDS            | جميع الحقول المطلوبة يجب ملؤها        | All required fields must be filled             |
+
+## Error Handling Patterns
+
+### 1. Form Validation
+
+Forms use React Hook Form with inline validation:
+
+```tsx
+const {
+  register,
+  handleSubmit,
+  formState: { errors },
+  setError,
+} = useForm<FormData>();
+
+// Field validation
+<input
+  {...register('name', {
+    required: 'اسم المنتج مطلوب',
+    minLength: { value: 3, message: 'الاسم يجب أن يكون 3 أحرف على الأقل' },
+  })}
+/>;
+
+// Display error
+{
+  errors.name && <p className="text-sm text-brand-primary-700">{errors.name.message}</p>;
+}
+
+// Set manual error
+if (apiError.code === 'DUPLICATE_CODE') {
+  setError('code', {
+    type: 'manual',
+    message: 'كود المنتج موجود بالفعل',
+  });
+}
+```
+
+### 2. API Error Handling
+
+All API calls are wrapped in try-catch blocks:
+
+```tsx
+const createProductMutation = useMutation({
+  mutationFn: (data: FormData) => productService.createProduct(data),
+  onSuccess: () => {
+    showSuccess('تم إضافة المنتج بنجاح');
+  },
+  onError: (error: any) => {
+    const message = extractErrorMessage(error);
+    showError(message);
+  },
+});
+```
+
+### 3. Loading States
+
+Loading states are shown during async operations:
+
+```tsx
+const { data, isLoading, error } = useQuery({
+  queryKey: ['products'],
+  queryFn: () => productService.getProducts(),
+});
+
+if (isLoading) {
+  return <LoadingSpinner message="جاري تحميل المنتجات..." />;
+}
+
+if (error) {
+  return <div>حدث خطأ: {error.message}</div>;
+}
+```
+
+### 4. Image Upload Validation
+
+Image uploads are validated before submission:
+
+```tsx
+const validateFile = (file: File): string | null => {
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+  if (!validTypes.includes(file.type)) {
+    return 'صيغة الصورة غير مدعومة. يرجى اختيار صورة JPG أو PNG';
+  }
+
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    return 'حجم الصورة يجب أن يكون أقل من 5 ميجابايت';
+  }
+
+  return null;
+};
+```
+
+### 5. Stock Error Handling
+
+Stock errors are handled with specific messages:
+
+```tsx
+try {
+  await productService.adjustInventory(productId, type, quantity, reason);
+  showSuccess('تم تعديل المخزون بنجاح');
+} catch (error) {
+  const message = extractErrorMessage(error);
+  if (message.includes('سالبة')) {
+    showError('لا يمكن تقليل المخزون إلى قيمة سالبة');
+  } else {
+    showError(message);
+  }
+}
+```
+
 ## Best Practices
 
-1. **Always log errors** with context using `logError()`
-2. **Use validation utilities** instead of inline validation
-3. **Show loading states** during async operations
-4. **Provide retry options** when operations fail
-5. **Use success messages** from `SUCCESS_MESSAGES` constant
-6. **Handle specific error codes** when needed (e.g., duplicate entries)
-7. **Clear errors** when user corrects input
-8. **Disable buttons** during submission to prevent double-submission
-9. **Show spinner** in buttons during loading
-10. **Use Arabic messages** for all user-facing text
+1. **Always use Arabic error messages** - All user-facing errors must be in Arabic
+2. **Be specific** - Provide clear, actionable error messages
+3. **Show loading states** - Always indicate when an operation is in progress
+4. **Handle all error cases** - Network errors, validation errors, server errors
+5. **Use toast notifications** - For success and error feedback
+6. **Validate early** - Client-side validation before API calls
+7. **Extract error messages** - Use `extractErrorMessage()` utility for consistent error handling
+8. **Disable during operations** - Disable form inputs and buttons during async operations
+9. **Clear errors** - Clear previous errors when user corrects input
+10. **Log errors** - Log errors to console in development for debugging
 
 ## Testing Error Handling
 
 ### Manual Testing Checklist
 
-- [ ] Network error (disconnect internet)
-- [ ] Server error (500 response)
-- [ ] Validation errors (invalid input)
-- [ ] Duplicate entries
-- [ ] Unauthorized access
-- [ ] Not found errors
-- [ ] Timeout errors
-- [ ] Form validation errors
-- [ ] Loading states display correctly
-- [ ] Toast notifications appear and dismiss
-- [ ] Retry buttons work
-- [ ] Error messages are in Arabic
-- [ ] Buttons are disabled during submission
+- [ ] Test all form validations (required fields, format, ranges)
+- [ ] Test image upload validation (file type, file size)
+- [ ] Test API error responses (network errors, server errors)
+- [ ] Test loading states (spinners, disabled buttons)
+- [ ] Test toast notifications (success, error, info)
+- [ ] Test error message display (inline, toast)
+- [ ] Test duplicate code error
+- [ ] Test stock quantity validation
+- [ ] Test price validation
+- [ ] Test deposit validation
 
-## Future Enhancements
+### Automated Testing
 
-1. **Error Tracking Service**: Integrate with Sentry or similar service
-2. **Offline Support**: Handle offline scenarios gracefully
-3. **Error Recovery**: Implement automatic retry with exponential backoff
-4. **User Feedback**: Collect user feedback on error messages
-5. **Analytics**: Track error frequency and types
-6. **Localization**: Support multiple languages beyond Arabic
+Error handling should be tested with:
 
-## Related Documentation
+- Unit tests for validation functions
+- Integration tests for API error handling
+- E2E tests for user error scenarios
 
-- [Brand Colors](./BRAND_COLORS.md)
-- [Component Guidelines](./COMPONENT_GUIDELINES.md)
-- [API Integration](./API_INTEGRATION.md)
+## Future Improvements
+
+1. Add error tracking service (e.g., Sentry)
+2. Implement retry logic for network errors
+3. Add offline error handling
+4. Implement error boundaries for React components
+5. Add more specific error codes for better error handling
+6. Implement error analytics to track cd)

@@ -1,0 +1,11 @@
+export { default as PopularProductsSection } from './PopularProductsSection';
+export { default as FiltersBar } from './FiltersBar';
+export { default as ProductGrid } from './ProductGrid';
+export { default as ProductCard } from './ProductCard';
+export { default as Pagination } from './Pagination';
+export { default as ProductDetailModal } from './ProductDetailModal';
+export { default as InstallmentCalculator } from './InstallmentCalculator';
+export { default as ProductStatistics } from './ProductStatistics';
+export { default as RelatedProducts } from './RelatedProducts';
+export { default as ManageInventoryModal } from './ManageInventoryModal';
+export { default as BulkPriceUpdateModal } from './BulkPriceUpdateModal';

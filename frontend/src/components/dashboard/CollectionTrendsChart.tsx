@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  TooltipProps,
 } from 'recharts';
 import { MonthlyCollection } from '../../store/dashboardSlice';
 import { LoadingSpinner } from './SkeletonLoaders';
@@ -23,8 +22,8 @@ interface CollectionTrendsChartProps {
 }
 
 // Custom tooltip component with Arabic formatting
-const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
-  if (active && payload && payload.length) {
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length && payload[0]) {
     const data = payload[0].payload as MonthlyCollection;
     return (
       <div className="bg-white border-2 border-brand-primary-900 rounded-lg shadow-lg p-3">

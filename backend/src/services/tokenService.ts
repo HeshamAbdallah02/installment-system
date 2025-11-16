@@ -26,7 +26,7 @@ class TokenService {
     try {
       const token = jwt.sign(payload, this.SECRET_KEY, {
         expiresIn: this.EXPIRATION,
-      });
+      } as jwt.SignOptions);
       return token;
     } catch (error) {
       throw new Error('Failed to generate token');

@@ -12,7 +12,7 @@ class UserController {
    * @param req - Express request
    * @param res - Express response
    */
-  async getActiveUsers(req: Request, res: Response): Promise<void> {
+  async getActiveUsers(_req: Request, res: Response): Promise<void> {
     try {
       // Fetch active users from service
       const users = await userService.getActiveUsers();

@@ -13,12 +13,7 @@ export interface Product {
   category?: string;
   isActive: boolean;
   availableTerms: number[];
-}
-
-export interface InstallmentRatio {
-  periodMonths: number;
-  ratioMultiplier: number;
-  description?: string;
+  quantity: number;
 }
 
 export interface InstallmentCalculation {
@@ -38,15 +33,22 @@ export interface PaymentScheduleItem {
   status?: string;
 }
 
+export interface CartItem {
+  productId: number;
+  productName: string;
+  productPrice: number;
+  quantity: number;
+  subtotal: number;
+}
+
 export interface WizardState {
   currentStep: 1 | 2 | 3 | 4;
   customerId: number | null;
   customerName?: string;
-  productId: number | null;
-  productName?: string;
-  productPrice?: number;
-  deposit: number;
-  termMonths: 3 | 6 | 12 | 24 | null;
+  customerOutstanding?: number;
+  cartItems: CartItem[];
+  totalAmount: number;
+  termMonths: 3 | 6 | null;
   startDate: Date;
   calculation?: InstallmentCalculation;
   schedule?: PaymentScheduleItem[];
@@ -54,8 +56,11 @@ export interface WizardState {
 
 export interface CreateInstallmentData {
   customerId: number;
-  productId: number;
-  depositAmount: number;
+  items: Array<{
+    productId: number;
+    quantity: number;
+    unitPrice: number;
+  }>;
   termMonths: number;
   startDate: string;
 }
@@ -133,4 +138,81 @@ export interface InstallmentAgreement {
   seller: {
     fullName: string;
   };
+}
+
+export interface BulkReminderResult {
+  successCount: number;
+  failedCount: number;
+  failedCustomers: string[];
+  invalidPhoneCustomers?: string[];
+}
+
+export interface InstallmentDetail {
+  id: number;
+  planId: string;
+  customerId: number;
+  customerName: string;
+  customerPhone: string;
+  customerNationalId: string;
+  customerAddress: string;
+  customerCity?: string;
+  customerOtherActiveInstallmentsCount?: number;
+  customerTotalDebtAcrossAll?: number;
+  productId: number;
+  productName: string;
+  productImage: string;
+  productCategory: string;
+  cashPrice: number;
+  totalAmount: number;
+  depositAmount: number;
+  financedAmount: number;
+  monthlyAmount: number;
+  termMonths: number;
+  interestRate: number;
+  totalWithInterest: number;
+  startDate: Date;
+  endDate: Date;
+  status: 'ACTIVE' | 'COMPLETED' | 'DEFAULTED' | 'CANCELLED';
+  remainingBalance: number;
+  paidInstallments: number;
+  totalInstallments: number;
+  progressPercentage: number;
+  createdAt: Date;
+  createdBy: string;
+}
+
+export type PaymentConsistency = 'GOOD' | 'FAIR' | 'POOR';
+
+export interface InstallmentStats {
+  onTimePaymentsCount: number;
+  latePaymentsCount: number;
+  totalPayments: number;
+  onTimePercentage: number;
+  averageDaysToPay: number;
+  paymentConsistency: PaymentConsistency;
+  totalInterestPaid: number;
+  remainingInterest: number;
+  expectedCompletionDate: Date;
+}
+
+export type ActivityEventType =
+  | 'INSTALLMENT_CREATED'
+  | 'PAYMENT_RECORDED'
+  | 'ADVANCE_PAYMENT_RECORDED'
+  | 'PAYMENT_REVERSED'
+  | 'REMINDER_SENT'
+  | 'TERMS_MODIFIED'
+  | 'EARLY_SETTLEMENT'
+  | 'INSTALLMENT_CANCELLED';
+
+export interface Activity {
+  id: number;
+  eventType: ActivityEventType;
+  entityType: string;
+  entityId: number;
+  userId: number;
+  userName: string;
+  eventData: Record<string, any>;
+  createdAt: Date;
+  relativeTime: string;
 }

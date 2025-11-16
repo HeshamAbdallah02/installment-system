@@ -80,10 +80,17 @@ class DashboardController {
    * @param req - Authenticated Express request
    * @param res - Express response
    */
-  async getMetrics(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getMetrics(_req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // Calculate dashboard metrics
       const metrics = await metricsService.calculateDashboardMetrics();
+
+      // Set cache control headers to prevent browser caching
+      // This ensures the frontend always receives fresh data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
 
       // Return success response
       res.status(200).json({
@@ -122,6 +129,12 @@ class DashboardController {
       // Get collection trends
       const trends = await trendsService.getCollectionTrends(months);
 
+      // Set cache control headers to prevent browser caching
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+
       // Return success response
       res.status(200).json({
         success: true,
@@ -158,6 +171,12 @@ class DashboardController {
       // Get branch distribution
       const distribution = await analyticsService.getBranchDistribution(period);
 
+      // Set cache control headers to prevent browser caching
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+
       // Return success response
       res.status(200).json({
         success: true,
@@ -178,10 +197,16 @@ class DashboardController {
    * @param req - Authenticated Express request
    * @param res - Express response
    */
-  async getTopProducts(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getTopProducts(_req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // Get top products
       const topProducts = await analyticsService.getTopProducts();
+
+      // Set cache control headers to prevent browser caching
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
 
       // Return success response
       res.status(200).json({
@@ -219,6 +244,12 @@ class DashboardController {
 
       // Get recent activities
       const activities = await activitiesService.getRecentActivities(limit);
+
+      // Set cache control headers to prevent browser caching
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
 
       // Return success response
       res.status(200).json({

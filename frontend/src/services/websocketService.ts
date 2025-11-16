@@ -17,6 +17,7 @@ interface WebSocketEvent {
 }
 
 type EventCallback = (event: WebSocketEvent) => void;
+type ConnectionStatusCallback = (isConnected: boolean) => void;
 
 class WebSocketService {
   private ws: WebSocket | null = null;
@@ -25,6 +26,7 @@ class WebSocketService {
   private reconnectDelay = 3000; // 3 seconds
   private reconnectTimer: NodeJS.Timeout | null = null;
   private eventListeners: Map<WebSocketEventType, Set<EventCallback>> = new Map();
+  private connectionStatusListeners: Set<ConnectionStatusCallback> = new Set();
   private isIntentionallyClosed = false;
   private isConnecting = false;
   private connectionRefCount = 0; // Track number of active subscribers
@@ -47,7 +49,11 @@ class WebSocketService {
 
     // Increment reference count
     this.connectionRefCount++;
-    console.log(`WebSocket connection requested (ref count: ${this.connectionRefCount})`);
+
+    // Only log if this is the first connection request
+    if (this.connectionRefCount === 1) {
+      console.log('WebSocket connection requested');
+    }
 
     // If already connected or connecting, just increment the ref count
     if (
@@ -112,6 +118,9 @@ class WebSocketService {
     this.reconnectAttempts = 0;
     this.isConnecting = false;
 
+    // Notify connection status listeners
+    this.notifyConnectionStatus(true);
+
     // Send authentication token if available
     const token = localStorage.getItem('auth_token');
     if (token && this.ws) {
@@ -124,16 +133,33 @@ class WebSocketService {
    */
   private handleMessage(event: MessageEvent): void {
     try {
-      const message: WebSocketEvent = JSON.parse(event.data);
+      const message = JSON.parse(event.data);
 
-      console.log('WebSocket message received:', message.type);
+      // Handle authentication response
+      if (message.type === 'auth') {
+        if (message.success === false) {
+          console.error('WebSocket authentication failed:', message.message);
+          // Clear expired token and disconnect
+          localStorage.removeItem('auth_token');
+          this.performDisconnect();
+          return;
+        } else {
+          console.log('WebSocket authenticated successfully');
+          return;
+        }
+      }
 
-      // Notify all listeners for this event type
-      const listeners = this.eventListeners.get(message.type);
+      // Only log non-subscription messages
+      if (message.type !== 'subscribe' && message.type !== 'unsubscribe') {
+        console.log('WebSocket message received:', message.type);
+      }
+
+      // For other event types, notify listeners
+      const listeners = this.eventListeners.get(message.type as WebSocketEventType);
       if (listeners) {
         listeners.forEach((callback) => {
           try {
-            callback(message);
+            callback(message as WebSocketEvent);
           } catch (error) {
             console.error('Error in WebSocket event listener:', error);
           }
@@ -159,6 +185,9 @@ class WebSocketService {
     console.log('WebSocket connection closed:', event.code);
     this.ws = null;
     this.isConnecting = false;
+
+    // Notify connection status listeners
+    this.notifyConnectionStatus(false);
 
     // Only attempt reconnection if not intentionally closed and still have subscribers
     if (!this.isIntentionallyClosed && this.connectionRefCount > 0) {
@@ -219,6 +248,36 @@ class WebSocketService {
   }
 
   /**
+   * Subscribe to connection status changes
+   * @param callback - Function to call when connection status changes
+   * @returns Unsubscribe function
+   */
+  onConnectionStatusChange(callback: ConnectionStatusCallback): () => void {
+    this.connectionStatusListeners.add(callback);
+
+    // Immediately notify of current status
+    callback(this.isConnected());
+
+    // Return unsubscribe function
+    return () => {
+      this.connectionStatusListeners.delete(callback);
+    };
+  }
+
+  /**
+   * Notify all connection status listeners
+   */
+  private notifyConnectionStatus(isConnected: boolean): void {
+    this.connectionStatusListeners.forEach((callback) => {
+      try {
+        callback(isConnected);
+      } catch (error) {
+        console.error('Error in connection status listener:', error);
+      }
+    });
+  }
+
+  /**
    * Disconnect WebSocket connection
    * Called on dashboard unmount
    * Uses reference counting - only disconnects when all subscribers are gone
@@ -232,7 +291,6 @@ class WebSocketService {
 
     // Decrement reference count
     this.connectionRefCount = Math.max(0, this.connectionRefCount - 1);
-    console.log(`WebSocket disconnect requested (ref count: ${this.connectionRefCount})`);
 
     // Only actually disconnect if no more subscribers
     if (this.connectionRefCount > 0) {
@@ -294,7 +352,6 @@ class WebSocketService {
     }
 
     this.reconnectAttempts = 0;
-    console.log('WebSocket disconnected (no more subscribers)');
   }
 
   /**

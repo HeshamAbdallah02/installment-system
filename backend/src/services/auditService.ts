@@ -37,7 +37,7 @@ class AuditService {
           entityType: 'USER',
           entityId: userId,
           userId,
-          eventData: sanitizedData,
+          eventData: sanitizedData as any,
           ipAddress: ipAddress || null,
         },
       });

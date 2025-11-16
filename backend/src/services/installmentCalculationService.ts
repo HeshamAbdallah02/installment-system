@@ -40,57 +40,30 @@ interface InstallmentCalculation {
  */
 class InstallmentCalculationService {
   /**
-   * Calculate monthly payment with ratio markup
-   * @param productPrice - Product cash price
-   * @param depositAmount - Deposit amount
+   * Calculate monthly payment (pay in advance - no deposit, no ratio)
+   * @param productPrice - Product cash price (already includes any markup)
    * @param termMonths - Term length in months
    * @returns Promise resolving to calculation details
-   * @throws CalculationError
    */
   async calculateMonthlyPayment(
     productPrice: number,
-    depositAmount: number,
     termMonths: number
   ): Promise<InstallmentCalculation> {
     try {
-      // Validate deposit amount
-      if (depositAmount < 0) {
-        throw new CalculationError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أكبر من أو يساوي صفر');
+      // Validate term months - only 3 or 6 months allowed
+      if (termMonths !== 3 && termMonths !== 6) {
+        throw new CalculationError('INVALID_TERM', 'فقط خطط 3 أو 6 أشهر مسموح بها');
       }
 
-      if (depositAmount > productPrice) {
-        throw new CalculationError('INVALID_DEPOSIT', 'المقدم لا يمكن أن يكون أكبر من سعر المنتج');
-      }
-
-      // Get installment ratio from database
-      const ratio = await prisma.installmentRatio.findUnique({
-        where: {
-          periodMonths: termMonths,
-          isActive: true,
-        },
-      });
-
-      if (!ratio) {
-        throw new CalculationError('RATIO_NOT_FOUND', `لا يوجد نسبة تقسيط لمدة ${termMonths} شهر`);
-      }
-
-      // Calculate financed amount
-      const financedAmount = productPrice - depositAmount;
-
-      // Apply ratio markup
-      const ratioMultiplier = Number(ratio.ratioMultiplier);
-      const totalWithRatio = financedAmount * ratioMultiplier;
-
-      // Calculate monthly payment
-      const monthlyAmount = totalWithRatio / termMonths;
-
-      // Calculate total to pay
-      const totalToPay = depositAmount + totalWithRatio;
+      // Simple calculation: divide product price by number of months
+      const financedAmount = productPrice;
+      const monthlyAmount = productPrice / termMonths;
+      const totalToPay = productPrice;
 
       return {
         financedAmount,
-        ratioMultiplier,
-        totalWithRatio,
+        ratioMultiplier: 1.0, // No ratio applied
+        totalWithRatio: productPrice,
         monthlyAmount: Math.round(monthlyAmount * 100) / 100, // Round to 2 decimal places
         totalToPay: Math.round(totalToPay * 100) / 100,
       };

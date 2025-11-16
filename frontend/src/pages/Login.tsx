@@ -88,6 +88,17 @@ const Login = () => {
             authService.clearRememberedUser();
           }
         }
+
+        // Check for session expired message
+        const sessionExpiredMessage = sessionStorage.getItem('session_expired_message');
+        if (sessionExpiredMessage) {
+          sessionStorage.removeItem('session_expired_message');
+          setToast({
+            message: sessionExpiredMessage,
+            type: 'info',
+            isVisible: true,
+          });
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'خطأ في تحميل قائمة المستخدمين';
@@ -101,7 +112,8 @@ const Login = () => {
   }, [setValue]);
 
   // Handle user selection from dropdown
-  const handleUserSelect = (userId: string) => {
+  const handleUserSelect = (userId: string | null) => {
+    if (!userId) return;
     setValue('userId', userId, { shouldValidate: true, shouldDirty: true });
 
     // Auto-focus password field when user is selected
@@ -148,9 +160,15 @@ const Login = () => {
         isVisible: true,
       });
 
-      // Redirect to dashboard after 1 second
+      // Check if there's a redirect path stored
+      const redirectPath = sessionStorage.getItem('redirect_after_login');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirect_after_login');
+      }
+
+      // Redirect after 1 second
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate(redirectPath || '/dashboard');
       }, 1000);
     } catch (error) {
       // Parse error message from Error object or use default

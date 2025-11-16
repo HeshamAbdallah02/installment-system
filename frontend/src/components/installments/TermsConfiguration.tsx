@@ -21,32 +21,18 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
   onNext,
   onPrevious,
 }) => {
-  const [deposit, setDeposit] = useState(wizardState.deposit.toString());
-  const [termMonths, setTermMonths] = useState<3 | 6 | 12 | 24 | null>(wizardState.termMonths);
+  const [termMonths, setTermMonths] = useState<3 | 6 | null>(wizardState.termMonths);
   const [startDate, setStartDate] = useState(wizardState.startDate.toISOString().split('T')[0]);
   const [calculating, setCalculating] = useState(false);
   const [calculationError, setCalculationError] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ deposit?: string; term?: string }>({});
+  const [errors, setErrors] = useState<{ term?: string }>({});
 
-  const productPrice = wizardState.productPrice || 0;
-  const minDeposit = 0; // Can be fetched from product if needed
-  const availableTerms = [3, 6, 12, 24];
+  const totalAmount = wizardState.totalAmount || 0;
+  const availableTerms = [3, 6]; // Only 3 and 6 months plans
 
-  // Calculate installment when values change
+  // Calculate installment when values change (no deposit)
   useEffect(() => {
     const calculateInstallment = async () => {
-      const depositAmount = parseFloat(deposit);
-
-      // Validate deposit using utility function
-      const depositValidation = validateDeposit(depositAmount, productPrice, minDeposit);
-      if (depositValidation !== true) {
-        setErrors((prev) => ({ ...prev, deposit: depositValidation }));
-        return;
-      }
-
-      // Clear deposit error
-      setErrors((prev) => ({ ...prev, deposit: undefined }));
-
       // Validate term
       if (!termMonths) {
         setErrors((prev) => ({ ...prev, term: 'يرجى اختيار مدة التقسيط' }));
@@ -60,14 +46,9 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
       try {
         setCalculating(true);
         setCalculationError(null);
-        const calculation = await installmentService.calculateInstallment(
-          productPrice,
-          depositAmount,
-          termMonths
-        );
+        const calculation = await installmentService.calculateInstallment(totalAmount, termMonths);
 
         updateWizardState({
-          deposit: depositAmount,
           termMonths,
           startDate: new Date(startDate),
           calculation,
@@ -83,21 +64,16 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
 
     // Debounce calculation
     const timer = setTimeout(() => {
-      if (deposit && termMonths) {
+      if (termMonths) {
         calculateInstallment();
       }
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [deposit, termMonths, startDate, productPrice, minDeposit, updateWizardState]);
-
-  // Handle deposit change
-  const handleDepositChange = useCallback((value: string) => {
-    setDeposit(value);
-  }, []);
+  }, [termMonths, startDate, totalAmount, updateWizardState]);
 
   // Handle term change
-  const handleTermChange = useCallback((term: 3 | 6 | 12 | 24) => {
+  const handleTermChange = useCallback((term: 3 | 6) => {
     setTermMonths(term);
   }, []);
 
@@ -108,13 +84,7 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
 
   // Handle next button
   const handleNext = useCallback(() => {
-    if (
-      wizardState.deposit &&
-      wizardState.termMonths &&
-      wizardState.calculation &&
-      !errors.deposit &&
-      !errors.term
-    ) {
+    if (wizardState.termMonths && wizardState.calculation && !errors.term) {
       onNext();
     }
   }, [wizardState, errors, onNext]);
@@ -134,48 +104,22 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-bold text-brand-primary-900 mb-2">تكوين شروط التقسيط</h3>
-        <p className="text-brand-offwhite-700">حدد المقدم ومدة التقسيط وتاريخ البدء</p>
+        <p className="text-brand-offwhite-700">
+          اختر مدة التقسيط وتاريخ البدء - الدفعة الأولى فورية
+        </p>
       </div>
 
-      {/* Product Price Display */}
+      {/* Total Amount Display */}
       <div className="bg-brand-secondary-50 border border-brand-secondary-400 rounded-lg p-4">
         <div className="flex justify-between items-center">
-          <span className="text-brand-offwhite-700">سعر المنتج:</span>
+          <span className="text-brand-offwhite-700">إجمالي المبلغ:</span>
           <span className="text-2xl font-bold text-brand-primary-900">
-            {formatCurrency(productPrice)} ج.م
+            {formatCurrency(totalAmount)} ج.م
           </span>
         </div>
-      </div>
-
-      {/* Deposit Amount */}
-      <div>
-        <label htmlFor="deposit" className="block text-sm font-medium text-brand-primary-900 mb-1">
-          المقدم <span className="text-brand-primary-700">*</span>
-        </label>
-        <div className="relative">
-          <input
-            type="number"
-            id="deposit"
-            value={deposit}
-            onChange={(e) => handleDepositChange(e.target.value)}
-            min={minDeposit}
-            max={productPrice}
-            step="0.01"
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-              errors.deposit ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
-            }`}
-            placeholder="أدخل المقدم"
-          />
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-offwhite-700">
-            ج.م
-          </span>
-        </div>
-        {errors.deposit && <p className="mt-1 text-sm text-brand-primary-700">{errors.deposit}</p>}
-        {minDeposit > 0 && (
-          <p className="mt-1 text-sm text-brand-offwhite-700">
-            الحد الأدنى: {formatCurrency(minDeposit)} ج.م
-          </p>
-        )}
+        <p className="text-sm text-brand-offwhite-700 mt-2">
+          💡 الدفعة الأولى تُدفع فوراً، ثم دفعات شهرية متساوية
+        </p>
       </div>
 
       {/* Term Length Selector */}
@@ -183,13 +127,13 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
         <label className="block text-sm font-medium text-brand-primary-900 mb-2">
           مدة التقسيط <span className="text-brand-primary-700">*</span>
         </label>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {availableTerms.map((term) => (
             <button
               key={term}
               type="button"
-              onClick={() => handleTermChange(term as 3 | 6 | 12 | 24)}
-              className={`px-4 py-3 border-2 rounded-lg font-medium transition-all ${
+              onClick={() => handleTermChange(term as 3 | 6)}
+              className={`px-6 py-4 border-2 rounded-lg font-bold text-lg transition-all ${
                 termMonths === term
                   ? 'border-brand-primary-900 bg-brand-secondary-50 text-brand-primary-900'
                   : 'border-brand-offwhite-400 text-brand-offwhite-700 hover:border-brand-secondary-400'
@@ -227,41 +171,16 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-brand-offwhite-700">سعر المنتج:</span>
+              <span className="text-brand-offwhite-700">إجمالي المبلغ:</span>
               <span className="text-brand-primary-900 font-medium">
-                {formatCurrency(productPrice)} ج.م
+                {formatCurrency(totalAmount)} ج.م
               </span>
             </div>
 
             <div className="flex justify-between">
-              <span className="text-brand-offwhite-700">المقدم:</span>
+              <span className="text-brand-offwhite-700">عدد الأقساط:</span>
               <span className="text-brand-primary-900 font-medium">
-                -{' '}
-                {formatCurrency(calculation.financedAmount - (productPrice - parseFloat(deposit)))}{' '}
-                ج.م
-              </span>
-            </div>
-
-            <div className="flex justify-between pt-2 border-t border-brand-offwhite-400">
-              <span className="text-brand-offwhite-700">المبلغ الممول:</span>
-              <span className="text-brand-primary-900 font-medium">
-                {formatCurrency(calculation.financedAmount)} ج.م
-              </span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-brand-offwhite-700">
-                نسبة التقسيط ({calculation.ratioMultiplier}):
-              </span>
-              <span className="text-brand-primary-900 font-medium">
-                + {formatCurrency(calculation.totalWithRatio - calculation.financedAmount)} ج.م
-              </span>
-            </div>
-
-            <div className="flex justify-between pt-2 border-t border-brand-offwhite-400">
-              <span className="text-brand-offwhite-700">إجمالي المبلغ الممول:</span>
-              <span className="text-brand-primary-900 font-medium">
-                {formatCurrency(calculation.totalWithRatio)} ج.م
+                {wizardState.termMonths} شهر
               </span>
             </div>
 
@@ -272,11 +191,8 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
               </span>
             </div>
 
-            <div className="flex justify-between pt-2 border-t border-brand-offwhite-400">
-              <span className="font-bold text-brand-primary-900">إجمالي المدفوعات:</span>
-              <span className="text-xl font-bold text-brand-primary-900">
-                {formatCurrency(calculation.totalToPay)} ج.م
-              </span>
+            <div className="text-sm text-brand-offwhite-700 mt-3 bg-brand-offwhite-100 -mx-4 px-4 py-2">
+              💡 الدفعة الأولى ({formatCurrency(calculation.monthlyAmount)} ج.م) تُدفع فوراً
             </div>
           </div>
         </div>
@@ -313,12 +229,7 @@ const TermsConfiguration: React.FC<TermsConfigurationProps> = ({
           type="button"
           onClick={handleNext}
           disabled={
-            !wizardState.deposit ||
-            !wizardState.termMonths ||
-            !wizardState.calculation ||
-            !!errors.deposit ||
-            !!errors.term ||
-            calculating
+            !wizardState.termMonths || !wizardState.calculation || !!errors.term || calculating
           }
           className="px-6 py-2 bg-brand-primary-900 text-white rounded-lg hover:bg-brand-primary-950 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >

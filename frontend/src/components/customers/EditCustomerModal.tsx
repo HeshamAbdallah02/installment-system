@@ -63,26 +63,26 @@ const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
     // Full name validation
     const fullNameValidation = validateRequired(formData.fullName);
     if (fullNameValidation !== true) {
-      newErrors.fullName = fullNameValidation;
+      newErrors.fullName = fullNameValidation || undefined;
     }
 
     // National ID validation (14 digits)
     const nationalIdValidation = validateNationalId(formData.nationalId);
     if (nationalIdValidation !== true) {
-      newErrors.nationalId = nationalIdValidation;
+      newErrors.nationalId = nationalIdValidation || undefined;
     }
 
     // Phone validation (Egyptian mobile: 11 digits starting with 01)
     const phoneValidation = validatePhone(formData.phone);
     if (phoneValidation !== true) {
-      newErrors.phone = phoneValidation;
+      newErrors.phone = phoneValidation || undefined;
     }
 
     // Secondary phone validation (optional)
     if (formData.phoneSecondary) {
       const phoneSecondaryValidation = validatePhone(formData.phoneSecondary);
       if (phoneSecondaryValidation !== true) {
-        newErrors.phoneSecondary = phoneSecondaryValidation;
+        newErrors.phoneSecondary = phoneSecondaryValidation || undefined;
       }
     }
 

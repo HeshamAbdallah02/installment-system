@@ -9,6 +9,10 @@ interface InstallmentsGridProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  selectedIds: Set<number>;
+  onToggleSelection: (id: number) => void;
+  onToggleSelectAll: (ids: number[]) => void;
+  isAllSelected: boolean;
 }
 
 /**
@@ -48,6 +52,9 @@ const StatusBadge: React.FC<{ status: 'on-track' | 'due-soon' | 'overdue' }> = (
 const TableRowSkeleton: React.FC = () => (
   <tr className="border-b border-brand-offwhite-300 animate-pulse">
     <td className="px-6 py-4">
+      <div className="h-4 w-4 bg-brand-offwhite-300 rounded"></div>
+    </td>
+    <td className="px-6 py-4">
       <div className="h-4 bg-brand-offwhite-300 rounded w-32"></div>
     </td>
     <td className="px-6 py-4">
@@ -67,8 +74,8 @@ const TableRowSkeleton: React.FC = () => (
 
 /**
  * InstallmentsGrid component
- * Displays paginated list of active installments with status badges
- * Requirements: 9.1, 9.2, 9.5, 9.9
+ * Displays paginated list of active installments with status badges and bulk selection
+ * Requirements: 9.1, 9.2, 9.5, 9.9, 11.1, 11.2, 11.3, 11.7, 11.8, 11.9
  */
 const InstallmentsGrid: React.FC<InstallmentsGridProps> = ({
   installments,
@@ -76,6 +83,10 @@ const InstallmentsGrid: React.FC<InstallmentsGridProps> = ({
   currentPage,
   totalPages,
   onPageChange,
+  selectedIds,
+  onToggleSelection,
+  onToggleSelectAll,
+  isAllSelected,
 }) => {
   const navigate = useNavigate();
 
@@ -86,6 +97,16 @@ const InstallmentsGrid: React.FC<InstallmentsGridProps> = ({
   const handlePrintAgreement = (e: React.MouseEvent, installmentId: number) => {
     e.stopPropagation(); // Prevent row click
     navigate(`/installments/${installmentId}/agreement`);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent, installmentId: number) => {
+    e.stopPropagation(); // Prevent row click
+    onToggleSelection(installmentId);
+  };
+
+  const handleSelectAllChange = () => {
+    const currentPageIds = installments.map((inst) => inst.id);
+    onToggleSelectAll(currentPageIds);
   };
 
   const formatDate = (date: Date | null) => {
@@ -112,6 +133,17 @@ const InstallmentsGrid: React.FC<InstallmentsGridProps> = ({
         <table className="w-full" dir="rtl">
           <thead className="bg-brand-offwhite-100 border-b border-brand-offwhite-300">
             <tr>
+              <th className="px-6 py-3 text-center w-12">
+                <label className="flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={handleSelectAllChange}
+                    className="w-4 h-4 text-brand-primary-900 bg-white border-brand-offwhite-400 rounded focus:ring-brand-primary-900 focus:ring-2 cursor-pointer"
+                    aria-label="تحديد الكل"
+                  />
+                </label>
+              </th>
               <th className="px-6 py-3 text-right text-xs font-semibold text-brand-primary-900 uppercase tracking-wider">
                 اسم العميل
               </th>
@@ -145,52 +177,73 @@ const InstallmentsGrid: React.FC<InstallmentsGridProps> = ({
             ) : installments.length === 0 ? (
               // Empty state
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
+                <td colSpan={7} className="px-6 py-12 text-center">
                   <p className="text-brand-offwhite-700 text-base">لا توجد أقساط نشطة</p>
                 </td>
               </tr>
             ) : (
               // Installment rows
-              installments.map((installment) => (
-                <tr
-                  key={installment.id}
-                  onClick={() => handleRowClick(installment.id)}
-                  className="hover:bg-brand-offwhite-50 cursor-pointer transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-brand-primary-900">
-                      {installment.customerName}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-brand-offwhite-900">{installment.productName}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-brand-offwhite-900">
-                      {formatCurrency(installment.monthlyPayment)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-brand-offwhite-900">
-                      {formatDate(installment.nextDueDate)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={installment.status} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      type="button"
-                      onClick={(e) => handlePrintAgreement(e, installment.id)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-brand-primary-900 hover:text-white bg-white hover:bg-brand-primary-900 border border-brand-primary-900 rounded-lg transition-colors"
-                      title="طباعة العقد"
-                    >
-                      <PrinterIcon className="w-4 h-4" />
-                      <span>طباعة</span>
-                    </button>
-                  </td>
-                </tr>
-              ))
+              installments.map((installment) => {
+                const isSelected = selectedIds.has(installment.id);
+                return (
+                  <tr
+                    key={installment.id}
+                    onClick={() => handleRowClick(installment.id)}
+                    className={`cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-brand-secondary-50 hover:bg-brand-secondary-100'
+                        : 'hover:bg-brand-offwhite-50'
+                    }`}
+                  >
+                    <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <label className="flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => onToggleSelection(installment.id)}
+                          onClick={(e) => handleCheckboxClick(e, installment.id)}
+                          className="w-4 h-4 text-brand-primary-900 bg-white border-brand-offwhite-400 rounded focus:ring-brand-primary-900 focus:ring-2 cursor-pointer"
+                          aria-label={`تحديد ${installment.customerName}`}
+                        />
+                      </label>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-brand-primary-900">
+                        {installment.customerName}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-brand-offwhite-900">
+                        {installment.productName}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-brand-offwhite-900">
+                        {formatCurrency(installment.monthlyPayment)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-brand-offwhite-900">
+                        {formatDate(installment.nextDueDate)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={installment.status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={(e) => handlePrintAgreement(e, installment.id)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-brand-primary-900 hover:text-white bg-white hover:bg-brand-primary-900 border border-brand-primary-900 rounded-lg transition-colors"
+                        title="طباعة العقد"
+                      >
+                        <PrinterIcon className="w-4 h-4" />
+                        <span>طباعة</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

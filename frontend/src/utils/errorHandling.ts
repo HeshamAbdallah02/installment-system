@@ -259,7 +259,7 @@ export function validateRequired(value: unknown): boolean | string {
  * Validate number field
  */
 export function validateNumber(value: unknown, min?: number, max?: number): boolean | string {
-  const num = parseFloat(value);
+  const num = parseFloat(String(value));
 
   if (isNaN(num)) {
     return VALIDATION_ERRORS.INVALID_NUMBER;

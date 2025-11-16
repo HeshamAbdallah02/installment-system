@@ -11,11 +11,13 @@ interface InstallmentWizardProps {
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
+  preSelectedProductId?: number | null;
 }
 
 /**
  * InstallmentWizard component
  * Multi-step wizard for creating installment plans
+ * Supports pre-selecting a product for quick add from product catalog
  * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8
  */
 const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
@@ -23,6 +25,7 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
   onClose,
   onSuccess,
   onError,
+  preSelectedProductId = null,
 }) => {
   // Get first day of next month as default start date
   const getDefaultStartDate = () => {
@@ -35,13 +38,18 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
   const [wizardState, setWizardState] = useState<WizardState>({
     currentStep: 1,
     customerId: null,
-    productId: null,
-    deposit: 0,
+    cartItems: [],
+    totalAmount: 0,
     termMonths: null,
     startDate: getDefaultStartDate(),
   });
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+
+  /**
+   * Note: preSelectedProductId is kept for future enhancement
+   * Currently the cart-based system requires manual product addition in Step 2
+   */
 
   // Update wizard state
   const updateWizardState = useCallback((updates: Partial<WizardState>) => {
@@ -78,8 +86,8 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
     setWizardState({
       currentStep: 1,
       customerId: null,
-      productId: null,
-      deposit: 0,
+      cartItems: [],
+      totalAmount: 0,
       termMonths: null,
       startDate: getDefaultStartDate(),
     });
@@ -96,8 +104,8 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
       setWizardState({
         currentStep: 1,
         customerId: null,
-        productId: null,
-        deposit: 0,
+        cartItems: [],
+        totalAmount: 0,
         termMonths: null,
         startDate: getDefaultStartDate(),
       });

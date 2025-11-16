@@ -59,7 +59,8 @@ const ReviewAndConfirm: React.FC<ReviewAndConfirmProps> = ({
   const handleCreate = useCallback(async () => {
     if (
       !wizardState.customerId ||
-      !wizardState.productId ||
+      !wizardState.cartItems ||
+      wizardState.cartItems.length === 0 ||
       !wizardState.termMonths ||
       !wizardState.calculation
     ) {
@@ -75,8 +76,11 @@ const ReviewAndConfirm: React.FC<ReviewAndConfirmProps> = ({
 
       const data: CreateInstallmentData = {
         customerId: wizardState.customerId,
-        productId: wizardState.productId,
-        depositAmount: wizardState.deposit,
+        items: wizardState.cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.productPrice,
+        })),
         termMonths: wizardState.termMonths,
         startDate: wizardState.startDate.toISOString().split('T')[0],
       };
@@ -181,20 +185,29 @@ const ReviewAndConfirm: React.FC<ReviewAndConfirmProps> = ({
             </div>
           </div>
 
-          {/* Product Summary */}
+          {/* Cart Items Summary */}
           <div className="bg-brand-offwhite-100 border border-brand-offwhite-400 rounded-lg p-4">
-            <h4 className="font-bold text-brand-primary-900 mb-3">معلومات المنتج</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-brand-offwhite-700">المنتج:</span>
-                <span className="text-brand-primary-900 font-medium">
-                  {wizardState.productName}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-brand-offwhite-700">السعر:</span>
-                <span className="text-brand-primary-900 font-medium">
-                  {formatCurrency(wizardState.productPrice || 0)} ج.م
+            <h4 className="font-bold text-brand-primary-900 mb-3">
+              المنتجات ({wizardState.cartItems.length})
+            </h4>
+            <div className="space-y-3">
+              {wizardState.cartItems.map((item) => (
+                <div key={item.productId} className="flex justify-between items-center text-sm">
+                  <div className="flex-1">
+                    <p className="font-medium text-brand-primary-900">{item.productName}</p>
+                    <p className="text-brand-offwhite-700">
+                      {formatCurrency(item.productPrice)} ج.م × {item.quantity}
+                    </p>
+                  </div>
+                  <p className="font-bold text-brand-primary-900">
+                    {formatCurrency(item.subtotal)} ج.م
+                  </p>
+                </div>
+              ))}
+              <div className="pt-3 border-t border-brand-offwhite-400 flex justify-between">
+                <span className="font-bold text-brand-primary-900">الإجمالي:</span>
+                <span className="text-xl font-bold text-brand-primary-900">
+                  {formatCurrency(wizardState.totalAmount)} ج.م
                 </span>
               </div>
             </div>
@@ -205,12 +218,6 @@ const ReviewAndConfirm: React.FC<ReviewAndConfirmProps> = ({
             <div className="bg-brand-offwhite-100 border border-brand-offwhite-400 rounded-lg p-4">
               <h4 className="font-bold text-brand-primary-900 mb-3">شروط التقسيط</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-brand-offwhite-700">المقدم:</span>
-                  <span className="text-brand-primary-900 font-medium">
-                    {formatCurrency(wizardState.deposit)} ج.م
-                  </span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-brand-offwhite-700">المدة:</span>
                   <span className="text-brand-primary-900 font-medium">
@@ -234,6 +241,9 @@ const ReviewAndConfirm: React.FC<ReviewAndConfirmProps> = ({
                   <span className="text-xl font-bold text-brand-primary-900">
                     {formatCurrency(calculation.totalToPay)} ج.م
                   </span>
+                </div>
+                <div className="text-sm text-brand-offwhite-700 mt-3 bg-brand-offwhite-200 -mx-4 px-4 py-2">
+                  💡 الدفعة الأولى ({formatCurrency(calculation.monthlyAmount)} ج.م) تُدفع فوراً
                 </div>
               </div>
             </div>

@@ -6,6 +6,7 @@ import App from './App';
 import { store } from './store';
 import { queryClient } from './lib/queryClient';
 import './index.css';
+import './styles/print.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

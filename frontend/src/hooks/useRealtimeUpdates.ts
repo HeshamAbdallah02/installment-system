@@ -70,9 +70,14 @@ export function useRealtimeUpdates() {
    * Updates metrics optimistically and adds activity to feed
    */
   const handlePaymentEvent = useCallback(
-    async (event: { data: PaymentEventData }) => {
+    async (
+      event:
+        | { data: PaymentEventData }
+        | { type: string; data: Record<string, unknown>; timestamp: string }
+    ) => {
+      if (!('paymentId' in event.data)) return;
       try {
-        const data: PaymentEventData = event.data;
+        const data = event.data as PaymentEventData;
 
         // Create activity for the feed
         const activity: Activity = {
@@ -134,9 +139,14 @@ export function useRealtimeUpdates() {
    * Updates active installments count and adds activity to feed
    */
   const handleInstallmentEvent = useCallback(
-    async (event: { data: InstallmentEventData }) => {
+    async (
+      event:
+        | { data: InstallmentEventData }
+        | { type: string; data: Record<string, unknown>; timestamp: string }
+    ) => {
       try {
-        const data: InstallmentEventData = event.data;
+        if (!('installmentId' in event.data)) return;
+        const data: InstallmentEventData = event.data as InstallmentEventData;
 
         // Create activity for the feed
         const activity: Activity = {

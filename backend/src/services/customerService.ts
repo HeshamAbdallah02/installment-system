@@ -180,7 +180,7 @@ class CustomerService {
         prisma.customer.count({ where }),
       ]);
 
-      // Calculate payment status for each customer
+      // Calculate payment status and outstanding balance for each customer
       const customersWithStatus = customers.map((customer) => {
         let paymentStatus: 'on-track' | 'overdue' | 'completed' = 'completed';
 
@@ -192,6 +192,16 @@ class CustomerService {
           paymentStatus = hasOverdue ? 'overdue' : 'on-track';
         }
 
+        // Calculate total outstanding balance
+        const totalOutstanding = customer.installmentPlans.reduce((sum, plan) => {
+          const planOutstanding = plan.schedule.reduce(
+            (planSum, schedule) =>
+              planSum + (Number(schedule.totalAmount) - Number(schedule.paidAmount)),
+            0
+          );
+          return sum + planOutstanding;
+        }, 0);
+
         return {
           id: customer.id,
           fullName: customer.fullName,
@@ -200,6 +210,7 @@ class CustomerService {
           branchName: customer.createdByUser.branch?.name || 'No Branch',
           branchId: customer.createdByUser.branchId,
           activeInstallmentsCount: customer.installmentPlans.length,
+          totalOutstanding,
           paymentStatus,
         };
       });

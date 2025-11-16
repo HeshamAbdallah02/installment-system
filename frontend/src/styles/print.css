@@ -1,0 +1,126 @@
+/**
+ * Print-specific styles for agreement printing
+ * Requirements: 8.5, 8.6, 8.7
+ */
+
+@media print {
+  /* Hide all non-printable elements */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the printable agreement */
+  #printable-agreement,
+  #printable-agreement * {
+    visibility: visible;
+  }
+
+  /* Position the printable content at the top */
+  #printable-agreement {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  /* Ensure proper page breaks */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
+
+  /* Table styles for printing */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Ensure colors are printed */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Remove shadows and transitions for print */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure borders are visible */
+  .border,
+  [class*="border-"] {
+    border-color: #000 !important;
+  }
+
+  /* Font adjustments for print */
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 24pt;
+  }
+
+  h2 {
+    font-size: 18pt;
+  }
+
+  h3 {
+    font-size: 14pt;
+  }
+
+  /* Ensure proper RTL layout in print */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* Remove background colors that might not print well */
+  .bg-brand-offwhite-50,
+  .bg-brand-offwhite-100 {
+    background-color: #f5f5f5 !important;
+  }
+
+  /* Ensure logo is visible */
+  img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+}
+
+/* Screen-only styles (hide print content on screen) */
+@media screen {
+  #printable-agreement {
+    display: none;
+  }
+}

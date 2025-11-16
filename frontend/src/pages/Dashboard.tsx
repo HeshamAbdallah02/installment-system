@@ -112,18 +112,16 @@ const Dashboard: React.FC = () => {
 
   const handleRecordPayment = async () => {
     setLoadingAction('record-payment');
-    // TODO: Open payment modal when implemented
     setTimeout(() => {
-      alert('فتح نافذة تسجيل الدفعة - قريباً');
+      navigate('/payments');
       setLoadingAction(null);
     }, 500);
   };
 
   const handleViewTodaysDues = async () => {
     setLoadingAction('view-dues');
-    // TODO: Navigate to filtered payment list when implemented
     setTimeout(() => {
-      alert('عرض المستحقات اليوم - قريباً');
+      navigate('/payments');
       setLoadingAction(null);
     }, 500);
   };
@@ -327,8 +325,7 @@ const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowActivitiesOnTablet(!showActivitiesOnTablet)}
-            className="w-full px-6 py-3 bg-brand-primary-900 hover:bg-brand-primary-950 text-white font-bold rounded-lg shadow-lg transition-colors duration-300 flex items-center justify-center gap-2"
-            style={{ minHeight: '44px' }} // Requirement 8.6: 44px minimum touch target
+            className="w-full px-6 py-3 min-h-[44px] bg-brand-primary-900 hover:bg-brand-primary-950 text-white font-bold rounded-lg shadow-lg transition-colors duration-300 flex items-center justify-center gap-2"
           >
             <BellAlertIcon className="w-6 h-6" />
             <span>{showActivitiesOnTablet ? 'إخفاء الأنشطة الأخيرة' : 'عرض الأنشطة الأخيرة'}</span>

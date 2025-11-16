@@ -10,6 +10,7 @@ export interface Customer {
   branchName: string;
   branchId: number | null;
   activeInstallmentsCount: number;
+  totalOutstanding: number;
   paymentStatus: 'on-track' | 'overdue' | 'completed';
 }
 

@@ -145,15 +145,8 @@ async function main() {
     },
   });
 
-  // Create installment ratios
-  await prisma.installmentRatio.createMany({
-    data: [
-      { periodMonths: 3, ratioMultiplier: 1.03, description: '3 months - 3% increase' },
-      { periodMonths: 6, ratioMultiplier: 1.05, description: '6 months - 5% increase' },
-      { periodMonths: 12, ratioMultiplier: 1.08, description: '12 months - 8% increase' },
-      { periodMonths: 24, ratioMultiplier: 1.12, description: '24 months - 12% increase' },
-    ],
-  });
+  // Installment ratios removed - no longer needed
+  // Product prices now include any markup, and monthly payment = price / months
   console.log('Created installment ratios');
 
   // Create customers with Arabic names
@@ -180,6 +173,260 @@ async function main() {
     },
   });
   console.log('Created customer:', customer2.fullName);
+
+  // Create sample orders and installments for dashboard data
+  console.log('\nCreating sample installment plans...');
+
+  // Generate unique order numbers
+  const orderNumber1 = `ORD-${Date.now()}-1`;
+  const orderNumber2 = `ORD-${Date.now()}-2`;
+
+  // Order 1: TV for customer1 (12 months, 3 payments made)
+  const order1 = await prisma.order.create({
+    data: {
+      orderNumber: orderNumber1,
+      customerId: customer1.id,
+      branchId: cairoBranch.id,
+      totalAmount: 15000.0,
+      paymentType: 'INSTALLMENT',
+      status: 'CONFIRMED',
+      createdBy: ahmed.id,
+    },
+  });
+
+  await prisma.orderItem.create({
+    data: {
+      orderId: order1.id,
+      productId: tv.id,
+      quantity: 1,
+      unitPrice: 15000.0,
+      lineTotal: 15000.0,
+    },
+  });
+
+  const startDate1 = new Date('2025-01-01');
+  const endDate1 = new Date('2025-12-31');
+
+  const installmentPlan1 = await prisma.installmentPlan.create({
+    data: {
+      customerId: customer1.id,
+      orderId: order1.id,
+      totalAmount: 15000.0,
+      depositAmount: 3000.0,
+      financedAmount: 12000.0,
+      periodMonths: 12,
+      ratioMultiplier: 1.08,
+      totalWithRatio: 12960.0, // 12000 * 1.08
+      monthlyAmount: 1080.0, // 12960 / 12
+      startDate: startDate1,
+      endDate: endDate1,
+      status: 'ACTIVE',
+      createdBy: ahmed.id,
+    },
+  });
+
+  // Create 12-month installment schedule
+  for (let i = 1; i <= 12; i++) {
+    const dueDate = new Date('2025-01-01');
+    dueDate.setMonth(dueDate.getMonth() + i);
+
+    await prisma.installmentSchedule.create({
+      data: {
+        planId: installmentPlan1.id,
+        sequenceNumber: i,
+        dueDate: dueDate,
+        totalAmount: 1080.0,
+        principalAmount: 1000.0,
+        extraAmount: 80.0,
+        paidAmount: i <= 3 ? 1080.0 : 0,
+        status: i <= 3 ? 'PAID' : 'PENDING',
+        paidDate: i <= 3 ? dueDate : null,
+      },
+    });
+  }
+
+  // Create payment records for first 3 installments
+  const paidSchedules1 = await prisma.installmentSchedule.findMany({
+    where: {
+      planId: installmentPlan1.id,
+      sequenceNumber: { lte: 3 },
+    },
+  });
+
+  for (const schedule of paidSchedules1) {
+    const paymentNumber = `PAY-${Date.now()}-${schedule.sequenceNumber}`;
+    const payment = await prisma.payment.create({
+      data: {
+        paymentNumber,
+        customerId: customer1.id,
+        orderId: order1.id,
+        amount: 1080.0,
+        paymentMethod: 'CASH',
+        collectedBy: ahmed.id,
+        paymentDate: schedule.dueDate,
+      },
+    });
+
+    // Create payment allocation
+    await prisma.paymentAllocation.create({
+      data: {
+        paymentId: payment.id,
+        scheduleId: schedule.id,
+        allocationType: 'PRINCIPAL',
+        amount: 1080.0,
+      },
+    });
+  }
+
+  console.log('Created installment plan 1: TV - 12 months, 3 payments made');
+
+  // Order 2: Fridge for customer2 (6 months, 1 payment made)
+  const fridge = await prisma.product.findFirst({
+    where: { code: 'FRIDGE-001' },
+  });
+
+  const order2 = await prisma.order.create({
+    data: {
+      orderNumber: orderNumber2,
+      customerId: customer2.id,
+      branchId: cairoBranch.id,
+      totalAmount: 12000.0,
+      paymentType: 'INSTALLMENT',
+      status: 'CONFIRMED',
+      createdBy: fatima.id,
+    },
+  });
+
+  await prisma.orderItem.create({
+    data: {
+      orderId: order2.id,
+      productId: fridge!.id,
+      quantity: 1,
+      unitPrice: 12000.0,
+      lineTotal: 12000.0,
+    },
+  });
+
+  const startDate2 = new Date('2025-02-01');
+  const endDate2 = new Date('2025-07-31');
+
+  const installmentPlan2 = await prisma.installmentPlan.create({
+    data: {
+      customerId: customer2.id,
+      orderId: order2.id,
+      totalAmount: 12000.0,
+      depositAmount: 2400.0,
+      financedAmount: 9600.0,
+      periodMonths: 6,
+      ratioMultiplier: 1.05,
+      totalWithRatio: 10080.0, // 9600 * 1.05
+      monthlyAmount: 1680.0, // 10080 / 6
+      startDate: startDate2,
+      endDate: endDate2,
+      status: 'ACTIVE',
+      createdBy: fatima.id,
+    },
+  });
+
+  // Create 6-month installment schedule
+  for (let i = 1; i <= 6; i++) {
+    const dueDate = new Date('2025-02-01');
+    dueDate.setMonth(dueDate.getMonth() + i);
+
+    await prisma.installmentSchedule.create({
+      data: {
+        planId: installmentPlan2.id,
+        sequenceNumber: i,
+        dueDate: dueDate,
+        totalAmount: 1680.0,
+        principalAmount: 1600.0,
+        extraAmount: 80.0,
+        paidAmount: i === 1 ? 1680.0 : 0,
+        status: i === 1 ? 'PAID' : 'PENDING',
+        paidDate: i === 1 ? dueDate : null,
+      },
+    });
+  }
+
+  // Create payment for first installment
+  const firstSchedule2 = await prisma.installmentSchedule.findFirst({
+    where: {
+      planId: installmentPlan2.id,
+      sequenceNumber: 1,
+    },
+  });
+
+  if (firstSchedule2) {
+    const paymentNumber2 = `PAY-${Date.now()}-F1`;
+    const payment2 = await prisma.payment.create({
+      data: {
+        paymentNumber: paymentNumber2,
+        customerId: customer2.id,
+        orderId: order2.id,
+        amount: 1680.0,
+        paymentMethod: 'BANK_TRANSFER',
+        collectedBy: fatima.id,
+        paymentDate: firstSchedule2.dueDate,
+      },
+    });
+
+    // Create payment allocation
+    await prisma.paymentAllocation.create({
+      data: {
+        paymentId: payment2.id,
+        scheduleId: firstSchedule2.id,
+        allocationType: 'PRINCIPAL',
+        amount: 1680.0,
+      },
+    });
+  }
+
+  console.log('Created installment plan 2: Fridge - 6 months, 1 payment made');
+
+  // Create event logs for activities
+  await prisma.eventLog.create({
+    data: {
+      userId: ahmed.id,
+      eventType: 'INSTALLMENT_CREATED',
+      entityType: 'INSTALLMENT_PLAN',
+      entityId: installmentPlan1.id,
+      eventData: {
+        description: 'Created installment plan for محمد أحمد علي',
+        productName: 'Samsung 55" Smart TV',
+        termMonths: 12,
+      },
+    },
+  });
+
+  await prisma.eventLog.create({
+    data: {
+      userId: fatima.id,
+      eventType: 'INSTALLMENT_CREATED',
+      entityType: 'INSTALLMENT_PLAN',
+      entityId: installmentPlan2.id,
+      eventData: {
+        description: 'Created installment plan for فاطمة حسن محمود',
+        productName: 'LG Refrigerator 450L',
+        termMonths: 6,
+      },
+    },
+  });
+
+  await prisma.eventLog.create({
+    data: {
+      userId: ahmed.id,
+      eventType: 'PAYMENT_RECEIVED',
+      entityType: 'PAYMENT',
+      entityId: paidSchedules1[0].id,
+      eventData: {
+        description: 'Payment received from محمد أحمد علي',
+        amount: 1080.0,
+        method: 'CASH',
+      },
+    },
+  });
+
+  console.log('Created event logs for activities');
 
   console.log('\n=== Default Credentials ===');
   console.log('All users have the default password: Password123');

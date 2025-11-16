@@ -1,6 +1,7 @@
 import prisma from '../prismaClient';
 import { Prisma } from '@prisma/client';
 import installmentCalculationService from './installmentCalculationService';
+import { MAX_CREDIT_LIMIT } from '../constants/businessRules';
 
 /**
  * Custom error class for installment service errors
@@ -20,8 +21,11 @@ class InstallmentError extends Error {
  */
 interface CreateInstallmentData {
   customerId: number;
-  productId: number;
-  depositAmount: number;
+  items: Array<{
+    productId: number;
+    quantity: number;
+    unitPrice: number;
+  }>;
   termMonths: number;
   startDate: Date;
   branchId: number;
@@ -59,23 +63,73 @@ class InstallmentService {
         throw new InstallmentError('CUSTOMER_NOT_FOUND', 'العميل غير موجود');
       }
 
-      // Validate product exists
-      const product = await prisma.product.findUnique({
-        where: { id: data.productId },
+      // Check customer's current outstanding balance against credit limit
+
+      const activeInstallments = await prisma.installmentPlan.findMany({
+        where: {
+          customerId: data.customerId,
+          status: {
+            in: ['ACTIVE', 'OVERDUE'],
+          },
+        },
+        include: {
+          schedule: {
+            where: {
+              status: {
+                in: ['PENDING', 'OVERDUE'],
+              },
+            },
+          },
+        },
       });
 
-      if (!product) {
-        throw new InstallmentError('PRODUCT_NOT_FOUND', 'المنتج غير موجود');
+      // Calculate total outstanding balance
+      const totalOutstanding = activeInstallments.reduce((sum, plan) => {
+        const planOutstanding = plan.schedule.reduce(
+          (planSum, schedule) =>
+            planSum + (Number(schedule.totalAmount) - Number(schedule.paidAmount)),
+          0
+        );
+        return sum + planOutstanding;
+      }, 0);
+
+      // Validate all products exist and have sufficient stock
+      const products = await prisma.product.findMany({
+        where: {
+          id: { in: data.items.map((item) => item.productId) },
+        },
+      });
+
+      if (products.length !== data.items.length) {
+        throw new InstallmentError('PRODUCT_NOT_FOUND', 'أحد المنتجات غير موجود');
       }
 
-      // Validate deposit
-      await installmentCalculationService.validateDeposit(data.depositAmount, data.productId);
+      // Check stock availability
+      for (const item of data.items) {
+        const product = products.find((p) => p.id === item.productId);
+        if (product && product.stockQuantity < item.quantity) {
+          throw new InstallmentError(
+            'INSUFFICIENT_STOCK',
+            `المخزون غير كافٍ للمنتج: ${product.name}`
+          );
+        }
+      }
 
-      // Calculate installment details
-      const productPrice = Number(product.cashPrice);
+      // Calculate total amount
+      const totalAmount = data.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+
+      // Check if adding this installment would exceed the credit limit
+      if (totalOutstanding + totalAmount > MAX_CREDIT_LIMIT) {
+        const availableCredit = MAX_CREDIT_LIMIT - totalOutstanding;
+        throw new InstallmentError(
+          'CREDIT_LIMIT_EXCEEDED',
+          `تجاوز الحد الائتماني. الرصيد المتاح: ${availableCredit.toFixed(2)} ج.م من أصل ${MAX_CREDIT_LIMIT} ج.م`
+        );
+      }
+
+      // Calculate installment details (no deposit)
       const calculation = await installmentCalculationService.calculateMonthlyPayment(
-        productPrice,
-        data.depositAmount,
+        totalAmount,
         data.termMonths
       );
 
@@ -94,9 +148,9 @@ class InstallmentService {
       // Generate order number
       const orderNumber = `ORD-${Date.now()}-${data.customerId}`;
 
-      // Create order, installment plan, and schedule in a transaction
+      // Create order, installment plan, schedule, and update inventory in a transaction
       const result = await prisma.$transaction(async (tx) => {
-        // Create order
+        // Create order with multiple items
         const order = await tx.order.create({
           data: {
             orderNumber,
@@ -108,25 +162,35 @@ class InstallmentService {
             status: 'CONFIRMED',
             createdBy: data.createdBy,
             orderItems: {
-              create: [
-                {
-                  productId: data.productId,
-                  quantity: 1,
-                  unitPrice: productPrice,
-                  lineTotal: productPrice,
-                },
-              ],
+              create: data.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                lineTotal: item.unitPrice * item.quantity,
+              })),
             },
           },
         });
 
-        // Create installment plan
+        // Decrease product quantities
+        for (const item of data.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
+
+        // Create installment plan (no deposit)
         const plan = await tx.installmentPlan.create({
           data: {
             orderId: order.id,
             customerId: data.customerId,
-            totalAmount: productPrice,
-            depositAmount: data.depositAmount,
+            totalAmount,
+            depositAmount: 0, // No deposit
             financedAmount: calculation.financedAmount,
             periodMonths: data.termMonths,
             ratioMultiplier: calculation.ratioMultiplier,
@@ -155,15 +219,24 @@ class InstallmentService {
         return { order, plan };
       });
 
+      // Get product names for response
+      const productNames = data.items
+        .map((item) => {
+          const product = products.find((p) => p.id === item.productId);
+          return product ? `${product.name} (${item.quantity})` : '';
+        })
+        .filter(Boolean)
+        .join(', ');
+
       return {
         id: result.plan.id,
         orderId: result.order.id,
         orderNumber: result.order.orderNumber,
         customerId: data.customerId,
         customerName: customer.fullName,
-        productName: product.name,
+        productName: productNames,
         totalAmount: calculation.totalToPay,
-        depositAmount: data.depositAmount,
+        depositAmount: 0, // No deposit
         monthlyAmount: calculation.monthlyAmount,
         termMonths: data.termMonths,
         startDate: data.startDate,
@@ -483,39 +556,15 @@ class InstallmentService {
   }
 
   /**
-   * Get available installment ratios
-   * @returns Promise resolving to list of active ratios
-   */
-  async getAvailableRatios() {
-    try {
-      const ratios = await prisma.installmentRatio.findMany({
-        where: { isActive: true },
-        orderBy: { periodMonths: 'asc' },
-      });
-
-      return ratios.map((ratio) => ({
-        periodMonths: ratio.periodMonths,
-        ratioMultiplier: Number(ratio.ratioMultiplier),
-        description: ratio.description,
-      }));
-    } catch (error) {
-      console.error('Get available ratios error:', error);
-      throw new Error('Failed to fetch installment ratios');
-    }
-  }
-
-  /**
-   * Calculate installment details
+   * Calculate installment details (no deposit)
    * @param productPrice - Product cash price
-   * @param depositAmount - Deposit amount
    * @param termMonths - Term length in months
    * @returns Promise resolving to calculation details
    */
-  async calculateInstallment(productPrice: number, depositAmount: number, termMonths: number) {
+  async calculateInstallment(productPrice: number, termMonths: number) {
     try {
       const calculation = await installmentCalculationService.calculateMonthlyPayment(
         productPrice,
-        depositAmount,
         termMonths
       );
 
@@ -523,6 +572,232 @@ class InstallmentService {
     } catch (error) {
       console.error('Calculate installment error:', error);
       throw new Error('Failed to calculate installment');
+    }
+  }
+
+  /**
+   * Send bulk reminders for selected installments with optimized batch processing
+   * @param installmentIds - Array of installment plan IDs
+   * @param method - Reminder method (whatsapp, sms, or both)
+   * @param onProgress - Optional callback for progress updates
+   * @returns Promise resolving to reminder results
+   */
+  async sendBulkReminders(
+    installmentIds: number[],
+    method: 'whatsapp' | 'sms' | 'both',
+    onProgress?: (progress: number, total: number) => void
+  ) {
+    try {
+      // Validate installment IDs
+      if (!installmentIds || installmentIds.length === 0) {
+        throw new InstallmentError('NO_SELECTION', 'يرجى تحديد قسط واحد على الأقل');
+      }
+
+      // Fetch installments with customer and schedule data
+      const installments = await prisma.installmentPlan.findMany({
+        where: {
+          id: { in: installmentIds },
+          status: { in: ['ACTIVE', 'PENDING'] },
+        },
+        include: {
+          customer: true,
+          schedule: {
+            where: {
+              status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
+            },
+            orderBy: {
+              dueDate: 'asc',
+            },
+            take: 1,
+          },
+        },
+      });
+
+      if (installments.length === 0) {
+        throw new InstallmentError('NO_INSTALLMENTS_FOUND', 'لم يتم العثور على أقساط نشطة');
+      }
+
+      // Validate phone numbers
+      const invalidPhoneCustomers: string[] = [];
+      const validInstallments = installments.filter((plan) => {
+        const phone = plan.customer.phone;
+        // Egyptian phone validation: 11 digits starting with 01
+        const isValid = phone && /^01\d{9}$/.test(phone);
+        if (!isValid) {
+          invalidPhoneCustomers.push(plan.customer.fullName);
+        }
+        return isValid;
+      });
+
+      // Process reminders in optimized batches (max 50 per batch)
+      const BATCH_SIZE = 50;
+      let successCount = 0;
+      let failedCount = 0;
+      const failedCustomers: string[] = [];
+      const totalToProcess = validInstallments.length;
+
+      for (let i = 0; i < validInstallments.length; i += BATCH_SIZE) {
+        const batch = validInstallments.slice(i, i + BATCH_SIZE);
+
+        // Process batch in parallel for better performance
+        const batchPromises = batch.map(async (plan) => {
+          try {
+            const nextDue = plan.schedule[0];
+            if (!nextDue) {
+              return { success: false, reason: 'no_pending' };
+            }
+
+            // Prepare reminder message
+            const message = `عزيزي ${plan.customer.fullName}، نذكرك بموعد دفعة القسط المستحقة\nالمبلغ: ${Number(nextDue.totalAmount).toFixed(2)} ج.م\nتاريخ الاستحقاق: ${new Date(nextDue.dueDate).toLocaleDateString('ar-EG')}`;
+
+            // In a real implementation, you would integrate with WhatsApp/SMS API here
+            // For now, we just log the activity
+            console.log(`Reminder sent to ${plan.customer.fullName} via ${method}:`, message);
+
+            // Simulate API delay (remove in production)
+            await new Promise((resolve) => setTimeout(resolve, 10));
+
+            return { success: true, customerName: plan.customer.fullName };
+          } catch (error) {
+            console.error(`Failed to send reminder to ${plan.customer.fullName}:`, error);
+            return { success: false, customerName: plan.customer.fullName };
+          }
+        });
+
+        // Wait for batch to complete
+        const batchResults = await Promise.all(batchPromises);
+
+        // Count results
+        batchResults.forEach((result) => {
+          if (result.success) {
+            successCount++;
+          } else if (result.customerName) {
+            failedCount++;
+            failedCustomers.push(result.customerName);
+          }
+        });
+
+        // Report progress
+        if (onProgress) {
+          onProgress(i + batch.length, totalToProcess);
+        }
+      }
+
+      return {
+        successCount,
+        failedCount: failedCount + invalidPhoneCustomers.length,
+        failedCustomers: [...failedCustomers, ...invalidPhoneCustomers],
+        invalidPhoneCustomers,
+      };
+    } catch (error) {
+      if (error instanceof InstallmentError) {
+        throw error;
+      }
+      console.error('Send bulk reminders error:', error);
+      throw new Error('Failed to send reminders');
+    }
+  }
+
+  /**
+   * Export installments to Excel or PDF format
+   * @param installmentIds - Array of installment plan IDs
+   * @param format - Export format (excel or pdf)
+   * @returns Promise resolving to export data with installments
+   */
+  async exportInstallments(installmentIds: number[], format: 'excel' | 'pdf') {
+    try {
+      // Validate installment IDs
+      if (!installmentIds || installmentIds.length === 0) {
+        throw new InstallmentError('NO_SELECTION', 'يرجى تحديد قسط واحد على الأقل');
+      }
+
+      // Fetch installments with all required data
+      const installments = await prisma.installmentPlan.findMany({
+        where: {
+          id: { in: installmentIds },
+        },
+        include: {
+          customer: true,
+          order: {
+            include: {
+              orderItems: {
+                include: {
+                  product: true,
+                },
+              },
+              branch: true,
+            },
+          },
+          schedule: {
+            where: {
+              status: {
+                in: ['PENDING', 'PARTIAL', 'OVERDUE'],
+              },
+            },
+            orderBy: {
+              dueDate: 'asc',
+            },
+            take: 1,
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (installments.length === 0) {
+        throw new InstallmentError('NO_INSTALLMENTS_FOUND', 'لم يتم العثور على أقساط');
+      }
+
+      // Format data for export
+      const exportData = installments.map((plan) => {
+        const productName = plan.order.orderItems[0]?.product.name || 'Unknown Product';
+        const nextDue = plan.schedule[0];
+
+        // Calculate progress
+        const totalSchedule = plan.periodMonths;
+        const paidSchedule = totalSchedule - plan.schedule.length;
+        const progressPercentage = Math.round((paidSchedule / totalSchedule) * 100);
+
+        // Determine status
+        let status = 'في الموعد';
+        if (nextDue) {
+          if (nextDue.status === 'OVERDUE') {
+            status = 'متأخر';
+          } else {
+            const daysUntilDue = Math.ceil(
+              (new Date(nextDue.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+            );
+            if (daysUntilDue <= 7) {
+              status = 'مستحق قريباً';
+            }
+          }
+        } else if (plan.status === 'COMPLETED') {
+          status = 'مكتمل';
+        }
+
+        return {
+          customerName: plan.customer.fullName,
+          nationalId: plan.customer.nationalId,
+          product: productName,
+          totalAmount: Number(plan.totalAmount),
+          monthlyPayment: Number(plan.monthlyAmount),
+          nextDueDate: nextDue?.dueDate || null,
+          status,
+          progressPercentage,
+        };
+      });
+
+      return {
+        installments: exportData,
+        format,
+      };
+    } catch (error) {
+      if (error instanceof InstallmentError) {
+        throw error;
+      }
+      console.error('Export installments error:', error);
+      throw new Error('Failed to export installments');
     }
   }
 }

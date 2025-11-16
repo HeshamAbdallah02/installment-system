@@ -11,6 +11,7 @@ interface Toast {
 /**
  * Custom hook for managing toast notifications
  * Provides methods to show success, error, and info toasts
+ * Requirements: 6.9, 8.9, 10.9 - Show toast notifications
  */
 export const useToast = () => {
   const [toast, setToast] = useState<Toast>({

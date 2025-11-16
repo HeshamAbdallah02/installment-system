@@ -5,11 +5,13 @@ import jwt from 'jsonwebtoken';
 interface AuthenticatedWebSocket extends WebSocket {
   userId?: string;
   isAuthenticated?: boolean;
+  subscribedChannels?: Set<string>;
 }
 
 interface WebSocketMessage {
   type: string;
   token?: string;
+  channel?: string;
   data?: unknown;
 }
 
@@ -53,6 +55,12 @@ class WebSocketService {
         case 'auth':
           this.handleAuth(ws, parsedMessage.token);
           break;
+        case 'subscribe':
+          this.handleSubscribe(ws, parsedMessage.channel);
+          break;
+        case 'unsubscribe':
+          this.handleUnsubscribe(ws, parsedMessage.channel);
+          break;
         case 'ping':
           ws.send(JSON.stringify({ type: 'pong' }));
           break;
@@ -79,6 +87,7 @@ class WebSocketService {
 
       ws.userId = decoded.userId;
       ws.isAuthenticated = true;
+      ws.subscribedChannels = new Set();
 
       // Store authenticated client
       this.clients.set(decoded.userId, ws);
@@ -88,6 +97,70 @@ class WebSocketService {
     } catch (error) {
       ws.send(JSON.stringify({ type: 'auth', success: false, message: 'Invalid token' }));
       console.error('WebSocket authentication failed:', error);
+    }
+  }
+
+  /**
+   * Handle channel subscription
+   */
+  private handleSubscribe(ws: AuthenticatedWebSocket, channel?: string): void {
+    if (!ws.isAuthenticated) {
+      ws.send(JSON.stringify({ type: 'subscribe', success: false, message: 'Not authenticated' }));
+      return;
+    }
+
+    if (!channel) {
+      ws.send(
+        JSON.stringify({ type: 'subscribe', success: false, message: 'No channel provided' })
+      );
+      return;
+    }
+
+    if (!ws.subscribedChannels) {
+      ws.subscribedChannels = new Set();
+    }
+
+    ws.subscribedChannels.add(channel);
+    ws.send(
+      JSON.stringify({
+        type: 'subscribe',
+        success: true,
+        channel,
+        message: `Subscribed to ${channel}`,
+      })
+    );
+    console.log(`User ${ws.userId} subscribed to channel: ${channel}`);
+  }
+
+  /**
+   * Handle channel unsubscription
+   */
+  private handleUnsubscribe(ws: AuthenticatedWebSocket, channel?: string): void {
+    if (!ws.isAuthenticated) {
+      ws.send(
+        JSON.stringify({ type: 'unsubscribe', success: false, message: 'Not authenticated' })
+      );
+      return;
+    }
+
+    if (!channel) {
+      ws.send(
+        JSON.stringify({ type: 'unsubscribe', success: false, message: 'No channel provided' })
+      );
+      return;
+    }
+
+    if (ws.subscribedChannels) {
+      ws.subscribedChannels.delete(channel);
+      ws.send(
+        JSON.stringify({
+          type: 'unsubscribe',
+          success: true,
+          channel,
+          message: `Unsubscribed from ${channel}`,
+        })
+      );
+      console.log(`User ${ws.userId} unsubscribed from channel: ${channel}`);
     }
   }
 
@@ -106,7 +179,7 @@ class WebSocketService {
   /**
    * Broadcast event to all authenticated clients
    */
-  broadcast(event: { type: string; data: unknown }): void {
+  broadcast(event: { type: string; data: unknown; channel?: string }): void {
     const message = JSON.stringify({
       ...event,
       timestamp: new Date().toISOString(),
@@ -114,7 +187,15 @@ class WebSocketService {
 
     this.clients.forEach((client) => {
       if (client.isAuthenticated && client.readyState === WebSocket.OPEN) {
-        client.send(message);
+        // If channel is specified, only send to clients subscribed to that channel
+        if (event.channel) {
+          if (client.subscribedChannels && client.subscribedChannels.has(event.channel)) {
+            client.send(message);
+          }
+        } else {
+          // No channel specified, send to all authenticated clients
+          client.send(message);
+        }
       }
     });
   }

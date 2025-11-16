@@ -100,22 +100,23 @@ class ActivitiesService {
 
       // eventData is already parsed by Prisma as Json type
       const metadata: ActivityMetadata = {};
+      const data = eventData as Record<string, any>;
 
       // Extract common fields
-      if (eventData.customerName) {
-        metadata.customerName = eventData.customerName;
+      if (data.customerName) {
+        metadata.customerName = data.customerName;
       }
-      if (eventData.amount !== undefined) {
-        metadata.amount = Number(eventData.amount);
+      if (data.amount !== undefined) {
+        metadata.amount = Number(data.amount);
       }
-      if (eventData.productName) {
-        metadata.productName = eventData.productName;
+      if (data.productName) {
+        metadata.productName = data.productName;
       }
 
       // Include any other fields from eventData
-      Object.keys(eventData).forEach((key) => {
+      Object.keys(data).forEach((key) => {
         if (!metadata[key]) {
-          metadata[key] = eventData[key];
+          metadata[key] = data[key];
         }
       });
 

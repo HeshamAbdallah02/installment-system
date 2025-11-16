@@ -1,6 +1,7 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import healthRouter from './routes/health';
 import exampleRouter from './routes/example';
 import authRouter from './routes/auth.routes';
@@ -9,6 +10,8 @@ import dashboardRouter from './routes/dashboard.routes';
 import customerRouter from './routes/customer.routes';
 import installmentRouter from './routes/installment.routes';
 import productRouter from './routes/product.routes';
+import paymentRouter from './routes/payment.routes';
+import reportRouter from './routes/report.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -37,14 +40,18 @@ app.use(
       }
     },
     credentials: true, // Enable credentials (cookies, authorization headers)
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow Authorization header
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires'], // Allow cache control headers
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-    exposedHeaders: ['Authorization'], // Expose Authorization header to client
+    exposedHeaders: ['Authorization', 'Cache-Control'], // Expose headers to client
+    maxAge: 86400, // Cache preflight response for 24 hours
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/health', healthRouter);
@@ -55,6 +62,8 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/customers', customerRouter);
 app.use('/api/installments', installmentRouter);
 app.use('/api/products', productRouter);
+app.use('/api/payments', paymentRouter);
+app.use('/api/reports', reportRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);

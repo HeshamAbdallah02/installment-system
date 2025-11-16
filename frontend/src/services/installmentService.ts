@@ -1,7 +1,5 @@
 import apiClient from './api';
 import {
-  Product,
-  InstallmentRatio,
   InstallmentCalculation,
   CreateInstallmentData,
   InstallmentCreationResponse,
@@ -9,6 +7,7 @@ import {
   InstallmentFilters,
   InstallmentAgreement,
 } from '../types/installment';
+import { Product } from '../types/product';
 
 /**
  * Service for installment-related API calls
@@ -23,28 +22,16 @@ class InstallmentService {
   }
 
   /**
-   * Get available installment ratios
-   */
-  async getInstallmentRatios(): Promise<InstallmentRatio[]> {
-    const response = await apiClient.get<{ success: boolean; data: InstallmentRatio[] }>(
-      '/api/installments/ratios'
-    );
-    return response.data.data;
-  }
-
-  /**
-   * Calculate installment details
+   * Calculate installment details (no deposit)
    */
   async calculateInstallment(
     productPrice: number,
-    depositAmount: number,
     termMonths: number
   ): Promise<InstallmentCalculation> {
     const response = await apiClient.post<{ success: boolean; data: InstallmentCalculation }>(
       '/api/installments/calculate',
       {
         productPrice,
-        depositAmount,
         termMonths,
       }
     );
@@ -111,6 +98,57 @@ class InstallmentService {
       data: InstallmentAgreement;
     }>(`/api/installments/${installmentId}/agreement`);
     return response.data.data;
+  }
+
+  /**
+   * Send bulk reminders for selected installments
+   */
+  async sendBulkReminders(
+    installmentIds: number[],
+    method: 'whatsapp' | 'sms' | 'both'
+  ): Promise<{
+    data: {
+      successCount: number;
+      failedCount: number;
+      failedCustomers: string[];
+      invalidPhoneCustomers?: string[];
+    };
+    message: string;
+  }> {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: {
+        successCount: number;
+        failedCount: number;
+        failedCustomers: string[];
+        invalidPhoneCustomers?: string[];
+      };
+      message: string;
+    }>('/api/installments/bulk-reminders', {
+      installmentIds,
+      method,
+    });
+    return {
+      data: response.data.data,
+      message: response.data.message,
+    };
+  }
+
+  /**
+   * Export selected installments to Excel or PDF
+   */
+  async bulkExport(installmentIds: number[], format: 'excel' | 'pdf'): Promise<Blob> {
+    const response = await apiClient.post(
+      '/api/installments/bulk-export',
+      {
+        installmentIds,
+        format,
+      },
+      {
+        responseType: 'blob',
+      }
+    );
+    return response.data;
   }
 }
 

@@ -79,6 +79,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
       updateWizardState({
         customerId: customer.id,
         customerName: customer.fullName,
+        customerOutstanding: customer.totalOutstanding || 0,
       });
     },
     [updateWizardState]
@@ -123,12 +124,14 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
     [showToast]
   );
 
-  // Handle next button
+  // Handle next button - with validation
   const handleNext = useCallback(() => {
-    if (wizardState.customerId) {
-      onNext();
+    if (!wizardState.customerId) {
+      showToast('يرجى اختيار عميل أولاً', 'error');
+      return;
     }
-  }, [wizardState.customerId, onNext]);
+    onNext();
+  }, [wizardState.customerId, onNext, showToast]);
 
   return (
     <div className="space-y-6">
@@ -202,7 +205,13 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                 </div>
                 {customer.activeInstallmentsCount > 0 && (
                   <div className="text-sm text-brand-secondary-700 mt-1">
-                    {customer.activeInstallmentsCount} أقساط نشطة
+                    {customer.activeInstallmentsCount} أقساط نشطة • رصيد مستحق:{' '}
+                    {(customer.totalOutstanding || 0).toFixed(2)} ج.م
+                  </div>
+                )}
+                {(customer.totalOutstanding || 0) >= 5000 && (
+                  <div className="text-xs text-brand-primary-900 font-bold mt-1 bg-brand-primary-50 px-2 py-1 rounded inline-block">
+                    ⚠️ قريب من الحد الائتماني (6000 ج.م)
                   </div>
                 )}
               </button>
@@ -239,12 +248,28 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
               </span>
             </div>
             {selectedCustomer.activeInstallmentsCount > 0 && (
-              <div>
-                <span className="text-brand-offwhite-700">الأقساط النشطة: </span>
-                <span className="text-brand-primary-900 font-medium">
-                  {selectedCustomer.activeInstallmentsCount}
-                </span>
-              </div>
+              <>
+                <div>
+                  <span className="text-brand-offwhite-700">الأقساط النشطة: </span>
+                  <span className="text-brand-primary-900 font-medium">
+                    {selectedCustomer.activeInstallmentsCount}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-brand-offwhite-700">الرصيد المستحق: </span>
+                  <span className="text-brand-primary-900 font-medium">
+                    {(selectedCustomer.totalOutstanding || 0).toFixed(2)} ج.م
+                  </span>
+                </div>
+                <div>
+                  <span className="text-brand-offwhite-700">الرصيد المتاح: </span>
+                  <span
+                    className={`font-medium ${6000 - (selectedCustomer.totalOutstanding || 0) < 1000 ? 'text-brand-primary-900' : 'text-brand-secondary-900'}`}
+                  >
+                    {(6000 - (selectedCustomer.totalOutstanding || 0)).toFixed(2)} ج.م من 6000 ج.م
+                  </span>
+                </div>
+              </>
             )}
           </div>
         </div>

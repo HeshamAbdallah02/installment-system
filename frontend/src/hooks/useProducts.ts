@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import installmentService from '../services/installmentService';
 import { queryKeys } from '../lib/queryClient';
-import { Product } from '../types/installment';
+import { Product } from '../types/product';
 
 /**
  * Hook to fetch and cache products list

@@ -18,6 +18,16 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add timestamp as cache buster for GET requests
+    // This ensures the browser treats each request as unique
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now(),
+      };
+    }
+
     return config;
   },
   (error) => {
@@ -25,11 +35,52 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor with comprehensive error handling
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
+    // Log error for debugging (only in development)
+    if (import.meta.env.DEV) {
+      console.error('API Error:', error);
+    }
+
+    // Handle 401 Unauthorized - token expired or invalid
+    if (error.response?.status === 401) {
+      // Clear expired token
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('current_user');
+
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        // Store the current path to redirect back after login
+        const currentPath = window.location.pathname + window.location.search;
+        if (currentPath !== '/') {
+          sessionStorage.setItem('redirect_after_login', currentPath);
+        }
+
+        // Store a message to show on login page
+        sessionStorage.setItem(
+          'session_expired_message',
+          'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى'
+        );
+
+        // Redirect to login
+        window.location.href = '/login';
+      }
+    }
+
+    // Handle network errors
+    if (!error.response) {
+      error.isNetworkError = true;
+      error.message = 'خطأ في الاتصال. يرجى التحقق من الاتصال بالإنترنت';
+    }
+
+    // Handle timeout errors
+    if (error.code === 'ECONNABORTED') {
+      error.isTimeoutError = true;
+      error.message = 'انتهت مهلة الطلب. يرجى المحاولة مرة أخرى';
+    }
+
     return Promise.reject(error);
   }
 );

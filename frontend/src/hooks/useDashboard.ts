@@ -17,8 +17,11 @@ export function useMetrics(): UseQueryResult<DashboardMetrics, Error> {
   return useQuery({
     queryKey: queryKeys.dashboard.metrics,
     queryFn: () => dashboardService.getMetrics(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always consider data stale to force refetch
     gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnReconnect: true, // Refetch when connection is restored
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
@@ -35,8 +38,11 @@ export function useCollectionTrends(
   return useQuery({
     queryKey: queryKeys.dashboard.collectionTrends(months),
     queryFn: () => dashboardService.getCollectionTrends(months),
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute instead of 10
     gcTime: 15 * 60 * 1000, // 15 minutes garbage collection
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
@@ -53,8 +59,11 @@ export function useBranchDistribution(
   return useQuery({
     queryKey: queryKeys.dashboard.branchDistribution(period),
     queryFn: () => dashboardService.getBranchDistribution(period),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute instead of 5
     gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
@@ -68,8 +77,11 @@ export function useTopProducts(): UseQueryResult<ProductData[], Error> {
   return useQuery({
     queryKey: queryKeys.dashboard.topProducts,
     queryFn: () => dashboardService.getTopProducts(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute instead of 5
     gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });

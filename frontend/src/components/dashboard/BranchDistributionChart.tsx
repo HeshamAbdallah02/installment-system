@@ -8,7 +8,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  TooltipProps,
   LabelList,
 } from 'recharts';
 import { BranchData } from '../../store/dashboardSlice';
@@ -25,8 +24,8 @@ interface BranchDistributionChartProps {
 }
 
 // Custom tooltip component with Arabic formatting
-const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
-  if (active && payload && payload.length) {
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length && payload[0]) {
     const data = payload[0].payload as BranchData;
     return (
       <div className="bg-white border-2 border-brand-primary-900 rounded-lg shadow-lg p-3">
@@ -42,7 +41,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload
 };
 
 // Custom label to show percentage on bars
-const renderCustomLabel = (props: { x: number; y: number; width: number; value: number }) => {
+const renderCustomLabel = (props: any) => {
   const { x, y, width, value } = props;
   return (
     <text

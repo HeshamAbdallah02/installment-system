@@ -58,6 +58,20 @@ export default {
       fontFamily: {
         arabic: ['Cairo', 'Tajawal', 'sans-serif'],
       },
+      keyframes: {
+        'slide-down': {
+          '0%': { transform: 'translate(-50%, -100%)', opacity: '0' },
+          '100%': { transform: 'translate(-50%, 0)', opacity: '1' },
+        },
+        'slide-up': {
+          '0%': { transform: 'translate(-50%, 0)', opacity: '1' },
+          '100%': { transform: 'translate(-50%, -100%)', opacity: '0' },
+        },
+      },
+      animation: {
+        'slide-down': 'slide-down 0.3s ease-out',
+        'slide-up': 'slide-up 0.3s ease-out',
+      },
     },
   },
   plugins: [],
