@@ -184,18 +184,12 @@ const ProductCatalog: React.FC = () => {
       if (!product) return;
 
       const action = product.status === 'ACTIVE' ? 'deactivate' : 'activate';
-      const endpoint = `/api/products/${productId}/${action}`;
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to toggle product status');
+      
+      // Call the appropriate service method
+      if (action === 'deactivate') {
+        await productService.deactivateProduct(productId, 'تم إيقاف المنتج من قبل المستخدم');
+      } else {
+        await productService.activateProduct(productId);
       }
 
       showSuccess(

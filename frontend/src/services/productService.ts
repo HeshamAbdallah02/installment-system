@@ -177,6 +177,30 @@ class ProductService {
       throw new Error(extractErrorMessage(error));
     }
   }
+
+  /**
+   * Deactivate a product
+   */
+  async deactivateProduct(productId: number, reason: string): Promise<Product> {
+    try {
+      const response = await api.post(`/api/products/${productId}/deactivate`, { reason });
+      return response.data.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
+  }
+
+  /**
+   * Activate a product
+   */
+  async activateProduct(productId: number): Promise<Product> {
+    try {
+      const response = await api.post(`/api/products/${productId}/activate`);
+      return response.data.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error));
+    }
+  }
 }
 
 export default new ProductService();
