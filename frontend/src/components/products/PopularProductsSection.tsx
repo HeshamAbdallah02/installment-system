@@ -89,12 +89,12 @@ const PopularProductsSection: React.FC<PopularProductsSectionProps> = React.memo
                     <span className="text-xs text-brand-offwhite-700">قسط نشط</span>
                   </div>
 
-                  {/* Monthly Sold Quantity */}
+                  {/* 6-Month Sold Quantity */}
                   <div className="flex items-center justify-between bg-brand-primary-50 rounded-lg py-2 px-3">
                     <span className="text-xs font-semibold text-brand-primary-900">
-                      {product.monthlySoldQuantity}
+                      {product.sixMonthSoldQuantity}
                     </span>
-                    <span className="text-xs text-brand-offwhite-700">مبيعات الشهر</span>
+                    <span className="text-xs text-brand-offwhite-700">مبيعات 6 أشهر</span>
                   </div>
                 </div>
               </button>

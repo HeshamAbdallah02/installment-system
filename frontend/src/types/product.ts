@@ -29,7 +29,7 @@ export interface PopularProduct {
   id: number;
   name: string;
   activeInstallmentsCount: number;
-  monthlySoldQuantity: number;
+  sixMonthSoldQuantity: number;
   rank: number;
 }
 

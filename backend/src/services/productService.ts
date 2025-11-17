@@ -315,14 +315,14 @@ class ProductService {
   /**
    * Get popular products by active installment count
    * @param limit - Number of products to return (default 5)
-   * @returns Promise resolving to popular products with monthly sold quantity
+   * @returns Promise resolving to popular products with 6-month sold quantity
    */
   async getPopularProducts(limit: number = 5) {
     try {
-      // Get start of current month
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
+      // Get date 6 months ago (matching longest installment period)
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
 
       // Get all active installment plans with their products
       const installmentPlans = await prisma.installmentPlan.findMany({
@@ -342,13 +342,13 @@ class ProductService {
         },
       });
 
-      // Get monthly sales count per product
-      const monthlySales = await prisma.orderItem.groupBy({
+      // Get 6-month sales count per product
+      const sixMonthSales = await prisma.orderItem.groupBy({
         by: ['productId'],
         where: {
           order: {
             createdAt: {
-              gte: startOfMonth,
+              gte: sixMonthsAgo,
             },
           },
         },
@@ -357,8 +357,8 @@ class ProductService {
         },
       });
 
-      const monthlySalesMap = new Map(
-        monthlySales.map((item) => [item.productId, item._sum.quantity || 0])
+      const sixMonthSalesMap = new Map(
+        sixMonthSales.map((item) => [item.productId, item._sum.quantity || 0])
       );
 
       // Count active installments per product
@@ -387,7 +387,7 @@ class ProductService {
         id: productId,
         name: data.product.name,
         activeInstallmentsCount: data.count,
-        monthlySoldQuantity: monthlySalesMap.get(productId) || 0,
+        sixMonthSoldQuantity: sixMonthSalesMap.get(productId) || 0,
         rank: index + 1,
         cashPrice: Number(data.product.cashPrice),
         category: data.product.category,
