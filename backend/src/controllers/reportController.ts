@@ -378,13 +378,19 @@ class ReportController {
             fgColor: { argb: 'FFFAFAF9' },
           };
 
-          exportData.data.collectorPerformance.forEach((collector: { collectorName: string; paymentCount: number; totalCollected: number }) => {
-            worksheet.addRow([
-              collector.collectorName,
-              collector.paymentCount,
-              `${collector.totalCollected.toFixed(2)} ج.م`,
-            ]);
-          });
+          exportData.data.collectorPerformance.forEach(
+            (collector: {
+              collectorName: string;
+              paymentCount: number;
+              totalCollected: number;
+            }) => {
+              worksheet.addRow([
+                collector.collectorName,
+                collector.paymentCount,
+                `${collector.totalCollected.toFixed(2)} ج.م`,
+              ]);
+            }
+          );
           worksheet.addRow([]);
         }
 
@@ -411,13 +417,15 @@ class ReportController {
             fgColor: { argb: 'FFFAFAF9' },
           };
 
-          exportData.data.topCustomers.forEach((customer: { customerName: string; paymentCount: number; totalPaid: number }) => {
-            worksheet.addRow([
-              customer.customerName,
-              customer.paymentCount,
-              `${customer.totalPaid.toFixed(2)} ج.م`,
-            ]);
-          });
+          exportData.data.topCustomers.forEach(
+            (customer: { customerName: string; paymentCount: number; totalPaid: number }) => {
+              worksheet.addRow([
+                customer.customerName,
+                customer.paymentCount,
+                `${customer.totalPaid.toFixed(2)} ج.م`,
+              ]);
+            }
+          );
           worksheet.addRow([]);
         }
 
@@ -440,14 +448,16 @@ class ReportController {
             fgColor: { argb: 'FFFAFAF9' },
           };
 
-          exportData.data.dailyTotals.forEach((daily: { date: string | Date; count: number; amount: number }) => {
-            const dateStr = new Date(daily.date).toLocaleDateString('ar-EG', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            });
-            worksheet.addRow([dateStr, daily.count, `${daily.amount.toFixed(2)} ج.م`]);
-          });
+          exportData.data.dailyTotals.forEach(
+            (daily: { date: string | Date; count: number; amount: number }) => {
+              const dateStr = new Date(daily.date).toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
+              worksheet.addRow([dateStr, daily.count, `${daily.amount.toFixed(2)} ج.م`]);
+            }
+          );
         }
 
         // Style the worksheet
@@ -581,11 +591,17 @@ class ReportController {
           doc.fontSize(14).fillColor('#560001').text('أداء المحصلين:', { underline: true });
           doc.moveDown(0.5);
           doc.fontSize(11).fillColor('#000000');
-          exportData.data.collectorPerformance.forEach((collector: { collectorName: string; paymentCount: number; totalCollected: number }) => {
-            doc.text(
-              `${collector.collectorName}: ${collector.paymentCount} دفعة - ${collector.totalCollected.toFixed(2)} ج.م`
-            );
-          });
+          exportData.data.collectorPerformance.forEach(
+            (collector: {
+              collectorName: string;
+              paymentCount: number;
+              totalCollected: number;
+            }) => {
+              doc.text(
+                `${collector.collectorName}: ${collector.paymentCount} دفعة - ${collector.totalCollected.toFixed(2)} ج.م`
+              );
+            }
+          );
           doc.moveDown(2);
         }
 
@@ -594,11 +610,16 @@ class ReportController {
           doc.fontSize(14).fillColor('#560001').text('أفضل 5 عملاء:', { underline: true });
           doc.moveDown(0.5);
           doc.fontSize(11).fillColor('#000000');
-          exportData.data.topCustomers.forEach((customer: { customerName: string; paymentCount: number; totalPaid: number }, index: number) => {
-            doc.text(
-              `${index + 1}. ${customer.customerName}: ${customer.paymentCount} دفعة - ${customer.totalPaid.toFixed(2)} ج.م`
-            );
-          });
+          exportData.data.topCustomers.forEach(
+            (
+              customer: { customerName: string; paymentCount: number; totalPaid: number },
+              index: number
+            ) => {
+              doc.text(
+                `${index + 1}. ${customer.customerName}: ${customer.paymentCount} دفعة - ${customer.totalPaid.toFixed(2)} ج.م`
+              );
+            }
+          );
           doc.moveDown(2);
         }
 

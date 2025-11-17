@@ -22,7 +22,13 @@ interface CollectionTrendsChartProps {
 }
 
 // Custom tooltip component with Arabic formatting
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: MonthlyCollection }> }) => {
+const CustomTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: MonthlyCollection }>;
+}) => {
   if (active && payload && payload.length && payload[0]) {
     const data = payload[0].payload as MonthlyCollection;
     return (

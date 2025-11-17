@@ -85,7 +85,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
       handleClose();
     },
     onError: (error: unknown) => {
-      const apiError = error as { response?: { data?: { error?: { code?: string; message?: string } } } };
+      const apiError = error as {
+        response?: { data?: { error?: { code?: string; message?: string } } };
+      };
       if (apiError?.response?.data?.error?.code === 'DUPLICATE_CODE') {
         setError('code', {
           type: 'manual',

@@ -362,7 +362,10 @@ class ProductService {
       );
 
       // Count active installments per product
-      const productCounts = new Map<number, { product: { id: number; name: string; code: string }; count: number }>();
+      const productCounts = new Map<
+        number,
+        { product: { id: number; name: string; code: string }; count: number }
+      >();
 
       installmentPlans.forEach((plan) => {
         plan.order.orderItems.forEach((item) => {
@@ -863,7 +866,10 @@ class ProductService {
       }
 
       // Prepare update data
-      const updateData: Record<string, string | number | number[] | Record<number, number> | undefined> = {};
+      const updateData: Record<
+        string,
+        string | number | number[] | Record<number, number> | undefined
+      > = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.description !== undefined) updateData.description = data.description;
       if (data.cashPrice !== undefined) updateData.cashPrice = data.cashPrice;
@@ -1352,18 +1358,33 @@ class ProductService {
 
       return {
         format,
-        products: productsWithInventory.map((p: { id: number; code: string; name: string; cashPrice: number; minDepositAmount: number; availableTerms: number[]; customRates: Record<number, number> | null; imageUrl: string | null; isActive: boolean; createdAt: Date; updatedAt: Date; inventoryCount: number }) => ({
-          code: p.code,
-          name: p.name,
-          category: p.category,
-          cashPrice: Number(p.cashPrice),
-          stockQuantity: p.stockQuantity,
-          stockStatus: p.stockStatus,
-          status: p.status,
-          imageUrl: options.includeImages ? p.imageUrl : undefined,
-          statistics: options.includeStatistics ? p.statistics : undefined,
-          inventoryHistory: options.includeInventory ? p.inventoryHistory : undefined,
-        })),
+        products: productsWithInventory.map(
+          (p: {
+            id: number;
+            code: string;
+            name: string;
+            cashPrice: number;
+            minDepositAmount: number;
+            availableTerms: number[];
+            customRates: Record<number, number> | null;
+            imageUrl: string | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            inventoryCount: number;
+          }) => ({
+            code: p.code,
+            name: p.name,
+            category: p.category,
+            cashPrice: Number(p.cashPrice),
+            stockQuantity: p.stockQuantity,
+            stockStatus: p.stockStatus,
+            status: p.status,
+            imageUrl: options.includeImages ? p.imageUrl : undefined,
+            statistics: options.includeStatistics ? p.statistics : undefined,
+            inventoryHistory: options.includeInventory ? p.inventoryHistory : undefined,
+          })
+        ),
         totalCount: productsWithInventory.length,
         exportDate: new Date(),
       };

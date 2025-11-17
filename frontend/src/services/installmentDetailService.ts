@@ -100,7 +100,10 @@ class InstallmentDetailService {
     interestRate: number | undefined,
     reason: string,
     approvedBy: number
-  ): Promise<{ updatedPlan: Record<string, unknown>; newSchedule: Array<Record<string, unknown>> }> {
+  ): Promise<{
+    updatedPlan: Record<string, unknown>;
+    newSchedule: Array<Record<string, unknown>>;
+  }> {
     try {
       const response = await apiClient.put(`/api/installments/${installmentId}/modify-terms`, {
         monthlyAmount,
@@ -119,7 +122,10 @@ class InstallmentDetailService {
    * Cancel installment
    * Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9
    */
-  async cancelInstallment(installmentId: number, reason: string): Promise<{ success: boolean; message: string }> {
+  async cancelInstallment(
+    installmentId: number,
+    reason: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await apiClient.post(`/api/installments/${installmentId}/cancel`, {
         reason,

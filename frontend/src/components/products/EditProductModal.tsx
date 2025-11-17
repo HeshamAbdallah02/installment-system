@@ -96,7 +96,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
       });
 
       // Set specifications if available
-      const productWithSpecs = product as typeof product & { specifications?: Array<{ key: string; value: string }> };
+      const productWithSpecs = product as typeof product & {
+        specifications?: Array<{ key: string; value: string }>;
+      };
       if (productWithSpecs.specifications && Array.isArray(productWithSpecs.specifications)) {
         const specs = productWithSpecs.specifications as Array<{ key: string; value: string }>;
         if (specs.length > 0) {

@@ -24,7 +24,13 @@ interface BranchDistributionChartProps {
 }
 
 // Custom tooltip component with Arabic formatting
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: BranchData }> }) => {
+const CustomTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: BranchData }>;
+}) => {
   if (active && payload && payload.length && payload[0]) {
     const data = payload[0].payload as BranchData;
     return (

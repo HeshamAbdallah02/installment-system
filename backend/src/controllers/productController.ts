@@ -457,7 +457,10 @@ class ProductController {
       // Get image URL from uploaded file if provided
       const imageUrl = req.file ? `/uploads/products/${req.file.filename}` : undefined;
 
-      const updateData: Record<string, string | number | number[] | Record<number, number> | undefined> = {};
+      const updateData: Record<
+        string,
+        string | number | number[] | Record<number, number> | undefined
+      > = {};
       if (name !== undefined) updateData.name = name;
       if (description !== undefined) updateData.description = description;
       if (cashPrice !== undefined) updateData.cashPrice = parseFloat(cashPrice);

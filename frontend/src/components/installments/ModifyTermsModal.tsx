@@ -74,11 +74,21 @@ const ModifyTermsModal: React.FC<ModifyTermsModalProps> = ({
   const newInterestRate = watch('interestRate');
 
   // Calculate new terms
-  const calculatedNewTerms = useMemo(() => ({
-    monthlyAmount: newMonthlyAmount || currentTerms.monthlyAmount,
-    termMonths: newTermMonths || currentTerms.termMonths,
-    interestRate: newInterestRate !== undefined ? newInterestRate : currentTerms.interestRate,
-  }), [newMonthlyAmount, newTermMonths, newInterestRate, currentTerms.monthlyAmount, currentTerms.termMonths, currentTerms.interestRate]);
+  const calculatedNewTerms = useMemo(
+    () => ({
+      monthlyAmount: newMonthlyAmount || currentTerms.monthlyAmount,
+      termMonths: newTermMonths || currentTerms.termMonths,
+      interestRate: newInterestRate !== undefined ? newInterestRate : currentTerms.interestRate,
+    }),
+    [
+      newMonthlyAmount,
+      newTermMonths,
+      newInterestRate,
+      currentTerms.monthlyAmount,
+      currentTerms.termMonths,
+      currentTerms.interestRate,
+    ]
+  );
 
   const totalWithInterest = calculatedNewTerms.monthlyAmount * calculatedNewTerms.termMonths;
 
