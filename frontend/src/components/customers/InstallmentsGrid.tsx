@@ -58,8 +58,8 @@ const InstallmentsGrid: React.FC<InstallmentsGridProps> = ({ installments, custo
 
   // Handle add new installment
   const handleAddInstallment = () => {
-    // Navigate to installment wizard with pre-selected customer
-    navigate(`/installments/new?customerId=${customerId}`);
+    // Navigate to installments page with pre-selected customer
+    navigate(`/installments?customerId=${customerId}`);
   };
 
   // Empty state
