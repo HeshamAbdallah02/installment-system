@@ -201,6 +201,7 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
                 updateWizardState={updateWizardState}
                 onNext={handleNext}
                 onPrevious={handlePrevious}
+                preSelectedProductId={preSelectedProductId}
               />
             )}
             {wizardState.currentStep === 3 && (

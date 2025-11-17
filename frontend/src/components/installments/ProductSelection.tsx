@@ -17,6 +17,7 @@ interface ProductSelectionProps {
   updateWizardState: (updates: Partial<WizardState>) => void;
   onNext: () => void;
   onPrevious: () => void;
+  preSelectedProductId?: number | null;
 }
 
 /**
@@ -27,6 +28,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
   updateWizardState,
   onNext,
   onPrevious,
+  preSelectedProductId = null,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -56,6 +58,36 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
 
     return filtered;
   }, [products, searchQuery]);
+
+  // Automatically add pre-selected product to cart when component mounts
+  React.useEffect(() => {
+    if (preSelectedProductId && products.length > 0 && wizardState.cartItems.length === 0) {
+      const preSelectedProduct = products.find((p) => p.id === preSelectedProductId);
+      if (preSelectedProduct) {
+        // Check if product is available
+        if (preSelectedProduct.stockQuantity > 0) {
+          const quantity = 1;
+          const subtotal = preSelectedProduct.cashPrice * quantity;
+
+          // Check credit limit
+          if (subtotal <= availableCredit) {
+            const newCartItem: CartItem = {
+              productId: preSelectedProduct.id,
+              productName: preSelectedProduct.name,
+              productPrice: preSelectedProduct.cashPrice,
+              quantity,
+              subtotal,
+            };
+
+            updateWizardState({
+              cartItems: [newCartItem],
+              totalAmount: subtotal,
+            });
+          }
+        }
+      }
+    }
+  }, [preSelectedProductId, products, wizardState.cartItems.length, availableCredit, updateWizardState]);
 
   // Add product to cart
   const handleAddToCart = useCallback(
