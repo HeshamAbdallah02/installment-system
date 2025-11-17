@@ -27,10 +27,10 @@ interface ProductFormData {
   code: string;
   name: string;
   category: string;
+  size?: string;
   description?: string;
   cashPrice: number;
   minDepositAmount?: number;
-  minDepositPercentage?: number;
   availableTerms: number[];
   customRates?: Record<number, number>;
   specifications?: Array<{ key: string; value: string }>;
@@ -84,14 +84,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
    */
   useEffect(() => {
     if (product) {
+      const productWithSize = product as any;
       reset({
         code: product.code,
         name: product.name,
         category: product.category,
+        size: productWithSize.size || '',
         description: product.description || '',
         cashPrice: product.cashPrice,
         minDepositAmount: product.minDepositAmount,
-        minDepositPercentage: product.minDepositPercentage,
         availableTerms: product.availableTerms || [],
         customRates: product.customRates,
         stockQuantity: product.stockQuantity,
@@ -144,16 +145,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
     formData.append('category', data.category);
     formData.append('cashPrice', data.cashPrice.toString());
 
+    if (data.size) {
+      formData.append('size', data.size);
+    }
+
     if (data.description) {
       formData.append('description', data.description);
     }
 
     if (data.minDepositAmount) {
       formData.append('minDepositAmount', data.minDepositAmount.toString());
-    }
-
-    if (data.minDepositPercentage) {
-      formData.append('minDepositPercentage', data.minDepositPercentage.toString());
     }
 
     if (data.stockQuantity !== undefined) {
@@ -184,26 +185,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
       setSpecifications([{ key: '', value: '' }]);
       setShowSpecifications(false);
       onClose();
-    }
-  };
-
-  /**
-   * Calculate minimum deposit percentage when amount changes
-   */
-  const handleMinDepositAmountChange = (value: number) => {
-    if (cashPrice && value) {
-      const percentage = (value / cashPrice) * 100;
-      setValue('minDepositPercentage', Math.round(percentage));
-    }
-  };
-
-  /**
-   * Calculate minimum deposit amount when percentage changes
-   */
-  const handleMinDepositPercentageChange = (value: number) => {
-    if (cashPrice && value) {
-      const amount = (cashPrice * value) / 100;
-      setValue('minDepositAmount', Math.round(amount));
     }
   };
 
@@ -326,36 +307,52 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Category - Requirement 7.4 */}
-                  <div>
-                    <label
-                      htmlFor="category"
-                      className="block text-sm font-medium text-brand-primary-900 mb-1"
-                    >
-                      الفئة <span className="text-brand-primary-700">*</span>
-                    </label>
-                    <select
-                      id="category"
-                      {...register('category', {
-                        required: 'الفئة مطلوبة',
-                      })}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                        errors.category ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
-                      }`}
-                      disabled={updateProductMutation.isPending}
-                    >
-                      <option value="">اختر الفئة</option>
-                      {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.category && (
-                      <p className="mt-1 text-sm text-brand-primary-700">
-                        {errors.category.message}
-                      </p>
-                    )}
+                  {/* Category and Size */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Category - Requirement 7.4 */}
+                    <div>
+                      <label
+                        htmlFor="category"
+                        className="block text-sm font-medium text-brand-primary-900 mb-1"
+                      >
+                        الفئة
+                      </label>
+                      <select
+                        id="category"
+                        {...register('category')}
+                        className="w-full px-3 py-2 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900"
+                        disabled={updateProductMutation.isPending}
+                      >
+                        <option value="">اختر الفئة</option>
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Size */}
+                    <div>
+                      <label
+                        htmlFor="size"
+                        className="block text-sm font-medium text-brand-primary-900 mb-1"
+                      >
+                        المقاس
+                      </label>
+                      <select
+                        id="size"
+                        {...register('size')}
+                        className="w-full px-3 py-2 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900"
+                        disabled={updateProductMutation.isPending}
+                      >
+                        <option value="">اختر المقاس</option>
+                        <option value="S">Small "S"</option>
+                        <option value="M">Medium "M"</option>
+                        <option value="L">Large "L"</option>
+                        <option value="XL">XLarge "XL"</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* Description - Requirement 7.4 */}
@@ -419,50 +416,23 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                     )}
                   </div>
 
-                  {/* Minimum Deposit - Requirement 7.4 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="minDepositAmount"
-                        className="block text-sm font-medium text-brand-primary-900 mb-1"
-                      >
-                        الحد الأدنى للمقدم (ج.م)
-                      </label>
-                      <input
-                        type="number"
-                        id="minDepositAmount"
-                        {...register('minDepositAmount', {
-                          onChange: (e) => handleMinDepositAmountChange(parseFloat(e.target.value)),
-                        })}
-                        className="w-full px-3 py-2 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900"
-                        placeholder="0.00"
-                        step="0.01"
-                        disabled={updateProductMutation.isPending}
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="minDepositPercentage"
-                        className="block text-sm font-medium text-brand-primary-900 mb-1"
-                      >
-                        الحد الأدنى للمقدم (%)
-                      </label>
-                      <input
-                        type="number"
-                        id="minDepositPercentage"
-                        {...register('minDepositPercentage', {
-                          onChange: (e) =>
-                            handleMinDepositPercentageChange(parseFloat(e.target.value)),
-                        })}
-                        className="w-full px-3 py-2 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900"
-                        placeholder="20"
-                        step="1"
-                        min="0"
-                        max="100"
-                        disabled={updateProductMutation.isPending}
-                      />
-                    </div>
+                  {/* Minimum Discount Price */}
+                  <div>
+                    <label
+                      htmlFor="minDepositAmount"
+                      className="block text-sm font-medium text-brand-primary-900 mb-1"
+                    >
+                      الحد الأدنى للسعر في التخفيض (ج.م)
+                    </label>
+                    <input
+                      type="number"
+                      id="minDepositAmount"
+                      {...register('minDepositAmount')}
+                      className="w-full px-3 py-2 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900"
+                      placeholder="0.00"
+                      step="0.01"
+                      disabled={updateProductMutation.isPending}
+                    />
                   </div>
 
                   {/* Stock Quantity - Requirement 7.4 */}
