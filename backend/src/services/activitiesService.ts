@@ -28,58 +28,89 @@ class ActivitiesService {
       // Validate and cap limit
       const validLimit = Math.min(Math.max(1, limit), 50);
 
-      // Query event_log table with filters - using include for relations and select for specific fields
-      const eventLogs = await measureQueryPerformance(
-        'ActivitiesService.getEventLogs',
-        () =>
-          prisma.eventLog.findMany({
-            where: {
-              eventType: {
-                in: this.RELEVANT_EVENT_TYPES,
-              },
-            },
-            select: {
-              id: true,
-              eventType: true,
-              eventData: true,
-              createdAt: true,
-              userId: true,
-              user: {
+      // Retry logic for connection errors
+      const maxRetries = 2;
+      let lastError: any;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          // Query event_log table with filters - using include for relations and select for specific fields
+          const eventLogs = await measureQueryPerformance(
+            'ActivitiesService.getEventLogs',
+            () =>
+              prisma.eventLog.findMany({
+                where: {
+                  eventType: {
+                    in: this.RELEVANT_EVENT_TYPES,
+                  },
+                },
                 select: {
                   id: true,
-                  fullName: true,
+                  eventType: true,
+                  eventData: true,
+                  createdAt: true,
+                  userId: true,
+                  user: {
+                    select: {
+                      id: true,
+                      fullName: true,
+                    },
+                  },
                 },
-              },
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-            take: validLimit,
-          }),
-        { limit: validLimit }
-      );
+                orderBy: {
+                  createdAt: 'desc',
+                },
+                take: validLimit,
+              }),
+            { limit: validLimit }
+          );
 
-      // Transform event logs to activities
-      const activities: Activity[] = eventLogs.map((log) => {
-        const metadata = this.parseEventData(log.eventData);
-        const { title, description } = this.generateArabicContent(log.eventType, metadata);
+          // If successful, break out of retry loop
+          if (attempt > 0) {
+            console.log(`Activities query succeeded on attempt ${attempt + 1}`);
+          }
 
-        return {
-          id: Number(log.id),
-          type: log.eventType as Activity['type'],
-          title,
-          description,
-          timestamp: log.createdAt,
-          userId: log.userId,
-          userName: log.user.fullName,
-          metadata,
-        };
-      });
+          // Transform and return
+          const activities: Activity[] = eventLogs.map((log) => {
+            const metadata = this.parseEventData(log.eventData);
+            const { title, description } = this.generateArabicContent(log.eventType, metadata);
 
-      return {
-        activities,
-        lastUpdated: new Date(),
-      };
+            return {
+              id: Number(log.id),
+              type: log.eventType as Activity['type'],
+              title,
+              description,
+              timestamp: log.createdAt,
+              userId: log.userId,
+              userName: log.user.fullName,
+              metadata,
+            };
+          });
+
+          return {
+            activities,
+            lastUpdated: new Date(),
+          };
+        } catch (error: any) {
+          lastError = error;
+
+          // Check if it's a connection error
+          const isConnectionError = error?.code === 'P1001' || error?.code === 'P1002';
+
+          if (isConnectionError && attempt < maxRetries) {
+            console.log(`Connection error on attempt ${attempt + 1}, retrying...`);
+            // Wait before retrying (exponential backoff)
+            await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 200));
+            continue;
+          }
+
+          // If not a connection error or max retries reached, throw
+          throw error;
+        }
+      }
+
+      // This should never be reached, but TypeScript needs it
+      throw lastError;
     } catch (error) {
       console.error('Error getting recent activities:', error);
       throw new Error('Failed to get recent activities');
