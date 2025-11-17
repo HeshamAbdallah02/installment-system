@@ -362,7 +362,7 @@ class ProductService {
       );
 
       // Count active installments per product
-      const productCounts = new Map<number, { product: any; count: number }>();
+      const productCounts = new Map<number, { product: { id: number; name: string; code: string }; count: number }>();
 
       installmentPlans.forEach((plan) => {
         plan.order.orderItems.forEach((item) => {
@@ -613,9 +613,9 @@ class ProductService {
           minDepositPercentage: data.minDepositPercentage,
           category: data.category,
           imageUrl: data.imageUrl,
-          specifications: data.specifications as any,
+          specifications: data.specifications as unknown as Prisma.InputJsonValue,
           availableTerms: [3, 6], // All products support only 3 and 6 month plans
-          customRates: data.customRates as any,
+          customRates: data.customRates as unknown as Prisma.InputJsonValue,
           stockQuantity: data.stockQuantity || 0,
           stockStatus,
           status: 'ACTIVE',
@@ -863,7 +863,7 @@ class ProductService {
       }
 
       // Prepare update data
-      const updateData: any = {};
+      const updateData: Record<string, string | number | number[] | Record<number, number> | undefined> = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.description !== undefined) updateData.description = data.description;
       if (data.cashPrice !== undefined) updateData.cashPrice = data.cashPrice;
@@ -1352,7 +1352,7 @@ class ProductService {
 
       return {
         format,
-        products: productsWithInventory.map((p: any) => ({
+        products: productsWithInventory.map((p: { id: number; code: string; name: string; cashPrice: number; minDepositAmount: number; availableTerms: number[]; customRates: Record<number, number> | null; imageUrl: string | null; isActive: boolean; createdAt: Date; updatedAt: Date; inventoryCount: number }) => ({
           code: p.code,
           name: p.name,
           category: p.category,

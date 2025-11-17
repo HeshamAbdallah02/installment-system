@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/auth.types';
 import reportService from '../services/reportService';
+import ExcelJS from 'exceljs';
+import PDFDocument from 'pdfkit';
 
 /**
  * Controller for handling report-related requests
@@ -232,7 +234,6 @@ class ReportController {
 
       if (format === 'excel') {
         // Use ExcelJS to generate Excel file
-        const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('تقرير التحصيل');
 
@@ -377,7 +378,7 @@ class ReportController {
             fgColor: { argb: 'FFFAFAF9' },
           };
 
-          exportData.data.collectorPerformance.forEach((collector: any) => {
+          exportData.data.collectorPerformance.forEach((collector: { collectorName: string; paymentCount: number; totalCollected: number }) => {
             worksheet.addRow([
               collector.collectorName,
               collector.paymentCount,
@@ -410,7 +411,7 @@ class ReportController {
             fgColor: { argb: 'FFFAFAF9' },
           };
 
-          exportData.data.topCustomers.forEach((customer: any) => {
+          exportData.data.topCustomers.forEach((customer: { customerName: string; paymentCount: number; totalPaid: number }) => {
             worksheet.addRow([
               customer.customerName,
               customer.paymentCount,
@@ -439,7 +440,7 @@ class ReportController {
             fgColor: { argb: 'FFFAFAF9' },
           };
 
-          exportData.data.dailyTotals.forEach((daily: any) => {
+          exportData.data.dailyTotals.forEach((daily: { date: string | Date; count: number; amount: number }) => {
             const dateStr = new Date(daily.date).toLocaleDateString('ar-EG', {
               year: 'numeric',
               month: 'long',
@@ -457,8 +458,8 @@ class ReportController {
         ];
 
         // Add borders to all cells
-        worksheet.eachRow((row: any) => {
-          row.eachCell((cell: any) => {
+        worksheet.eachRow((row: ExcelJS.Row) => {
+          row.eachCell((cell: ExcelJS.Cell) => {
             cell.border = {
               top: { style: 'thin' },
               left: { style: 'thin' },
@@ -478,7 +479,6 @@ class ReportController {
         res.send(buffer);
       } else {
         // Use PDFKit to generate PDF file
-        const PDFDocument = require('pdfkit');
         const doc = new PDFDocument({
           size: 'A4',
           margin: 50,
@@ -581,7 +581,7 @@ class ReportController {
           doc.fontSize(14).fillColor('#560001').text('أداء المحصلين:', { underline: true });
           doc.moveDown(0.5);
           doc.fontSize(11).fillColor('#000000');
-          exportData.data.collectorPerformance.forEach((collector: any) => {
+          exportData.data.collectorPerformance.forEach((collector: { collectorName: string; paymentCount: number; totalCollected: number }) => {
             doc.text(
               `${collector.collectorName}: ${collector.paymentCount} دفعة - ${collector.totalCollected.toFixed(2)} ج.م`
             );
@@ -594,7 +594,7 @@ class ReportController {
           doc.fontSize(14).fillColor('#560001').text('أفضل 5 عملاء:', { underline: true });
           doc.moveDown(0.5);
           doc.fontSize(11).fillColor('#000000');
-          exportData.data.topCustomers.forEach((customer: any, index: number) => {
+          exportData.data.topCustomers.forEach((customer: { customerName: string; paymentCount: number; totalPaid: number }, index: number) => {
             doc.text(
               `${index + 1}. ${customer.customerName}: ${customer.paymentCount} دفعة - ${customer.totalPaid.toFixed(2)} ج.م`
             );

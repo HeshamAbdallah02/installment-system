@@ -44,7 +44,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
         });
         setCustomers(response.data);
         setFilteredCustomers(response.data);
-        
+
         // Auto-select pre-selected customer if provided
         if (preSelectedCustomerId) {
           const preSelected = response.data.find((c) => c.id === preSelectedCustomerId);
@@ -67,7 +67,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
     };
 
     fetchCustomers();
-  }, [showToast]);
+  }, [showToast, preSelectedCustomerId, updateWizardState]);
 
   // Filter customers based on search term
   useEffect(() => {

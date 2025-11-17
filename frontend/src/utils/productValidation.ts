@@ -128,7 +128,7 @@ export const validateInventoryQuantity = (quantity: number | string): string | n
  * @param error - Error object from API
  * @returns User-friendly error message in Arabic
  */
-export const extractErrorMessage = (error: any): string => {
+export const extractErrorMessage = (error: unknown): string => {
   // Check if error has response data with error object
   if (error?.response?.data?.error?.message) {
     return error.response.data.error.message;

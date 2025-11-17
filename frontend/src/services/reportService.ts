@@ -61,7 +61,7 @@ export const exportReport = async (
   format: 'excel' | 'pdf',
   branchId?: number
 ): Promise<Blob> => {
-  const payload: any = {
+  const payload: Record<string, string | number | undefined> = {
     reportType,
     format,
     branchId,

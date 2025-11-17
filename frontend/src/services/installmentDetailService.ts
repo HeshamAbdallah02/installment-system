@@ -10,7 +10,7 @@ class InstallmentDetailService {
    * Get comprehensive installment detail
    * Requirements: 1.1, 1.2, 1.8, 1.9
    */
-  async getInstallmentDetail(installmentId: number): Promise<any> {
+  async getInstallmentDetail(installmentId: number): Promise<Record<string, unknown>> {
     try {
       const response = await apiClient.get(`/api/installments/${installmentId}/detail`);
       return response.data.data;
@@ -30,7 +30,7 @@ class InstallmentDetailService {
     paymentMethod: string,
     paymentDate: Date,
     notes?: string
-  ): Promise<any> {
+  ): Promise<{ payment: Record<string, unknown>; updatedSchedule: Record<string, unknown> }> {
     try {
       const response = await apiClient.post(`/api/installments/${installmentId}/payment`, {
         scheduleId,
@@ -53,7 +53,7 @@ class InstallmentDetailService {
     installmentId: number,
     method: 'whatsapp' | 'sms' | 'both',
     scheduleId?: number
-  ): Promise<any> {
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await apiClient.post(`/api/installments/${installmentId}/reminder`, {
         method,
@@ -75,7 +75,7 @@ class InstallmentDetailService {
     paymentMethod: string,
     paymentDate: Date,
     approvedBy?: number
-  ): Promise<any> {
+  ): Promise<{ settlement: Record<string, unknown>; finalPayment: Record<string, unknown> }> {
     try {
       const response = await apiClient.post(`/api/installments/${installmentId}/early-settlement`, {
         discountPercentage,
@@ -100,7 +100,7 @@ class InstallmentDetailService {
     interestRate: number | undefined,
     reason: string,
     approvedBy: number
-  ): Promise<any> {
+  ): Promise<{ updatedPlan: Record<string, unknown>; newSchedule: Array<Record<string, unknown>> }> {
     try {
       const response = await apiClient.put(`/api/installments/${installmentId}/modify-terms`, {
         monthlyAmount,
@@ -119,7 +119,7 @@ class InstallmentDetailService {
    * Cancel installment
    * Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9
    */
-  async cancelInstallment(installmentId: number, reason: string): Promise<any> {
+  async cancelInstallment(installmentId: number, reason: string): Promise<{ success: boolean; message: string }> {
     try {
       const response = await apiClient.post(`/api/installments/${installmentId}/cancel`, {
         reason,
@@ -143,7 +143,7 @@ class InstallmentDetailService {
       includeCustomer?: boolean;
       includeActivities?: boolean;
     }
-  ): Promise<any> {
+  ): Promise<Blob> {
     try {
       const response = await apiClient.post(`/api/installments/${installmentId}/export`, {
         format,

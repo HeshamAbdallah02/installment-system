@@ -24,7 +24,7 @@ interface BranchDistributionChartProps {
 }
 
 // Custom tooltip component with Arabic formatting
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: BranchData }> }) => {
   if (active && payload && payload.length && payload[0]) {
     const data = payload[0].payload as BranchData;
     return (
@@ -41,7 +41,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 // Custom label to show percentage on bars
-const renderCustomLabel = (props: any) => {
+const renderCustomLabel = (props: { x?: number; y?: number; width?: number; value?: number }) => {
   const { x, y, width, value } = props;
   return (
     <text

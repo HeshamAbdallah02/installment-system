@@ -73,7 +73,7 @@ interface ActivityRecord {
   entityId: number;
   userId: number;
   userName: string;
-  eventData: Record<string, any>;
+  eventData: Record<string, string | number | boolean | null | undefined>;
   createdAt: Date;
   relativeTime: string;
 }
@@ -263,7 +263,7 @@ class InstallmentDetailService {
    * Calculate installment statistics
    * Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6
    */
-  private async calculateStatistics(_planId: number, schedule: any[]): Promise<InstallmentStats> {
+  private async calculateStatistics(_planId: number, schedule: Array<{ status: string; dueDate: Date; amountDue: number; amountPaid: number; remainingAmount: number }>): Promise<InstallmentStats> {
     try {
       // Get all paid schedule items with payment dates
       const paidSchedules = schedule.filter((s) => s.status === 'PAID' && s.paidDate);
@@ -345,7 +345,7 @@ class InstallmentDetailService {
    * Calculate next due payment
    * Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8
    */
-  private calculateNextDuePayment(schedule: any[]): ScheduleItemDetail | null {
+  private calculateNextDuePayment(schedule: Array<{ id: number; status: string; dueDate: Date; amountDue: number; amountPaid: number; remainingAmount: number; installmentNumber: number }>): ScheduleItemDetail | null {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -380,7 +380,7 @@ class InstallmentDetailService {
    * Format schedule with status and overdue information
    * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9
    */
-  private formatSchedule(schedule: any[], nextDueId?: number): ScheduleItemDetail[] {
+  private formatSchedule(schedule: Array<{ id: number; status: string; dueDate: Date; amountDue: number; amountPaid: number; remainingAmount: number; installmentNumber: number }>, nextDueId?: number): ScheduleItemDetail[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -513,7 +513,7 @@ class InstallmentDetailService {
         entityId: event.entityId,
         userId: event.userId,
         userName: event.user.fullName,
-        eventData: (event.eventData as Record<string, any>) || {},
+        eventData: (event.eventData as Record<string, string | number | boolean | null | undefined>) || {},
         createdAt: event.createdAt,
         relativeTime: this.formatRelativeTime(event.createdAt),
       }));
@@ -592,7 +592,7 @@ class InstallmentDetailService {
       const product = plan.order.orderItems[0]?.product;
 
       // Get payment history if requested
-      let payments: any[] = [];
+      let payments: Array<{ id: number; amount: number; paymentDate: Date; paymentMethod: string; collectedBy: number; notes: string | null }> = [];
       if (options.includePayments) {
         const allocations = await prisma.paymentAllocation.findMany({
           where: {
@@ -631,7 +631,7 @@ class InstallmentDetailService {
       }
 
       // Get activities if requested
-      let activities: any[] = [];
+      let activities: Array<{ id: number; eventType: string; eventData: unknown; createdAt: Date; users?: { fullName: string } }> = [];
       if (options.includeActivities) {
         const events = await prisma.eventLog.findMany({
           where: {
@@ -886,7 +886,7 @@ class InstallmentDetailService {
 
       // Generate new payment schedule for remaining installments
       const startDate = remainingSchedules[0]?.dueDate || new Date();
-      const newSchedule: any[] = [];
+      const newSchedule: Array<{ installmentNumber: number; dueDate: Date; amountDue: number }> = [];
 
       for (let i = 0; i < termMonths; i++) {
         const dueDate = new Date(startDate);

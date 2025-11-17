@@ -38,7 +38,7 @@ export async function generateProductExcelExport(products: ExportProductData[]):
   });
 
   // Define columns with Arabic headers
-  const columns: any[] = [
+  const columns: Array<{ header: string; key: string; width: number }> = [
     { header: 'كود المنتج', key: 'code', width: 20 },
     { header: 'اسم المنتج', key: 'name', width: 30 },
     { header: 'الفئة', key: 'category', width: 20 },
@@ -90,7 +90,7 @@ export async function generateProductExcelExport(products: ExportProductData[]):
 
   // Add data rows
   products.forEach((product) => {
-    const rowData: any = {
+    const rowData: Record<string, string | number> = {
       code: product.code,
       name: product.name,
       category: product.category || '-',

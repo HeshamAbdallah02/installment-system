@@ -162,7 +162,7 @@ class InstallmentCalculationService {
     // TODO: Implement this when installmentRatio model is added to schema
     // or use product customRates instead
     return [];
-    
+
     /* Original implementation - commented out until model exists
     try {
       const ratios = await prisma.installmentRatio.findMany({
@@ -170,7 +170,7 @@ class InstallmentCalculationService {
         orderBy: { periodMonths: 'asc' },
       });
 
-      return ratios.map((ratio: any) => ({
+      return ratios.map((ratio: { periodMonths: number; ratioMultiplier: number | string }) => ({
         periodMonths: ratio.periodMonths,
         ratioMultiplier: Number(ratio.ratioMultiplier),
         description: ratio.description,

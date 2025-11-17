@@ -25,7 +25,7 @@ interface TopProductsChartProps {
 }
 
 // Custom tooltip component with Arabic formatting
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProductData }> }) => {
   if (active && payload && payload.length && payload[0]) {
     const data = payload[0].payload as ProductData;
     return (
@@ -42,7 +42,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 // Custom label to show count at bar end
-const renderCustomLabel = (props: any) => {
+const renderCustomLabel = (props: { x?: number; y?: number; width?: number; height?: number; value?: number }) => {
   const { x, y, width, height, value } = props;
   return (
     <text

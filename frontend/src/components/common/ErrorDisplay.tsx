@@ -5,7 +5,7 @@ interface ErrorDisplayProps {
   error: {
     code?: string;
     message: string;
-    details?: Record<string, any>;
+    details?: Record<string, string | number | boolean | null>;
   };
   onRetry?: () => void;
   onDismiss?: () => void;

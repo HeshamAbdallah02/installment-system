@@ -212,7 +212,7 @@ export interface Activity {
   entityId: number;
   userId: number;
   userName: string;
-  eventData: Record<string, any>;
+  eventData: Record<string, string | number | boolean | null | undefined>;
   createdAt: Date;
   relativeTime: string;
 }

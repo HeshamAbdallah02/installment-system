@@ -108,8 +108,9 @@ const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
       onSuccess(`تم تحديث ${data.updatedProducts.length} منتج بنجاح`);
       handleClose();
     },
-    onError: (error: any) => {
-      onError(error?.response?.data?.error?.message || 'فشل في تحديث الأسعار');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { error?: { message?: string } } } };
+      onError(apiError?.response?.data?.error?.message || 'فشل في تحديث الأسعار');
     },
   });
 

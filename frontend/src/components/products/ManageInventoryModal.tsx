@@ -99,8 +99,9 @@ const ManageInventoryModal: React.FC<ManageInventoryModalProps> = ({
       onSuccess('تم تعديل المخزون بنجاح');
       handleClose();
     },
-    onError: (error: any) => {
-      onError(error?.response?.data?.error?.message || 'فشل في تعديل المخزون');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { error?: { message?: string } } } };
+      onError(apiError?.response?.data?.error?.message || 'فشل في تعديل المخزون');
     },
   });
 

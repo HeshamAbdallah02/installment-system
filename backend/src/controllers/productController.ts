@@ -227,7 +227,7 @@ class ProductController {
       if (availableTerms) {
         const terms = JSON.parse(availableTerms);
         parsedAvailableTerms = Array.isArray(terms)
-          ? terms.map((t: any) => parseInt(t))
+          ? terms.map((t: string | number) => parseInt(String(t)))
           : undefined;
       }
 
@@ -457,7 +457,7 @@ class ProductController {
       // Get image URL from uploaded file if provided
       const imageUrl = req.file ? `/uploads/products/${req.file.filename}` : undefined;
 
-      const updateData: any = {};
+      const updateData: Record<string, string | number | number[] | Record<number, number> | undefined> = {};
       if (name !== undefined) updateData.name = name;
       if (description !== undefined) updateData.description = description;
       if (cashPrice !== undefined) updateData.cashPrice = parseFloat(cashPrice);
@@ -755,7 +755,7 @@ class ProductController {
       }
 
       const result = await productService.bulkPriceUpdate(
-        productIds.map((id: any) => parseInt(id)),
+        productIds.map((id: string | number) => parseInt(String(id))),
         updateMethod,
         parseFloat(value),
         req.user!.userId,

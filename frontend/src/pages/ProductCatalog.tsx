@@ -184,7 +184,7 @@ const ProductCatalog: React.FC = () => {
       if (!product) return;
 
       const action = product.status === 'ACTIVE' ? 'deactivate' : 'activate';
-      
+
       // Call the appropriate service method
       if (action === 'deactivate') {
         await productService.deactivateProduct(productId, 'تم إيقاف المنتج من قبل المستخدم');
@@ -192,9 +192,7 @@ const ProductCatalog: React.FC = () => {
         await productService.activateProduct(productId);
       }
 
-      showSuccess(
-        product.status === 'ACTIVE' ? 'تم إيقاف المنتج بنجاح' : 'تم تفعيل المنتج بنجاح'
-      );
+      showSuccess(product.status === 'ACTIVE' ? 'تم إيقاف المنتج بنجاح' : 'تم تفعيل المنتج بنجاح');
 
       // Refresh catalog
       setFilters({ ...filters });
@@ -202,7 +200,7 @@ const ProductCatalog: React.FC = () => {
       showError('فشل في تغيير حالة المنتج');
       console.error('Toggle status error:', error);
     }
-  };;
+  };
 
   /**
    * Handle add product

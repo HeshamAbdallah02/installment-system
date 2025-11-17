@@ -99,13 +99,13 @@ export function getErrorMessage(errorCode: string): string {
 export interface ApiError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, string | number | boolean | null>;
 }
 
 /**
  * Extract error information from axios error
  */
-export function extractApiError(error: any): ApiError {
+export function extractApiError(error: unknown): ApiError {
   // Network error
   if (!error.response) {
     return {

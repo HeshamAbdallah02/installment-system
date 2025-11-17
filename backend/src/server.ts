@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 4000;
 
 // Warm up database connection with retry logic
 async function warmupDatabase() {
-  const maxRetries = 3;
-  
+  const maxRetries = 5; // Increased from 3
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Warming up database connection (attempt ${attempt}/${maxRetries})...`);
@@ -21,15 +21,18 @@ async function warmupDatabase() {
       await prisma.$queryRaw`SELECT 1`;
       console.log('✓ Database connection ready');
       return; // Success, exit function
-    } catch (error: any) {
-      console.error(`Database warmup attempt ${attempt} failed:`, error.message);
-      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Database warmup attempt ${attempt} failed:`, errorMessage);
+
       if (attempt < maxRetries) {
-        const waitTime = attempt * 1000; // 1s, 2s, 3s
+        const waitTime = attempt * 2000; // 2s, 4s, 6s, 8s - increased delays
         console.log(`Retrying in ${waitTime}ms...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       } else {
-        console.error('⚠ Database warmup failed after all retries. Server will start but initial requests may fail.');
+        console.error(
+          '⚠ Database warmup failed after all retries. Server will start but initial requests may fail.'
+        );
       }
     }
   }
@@ -58,5 +61,3 @@ warmupDatabase().then(() => {
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
 });
-
-

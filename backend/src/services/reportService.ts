@@ -529,7 +529,7 @@ class ReportService {
     }
   ) {
     try {
-      let reportData: any;
+      let reportData: { summary: Record<string, number | string>; data: Record<string, unknown> };
 
       // Get report data based on type
       switch (reportType) {

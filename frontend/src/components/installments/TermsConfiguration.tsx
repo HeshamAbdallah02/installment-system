@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { WizardState } from '../../types/installment';
 import installmentService from '../../services/installmentService';
-import { validateDeposit, getErrorMessage, logError } from '../../utils/errorHandling';
+import { getErrorMessage, logError } from '../../utils/errorHandling';
 
 interface TermsConfigurationProps {
   wizardState: WizardState;

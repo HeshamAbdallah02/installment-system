@@ -1,4 +1,5 @@
 import prisma from '../prismaClient';
+import { Prisma } from '@prisma/client';
 
 /**
  * Event types for audit logging
@@ -37,7 +38,7 @@ class AuditService {
           entityType: 'USER',
           entityId: userId,
           userId,
-          eventData: sanitizedData as any,
+          eventData: sanitizedData as unknown as Prisma.InputJsonValue,
           ipAddress: ipAddress || null,
         },
       });

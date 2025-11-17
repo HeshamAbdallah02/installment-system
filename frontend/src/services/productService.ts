@@ -129,7 +129,7 @@ class ProductService {
     type: string,
     quantity: number,
     reason: string
-  ): Promise<{ product: Product; adjustment: any }> {
+  ): Promise<{ product: Product; adjustment: { id: number; productId: number; quantity: number; reason: string; createdAt: string } }> {
     try {
       const response = await api.post(`/api/products/${productId}/inventory/adjust`, {
         type,
@@ -145,7 +145,7 @@ class ProductService {
   /**
    * Get inventory adjustment history
    */
-  async getInventoryHistory(productId: number): Promise<any[]> {
+  async getInventoryHistory(productId: number): Promise<Array<{ id: number; productId: number; quantity: number; reason: string; createdAt: string }>> {
     try {
       const response = await api.get(`/api/products/${productId}/inventory/history`);
       return response.data.data;
@@ -165,7 +165,7 @@ class ProductService {
       | 'FIXED_INCREASE'
       | 'FIXED_DECREASE',
     value: number
-  ): Promise<{ updatedProducts: Product[]; changes: any[] }> {
+  ): Promise<{ updatedProducts: Product[]; changes: Array<{ productId: number; oldPrice: number; newPrice: number }> }> {
     try {
       const response = await api.post('/api/products/bulk-price-update', {
         productIds,

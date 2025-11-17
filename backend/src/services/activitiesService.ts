@@ -30,7 +30,7 @@ class ActivitiesService {
 
       // Retry logic for connection errors
       const maxRetries = 2;
-      let lastError: any;
+      let lastError: Error | null = null;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
@@ -91,11 +91,12 @@ class ActivitiesService {
             activities,
             lastUpdated: new Date(),
           };
-        } catch (error: any) {
-          lastError = error;
+        } catch (error: unknown) {
+          lastError = error as Error;
 
           // Check if it's a connection error
-          const isConnectionError = error?.code === 'P1001' || error?.code === 'P1002';
+          const prismaError = error as { code?: string };
+          const isConnectionError = prismaError?.code === 'P1001' || prismaError?.code === 'P1002';
 
           if (isConnectionError && attempt < maxRetries) {
             console.log(`Connection error on attempt ${attempt + 1}, retrying...`);
@@ -131,7 +132,7 @@ class ActivitiesService {
 
       // eventData is already parsed by Prisma as Json type
       const metadata: ActivityMetadata = {};
-      const data = eventData as Record<string, any>;
+      const data = eventData as Record<string, string | number | boolean | null | undefined>;
 
       // Extract common fields
       if (data.customerName) {

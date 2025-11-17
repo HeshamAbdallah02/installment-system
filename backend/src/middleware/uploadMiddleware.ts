@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * Configure multer for file uploads
@@ -27,7 +28,7 @@ const storage = multer.diskStorage({
 });
 
 // File filter - only allow images
-const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
@@ -49,7 +50,7 @@ export const upload = multer({
 /**
  * Middleware to handle multer errors
  */
-export const handleUploadError = (err: any, _req: any, res: any, next: any) => {
+export const handleUploadError = (err: Error, _req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({

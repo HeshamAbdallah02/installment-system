@@ -7,75 +7,57 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// USERS & BRANCHES
-// ============================================================================
+model branches {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  code      String   @unique @db.VarChar(20)
+  address   String?
+  city      String?  @db.VarChar(50)
+  phone     String?  @db.VarChar(20)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  orders    orders[]
+  users     users[]
+}
 
-model Branch {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(100)
-  code       String   @unique @db.VarChar(20)
-  address    String?  @db.Text
-  city       String?  @db.VarChar(50)
-  phone      String?  @db.VarChar(20)
-  isActive   Boolean  @default(true)
+model customers {
+  id                Int                 @id @default(autoincrement())
+  fullName          String              @db.VarChar(100)
+  nationalId        String              @unique @db.Char(14)
+  phone             String              @db.VarChar(20)
+  phoneSecondary    String?             @db.VarChar(20)
+  address           String?
+  city              String?             @db.VarChar(50)
+  createdBy         Int
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  users             users               @relation(fields: [createdBy], references: [id])
+  installment_plans installment_plans[]
+  orders            orders[]
+  payments          payments[]
+}
+
+model event_log {
+  id         BigInt   @id @default(autoincrement())
+  eventType  String   @db.VarChar(50)
+  entityType String   @db.VarChar(50)
+  entityId   Int
+  userId     Int
+  eventData  Json?
+  ipAddress  String?  @db.Inet
   createdAt  DateTime @default(now())
-  users      User[]
-  orders     Order[]
+  users      users    @relation(fields: [userId], references: [id])
 
-  @@map("branches")
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([eventType, createdAt])
+  @@index([eventType])
+  @@index([userId])
 }
 
-model User {
-  id                Int               @id @default(autoincrement())
-  username          String            @unique @db.VarChar(50)
-  passwordHash      String            @db.VarChar(255)
-  fullName          String            @db.VarChar(100)
-  email             String?           @db.VarChar(100)
-  role              String            @db.VarChar(20) // SELLER, MANAGER, ADMIN
-  branchId          Int?
-  isActive          Boolean           @default(true)
-  lastLoginAt       DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  branch            Branch?           @relation(fields: [branchId], references: [id])
-  customersCreated  Customer[]        @relation("CustomerCreatedBy")
-  filesUploaded     FileStorage[]     @relation("FileUploadedBy")
-  ordersCreated     Order[]           @relation("OrderCreatedBy")
-  plansCreated         InstallmentPlan[]     @relation("PlanCreatedBy")
-  paymentsCollected    Payment[]             @relation("PaymentCollectedBy")
-  inventoryAdjustments InventoryAdjustment[] @relation("InventoryAdjustedBy")
-  eventLogs            EventLog[]
-
-  @@map("users")
-}
-
-// ============================================================================
-// CUSTOMERS & FILES
-// ============================================================================
-
-model Customer {
-  id               Int               @id @default(autoincrement())
-  fullName         String            @db.VarChar(100)
-  nationalId       String            @unique @db.Char(14)
-  phone            String            @db.VarChar(20)
-  phoneSecondary   String?           @db.VarChar(20)
-  address          String?           @db.Text
-  city             String?           @db.VarChar(50)
-  createdBy        Int
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  createdByUser    User              @relation("CustomerCreatedBy", fields: [createdBy], references: [id])
-  orders           Order[]
-  installmentPlans InstallmentPlan[]
-  payments         Payment[]
-
-  @@map("customers")
-}
-
-model FileStorage {
+model file_storage {
   id            Int      @id @default(autoincrement())
-  entityType    String   @db.VarChar(50) // CUSTOMER_ID, CONTRACT, PAYMENT_RECEIPT, OTHER
+  entityType    String   @db.VarChar(50)
   entityId      Int
   storagePath   String   @db.VarChar(500)
   fileName      String   @db.VarChar(255)
@@ -84,222 +66,199 @@ model FileStorage {
   fileHash      String   @db.VarChar(64)
   uploadedBy    Int
   uploadedAt    DateTime @default(now())
-  uploadedByUser User    @relation("FileUploadedBy", fields: [uploadedBy], references: [id])
+  users         users    @relation(fields: [uploadedBy], references: [id])
 
   @@index([entityType, entityId])
-  @@map("file_storage")
 }
 
-// ============================================================================
-// PRODUCTS & PRICING
-// ============================================================================
+model installment_plans {
+  id                   Int                    @id @default(autoincrement())
+  orderId              Int                    @unique
+  customerId           Int
+  totalAmount          Decimal                @db.Decimal(12, 2)
+  depositAmount        Decimal                @default(0) @db.Decimal(12, 2)
+  financedAmount       Decimal                @db.Decimal(12, 2)
+  periodMonths         Int
+  ratioMultiplier      Decimal                @db.Decimal(5, 4)
+  totalWithRatio       Decimal                @db.Decimal(12, 2)
+  monthlyAmount        Decimal                @db.Decimal(12, 2)
+  startDate            DateTime               @db.Date
+  endDate              DateTime               @db.Date
+  status               String                 @default("ACTIVE") @db.VarChar(20)
+  createdBy            Int
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  users                users                  @relation(fields: [createdBy], references: [id])
+  customers            customers              @relation(fields: [customerId], references: [id])
+  orders               orders                 @relation(fields: [orderId], references: [id])
+  installment_schedule installment_schedule[]
 
-model Product {
-  id                    Int                     @id @default(autoincrement())
-  code                  String                  @unique @db.VarChar(50)
-  name                  String                  @db.VarChar(200)
-  size                  String?                 @db.VarChar(50)
-  description           String?                 @db.Text
-  cashPrice             Decimal                 @db.Decimal(12, 2)
-  requiresDeposit       Boolean                 @default(false)
-  minDepositAmount      Decimal?                @db.Decimal(12, 2)
-  minDepositPercentage  Decimal?                @db.Decimal(5, 2)
-  category              String?                 @db.VarChar(50)
-  imageUrl              String?                 @db.VarChar(500)
-  specifications        Json?                   @db.JsonB
-  availableTerms        Int[]                   @default([3, 6, 12, 24])
-  customRates           Json?                   @db.JsonB
-  stockQuantity         Int                     @default(0)
-  stockStatus           String                  @default("OUT_OF_STOCK") @db.VarChar(20) // IN_STOCK, LOW_STOCK, OUT_OF_STOCK
-  status                String                  @default("ACTIVE") @db.VarChar(20) // ACTIVE, DISCONTINUED
-  isActive              Boolean                 @default(true)
-  deactivationReason    String?                 @db.Text
-  deactivatedAt         DateTime?
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
-  orderItems            OrderItem[]
-  inventoryAdjustments  InventoryAdjustment[]
-
-  @@map("products")
+  @@index([customerId])
+  @@index([status])
 }
 
-model InventoryAdjustment {
+model installment_schedule {
+  id                  Int                   @id @default(autoincrement())
+  planId              Int
+  sequenceNumber      Int
+  dueDate             DateTime              @db.Date
+  totalAmount         Decimal               @db.Decimal(12, 2)
+  principalAmount     Decimal               @db.Decimal(12, 2)
+  extraAmount         Decimal               @db.Decimal(12, 2)
+  paidAmount          Decimal               @default(0) @db.Decimal(12, 2)
+  status              String                @default("PENDING") @db.VarChar(20)
+  paidDate            DateTime?             @db.Date
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  installment_plans   installment_plans     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  payment_allocations payment_allocations[]
+
+  @@unique([planId, sequenceNumber])
+  @@index([dueDate])
+  @@index([planId])
+  @@index([status, dueDate])
+  @@index([status])
+}
+
+model inventory_adjustments {
   id               Int      @id @default(autoincrement())
   productId        Int
-  type             String   @db.VarChar(20) // SALE, RESTOCK, DAMAGE, RETURN
+  type             String   @db.VarChar(20)
   quantity         Int
   previousQuantity Int
   newQuantity      Int
-  reason           String   @db.Text
+  reason           String
   adjustedBy       Int
   createdAt        DateTime @default(now())
-  product          Product  @relation(fields: [productId], references: [id])
-  adjustedByUser   User     @relation("InventoryAdjustedBy", fields: [adjustedBy], references: [id])
+  users            users    @relation(fields: [adjustedBy], references: [id])
+  products         products @relation(fields: [productId], references: [id])
 
-  @@index([productId])
   @@index([createdAt])
-  @@map("inventory_adjustments")
+  @@index([productId])
 }
 
-// ============================================================================
-// ORDERS & INSTALLMENT PLANS
-// ============================================================================
+model order_items {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(12, 2)
+  lineTotal Decimal  @db.Decimal(12, 2)
+  orders    orders   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  products  products @relation(fields: [productId], references: [id])
 
-model Order {
-  id               Int               @id @default(autoincrement())
-  orderNumber      String            @unique @db.VarChar(50)
-  customerId       Int
-  branchId         Int
-  orderDate        DateTime          @default(now()) @db.Date
-  totalAmount      Decimal           @db.Decimal(12, 2)
-  paymentType      String            @db.VarChar(20) // CASH, INSTALLMENT
-  status           String            @default("PENDING") @db.VarChar(20) // PENDING, CONFIRMED, COMPLETED, CANCELLED
-  createdBy        Int
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  customer         Customer          @relation(fields: [customerId], references: [id])
-  branch           Branch            @relation(fields: [branchId], references: [id])
-  createdByUser    User              @relation("OrderCreatedBy", fields: [createdBy], references: [id])
-  orderItems       OrderItem[]
-  installmentPlan  InstallmentPlan?
-  payments         Payment[]
+  @@index([orderId])
+}
+
+model orders {
+  id                Int                @id @default(autoincrement())
+  orderNumber       String             @unique @db.VarChar(50)
+  customerId        Int
+  branchId          Int
+  orderDate         DateTime           @default(now()) @db.Date
+  totalAmount       Decimal            @db.Decimal(12, 2)
+  paymentType       String             @db.VarChar(20)
+  status            String             @default("PENDING") @db.VarChar(20)
+  createdBy         Int
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime
+  installment_plans installment_plans?
+  order_items       order_items[]
+  branches          branches           @relation(fields: [branchId], references: [id])
+  users             users              @relation(fields: [createdBy], references: [id])
+  customers         customers          @relation(fields: [customerId], references: [id])
+  payments          payments[]
 
   @@index([customerId])
   @@index([orderDate])
   @@index([status])
-  @@map("orders")
 }
 
-model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  productId Int
-  quantity  Int
-  unitPrice Decimal @db.Decimal(12, 2)
-  lineTotal Decimal @db.Decimal(12, 2)
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
-
-  @@index([orderId])
-  @@map("order_items")
-}
-
-model InstallmentPlan {
-  id              Int                  @id @default(autoincrement())
-  orderId         Int                  @unique
-  customerId      Int
-  totalAmount     Decimal              @db.Decimal(12, 2)
-  depositAmount   Decimal              @default(0) @db.Decimal(12, 2)
-  financedAmount  Decimal              @db.Decimal(12, 2)
-  periodMonths    Int
-  ratioMultiplier Decimal              @db.Decimal(5, 4)
-  totalWithRatio  Decimal              @db.Decimal(12, 2)
-  monthlyAmount   Decimal              @db.Decimal(12, 2)
-  startDate       DateTime             @db.Date
-  endDate         DateTime             @db.Date
-  status          String               @default("ACTIVE") @db.VarChar(20) // ACTIVE, COMPLETED, DEFAULTED, CANCELLED
-  createdBy       Int
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  order           Order                @relation(fields: [orderId], references: [id])
-  customer        Customer             @relation(fields: [customerId], references: [id])
-  createdByUser   User                 @relation("PlanCreatedBy", fields: [createdBy], references: [id])
-  schedule        InstallmentSchedule[]
-
-  @@index([customerId])
-  @@index([status])
-  @@map("installment_plans")
-}
-
-model InstallmentSchedule {
-  id              Int                 @id @default(autoincrement())
-  planId          Int
-  sequenceNumber  Int
-  dueDate         DateTime            @db.Date
-  totalAmount     Decimal             @db.Decimal(12, 2)
-  principalAmount Decimal             @db.Decimal(12, 2)
-  extraAmount     Decimal             @db.Decimal(12, 2)
-  paidAmount      Decimal             @default(0) @db.Decimal(12, 2)
-  status          String              @default("PENDING") @db.VarChar(20) // PENDING, PARTIAL, PAID, OVERDUE
-  paidDate        DateTime?           @db.Date
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  plan            InstallmentPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  allocations     PaymentAllocation[]
-
-  @@unique([planId, sequenceNumber])
-  @@index([planId])
-  @@index([dueDate])
-  @@index([status])
-  @@index([status, dueDate])
-  @@map("installment_schedule")
-}
-
-// ============================================================================
-// PAYMENTS & ALLOCATIONS
-// ============================================================================
-
-model Payment {
-  id                 Int                 @id @default(autoincrement())
-  paymentNumber      String              @unique @db.VarChar(50)
-  customerId         Int
-  orderId            Int
-  amount             Decimal             @db.Decimal(12, 2)
-  paymentMethod      String              @db.VarChar(20) // CASH, CARD, BANK_TRANSFER, CHECK
-  paymentDate        DateTime            @default(now()) @db.Date
-  isReversal         Boolean             @default(false)
-  reversedPaymentId  Int?
-  reversalReason     String?             @db.Text
-  collectedBy        Int
-  createdAt          DateTime            @default(now())
-  customer           Customer            @relation(fields: [customerId], references: [id])
-  order              Order               @relation(fields: [orderId], references: [id])
-  collectedByUser    User                @relation("PaymentCollectedBy", fields: [collectedBy], references: [id])
-  reversedPayment    Payment?            @relation("PaymentReversal", fields: [reversedPaymentId], references: [id])
-  reversals          Payment[]           @relation("PaymentReversal")
-  allocations        PaymentAllocation[]
-
-  @@index([customerId])
-  @@index([orderId])
-  @@index([paymentDate])
-  @@index([createdAt])
-  @@map("payments")
-}
-
-model PaymentAllocation {
-  id             Int                 @id @default(autoincrement())
-  paymentId      Int
-  scheduleId     Int
-  allocationType String              @db.VarChar(20) // PRINCIPAL, EXTRA, PREPAYMENT
-  amount         Decimal             @db.Decimal(12, 2)
-  createdAt      DateTime            @default(now())
-  payment        Payment             @relation(fields: [paymentId], references: [id])
-  schedule       InstallmentSchedule @relation(fields: [scheduleId], references: [id])
+model payment_allocations {
+  id                   Int                  @id @default(autoincrement())
+  paymentId            Int
+  scheduleId           Int
+  allocationType       String               @db.VarChar(20)
+  amount               Decimal              @db.Decimal(12, 2)
+  createdAt            DateTime             @default(now())
+  payments             payments             @relation(fields: [paymentId], references: [id])
+  installment_schedule installment_schedule @relation(fields: [scheduleId], references: [id])
 
   @@index([paymentId])
   @@index([scheduleId])
-  @@map("payment_allocations")
 }
 
-// ============================================================================
-// AUDIT LOG
-// ============================================================================
+model payments {
+  id                  Int                   @id @default(autoincrement())
+  paymentNumber       String                @unique @db.VarChar(50)
+  customerId          Int
+  orderId             Int
+  amount              Decimal               @db.Decimal(12, 2)
+  paymentMethod       String                @db.VarChar(20)
+  paymentDate         DateTime              @default(now()) @db.Date
+  isReversal          Boolean               @default(false)
+  reversedPaymentId   Int?
+  reversalReason      String?
+  collectedBy         Int
+  createdAt           DateTime              @default(now())
+  payment_allocations payment_allocations[]
+  users               users                 @relation(fields: [collectedBy], references: [id])
+  customers           customers             @relation(fields: [customerId], references: [id])
+  orders              orders                @relation(fields: [orderId], references: [id])
+  payments            payments?             @relation("paymentsTopayments", fields: [reversedPaymentId], references: [id])
+  other_payments      payments[]            @relation("paymentsTopayments")
 
-model EventLog {
-  id         BigInt   @id @default(autoincrement())
-  eventType  String   @db.VarChar(50)
-  entityType String   @db.VarChar(50)
-  entityId   Int
-  userId     Int
-  eventData  Json?    @db.JsonB
-  ipAddress  String?  @db.Inet
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
-
-  @@index([entityType, entityId])
-  @@index([userId])
   @@index([createdAt])
-  @@index([eventType])
-  @@index([eventType, createdAt])
-  @@map("event_log")
+  @@index([customerId])
+  @@index([orderId])
+  @@index([paymentDate])
+}
+
+model products {
+  id                    Int                     @id @default(autoincrement())
+  code                  String                  @unique @db.VarChar(50)
+  name                  String                  @db.VarChar(200)
+  description           String?
+  cashPrice             Decimal                 @db.Decimal(12, 2)
+  requiresDeposit       Boolean                 @default(false)
+  minDepositAmount      Decimal?                @db.Decimal(12, 2)
+  category              String?                 @db.VarChar(50)
+  isActive              Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  availableTerms        Int[]                   @default([3, 6, 12, 24])
+  customRates           Json?
+  deactivatedAt         DateTime?
+  deactivationReason    String?
+  imageUrl              String?                 @db.VarChar(500)
+  minDepositPercentage  Decimal?                @db.Decimal(5, 2)
+  specifications        Json?
+  status                String                  @default("ACTIVE") @db.VarChar(20)
+  stockQuantity         Int                     @default(0)
+  stockStatus           String                  @default("OUT_OF_STOCK") @db.VarChar(20)
+  size                  String?                 @db.VarChar(50)
+  inventory_adjustments inventory_adjustments[]
+  order_items           order_items[]
+}
+
+model users {
+  id                    Int                     @id @default(autoincrement())
+  username              String                  @unique @db.VarChar(50)
+  passwordHash          String                  @db.VarChar(255)
+  fullName              String                  @db.VarChar(100)
+  email                 String?                 @db.VarChar(100)
+  role                  String                  @db.VarChar(20)
+  branchId              Int?
+  isActive              Boolean                 @default(true)
+  lastLoginAt           DateTime?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  customers             customers[]
+  event_log             event_log[]
+  file_storage          file_storage[]
+  installment_plans     installment_plans[]
+  inventory_adjustments inventory_adjustments[]
+  orders                orders[]
+  payments              payments[]
+  branches              branches?               @relation(fields: [branchId], references: [id])
 }

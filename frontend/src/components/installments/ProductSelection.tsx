@@ -87,7 +87,13 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
         }
       }
     }
-  }, [preSelectedProductId, products, wizardState.cartItems.length, availableCredit, updateWizardState]);
+  }, [
+    preSelectedProductId,
+    products,
+    wizardState.cartItems.length,
+    availableCredit,
+    updateWizardState,
+  ]);
 
   // Add product to cart
   const handleAddToCart = useCallback(

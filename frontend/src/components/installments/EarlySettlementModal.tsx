@@ -127,9 +127,10 @@ const EarlySettlementModal: React.FC<EarlySettlementModalProps> = ({
 
       handleClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { error?: { message?: string } } } };
       const errorMessage =
-        error?.response?.data?.error?.message || 'حدث خطأ أثناء معالجة التسوية المبكرة';
+        apiError?.response?.data?.error?.message || 'حدث خطأ أثناء معالجة التسوية المبكرة';
       showError(errorMessage);
       console.error('Early settlement error:', error);
     },

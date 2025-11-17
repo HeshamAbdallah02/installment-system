@@ -25,6 +25,7 @@ const FiltersBar: React.FC<FiltersBarProps> = ({ filters, onFiltersChange, categ
     if (debouncedSearch !== filters.search) {
       onFiltersChange({ ...filters, search: debouncedSearch, page: 1 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
   /**

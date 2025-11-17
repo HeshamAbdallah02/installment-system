@@ -63,7 +63,7 @@ const PaymentDistributionPieChart: React.FC<PaymentDistributionPieChartProps> = 
     return null;
   };
 
-  const CustomLabel = (props: any) => {
+  const CustomLabel = (props: { cx?: number; cy?: number; midAngle?: number; innerRadius?: number; outerRadius?: number; percentage?: number }) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percentage } = props;
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;

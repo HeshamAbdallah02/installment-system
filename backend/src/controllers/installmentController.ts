@@ -49,7 +49,7 @@ class InstallmentController {
 
       const installmentData = {
         customerId: parseInt(customerId),
-        items: items.map((item: any) => ({
+        items: items.map((item: { productId: string; quantity: string; unitPrice: string }) => ({
           productId: parseInt(item.productId),
           quantity: parseInt(item.quantity),
           unitPrice: parseFloat(item.unitPrice),

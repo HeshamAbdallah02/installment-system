@@ -107,8 +107,9 @@ const MultiplePaymentModal: React.FC<MultiplePaymentModalProps> = ({
         onSuccess();
       }
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'حدث خطأ أثناء تسجيل الدفعات';
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = apiError.response?.data?.message || 'حدث خطأ أثناء تسجيل الدفعات';
       showError(errorMessage);
     },
   });

@@ -3,7 +3,7 @@ import installmentDetailService from '../services/installmentDetailService';
 import type { ApiError } from '../constants/errors';
 
 interface UseInstallmentDetailResult {
-  data: any | null;
+  data: Record<string, unknown> | null;
   loading: boolean;
   error: ApiError | null;
   refetch: () => Promise<void>;
@@ -12,7 +12,7 @@ interface UseInstallmentDetailResult {
 
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
-const cache = new Map<number, { data: any; timestamp: number }>();
+const cache = new Map<number, { data: Record<string, unknown>; timestamp: number }>();
 
 /**
  * Custom hook for fetching and managing installment detail data with caching
@@ -20,7 +20,7 @@ const cache = new Map<number, { data: any; timestamp: number }>();
  * Performance: Caches data for 5 minutes to reduce API calls
  */
 export function useInstallmentDetail(installmentId: number | null): UseInstallmentDetailResult {
-  const [data, setData] = useState<any | null>(null);
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const isMountedRef = useRef(true);

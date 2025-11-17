@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import CustomInstallmentRates from './CustomInstallmentRates';
 import productService from '../../services/productService';
 
 // Product categories for female wear and accessories retail store
@@ -60,12 +59,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   const {
     register,
     handleSubmit,
-    control,
-    watch,
     formState: { errors },
     reset,
     setError,
-    setValue,
   } = useForm<ProductFormData>({
     mode: 'onBlur',
     defaultValues: {
@@ -88,8 +84,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
       onSuccess('تم إضافة المنتج بنجاح');
       handleClose();
     },
-    onError: (error: any) => {
-      if (error?.response?.data?.error?.code === 'DUPLICATE_CODE') {
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { error?: { code?: string; message?: string } } } };
+      if (apiError?.response?.data?.error?.code === 'DUPLICATE_CODE') {
         setError('code', {
           type: 'manual',
           message: 'كود المنتج موجود بالفعل',

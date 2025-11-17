@@ -67,11 +67,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   const {
     register,
     handleSubmit,
-    control,
-    watch,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<ProductFormData>({
     mode: 'onBlur',
   });
@@ -84,7 +81,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
    */
   useEffect(() => {
     if (product) {
-      const productWithSize = product as any;
+      const productWithSize = product as typeof product & { size?: string };
       reset({
         code: product.code,
         name: product.name,
@@ -99,7 +96,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
       });
 
       // Set specifications if available
-      const productWithSpecs = product as any;
+      const productWithSpecs = product as typeof product & { specifications?: Array<{ key: string; value: string }> };
       if (productWithSpecs.specifications && Array.isArray(productWithSpecs.specifications)) {
         const specs = productWithSpecs.specifications as Array<{ key: string; value: string }>;
         if (specs.length > 0) {
@@ -125,8 +122,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
       onSuccess('تم تحديث المنتج بنجاح');
       handleClose();
     },
-    onError: (error: any) => {
-      onError(error?.response?.data?.error?.message || 'فشل في تحديث المنتج');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { error?: { message?: string } } } };
+      onError(apiError?.response?.data?.error?.message || 'فشل في تحديث المنتج');
     },
   });
 

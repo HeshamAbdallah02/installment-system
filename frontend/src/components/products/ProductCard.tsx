@@ -179,7 +179,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(
                   {formatCurrency(product.cashPrice)} ج.م
                 </span>
               </div>
-              
+
               {/* Stock Quantity */}
               <div className="flex items-center justify-between">
                 <span className="text-sm text-brand-offwhite-700">الكمية المتاحة</span>

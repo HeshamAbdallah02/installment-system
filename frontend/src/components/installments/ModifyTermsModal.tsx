@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -74,11 +74,11 @@ const ModifyTermsModal: React.FC<ModifyTermsModalProps> = ({
   const newInterestRate = watch('interestRate');
 
   // Calculate new terms
-  const calculatedNewTerms = {
+  const calculatedNewTerms = useMemo(() => ({
     monthlyAmount: newMonthlyAmount || currentTerms.monthlyAmount,
     termMonths: newTermMonths || currentTerms.termMonths,
     interestRate: newInterestRate !== undefined ? newInterestRate : currentTerms.interestRate,
-  };
+  }), [newMonthlyAmount, newTermMonths, newInterestRate, currentTerms.monthlyAmount, currentTerms.termMonths, currentTerms.interestRate]);
 
   const totalWithInterest = calculatedNewTerms.monthlyAmount * calculatedNewTerms.termMonths;
 
@@ -149,8 +149,9 @@ const ModifyTermsModal: React.FC<ModifyTermsModalProps> = ({
 
       handleClose();
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.error?.message || 'حدث خطأ أثناء تعديل الشروط';
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { error?: { message?: string } } } };
+      const errorMessage = apiError?.response?.data?.error?.message || 'حدث خطأ أثناء تعديل الشروط';
       showError(errorMessage);
       console.error('Modify terms error:', error);
     },

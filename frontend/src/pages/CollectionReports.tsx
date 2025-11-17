@@ -48,10 +48,11 @@ const CollectionReports: React.FC = () => {
     switch (datePreset) {
       case 'today':
         return { start: today, end: today };
-      case 'yesterday':
+      case 'yesterday': {
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
         return { start: yesterday, end: yesterday };
+      }
       case 'thisWeek':
         return { start: startOfWeek, end: endOfWeek };
       case 'thisMonth':
