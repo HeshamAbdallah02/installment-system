@@ -315,10 +315,15 @@ class ProductService {
   /**
    * Get popular products by active installment count
    * @param limit - Number of products to return (default 5)
-   * @returns Promise resolving to popular products
+   * @returns Promise resolving to popular products with monthly sold quantity
    */
   async getPopularProducts(limit: number = 5) {
     try {
+      // Get start of current month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
       // Get all active installment plans with their products
       const installmentPlans = await prisma.installmentPlan.findMany({
         where: {
@@ -336,6 +341,25 @@ class ProductService {
           },
         },
       });
+
+      // Get monthly sales count per product
+      const monthlySales = await prisma.orderItem.groupBy({
+        by: ['productId'],
+        where: {
+          order: {
+            createdAt: {
+              gte: startOfMonth,
+            },
+          },
+        },
+        _sum: {
+          quantity: true,
+        },
+      });
+
+      const monthlySalesMap = new Map(
+        monthlySales.map((item) => [item.productId, item._sum.quantity || 0])
+      );
 
       // Count active installments per product
       const productCounts = new Map<number, { product: any; count: number }>();
@@ -362,8 +386,8 @@ class ProductService {
       return sortedProducts.map(([productId, data], index) => ({
         id: productId,
         name: data.product.name,
-        imageUrl: data.product.imageUrl,
         activeInstallmentsCount: data.count,
+        monthlySoldQuantity: monthlySalesMap.get(productId) || 0,
         rank: index + 1,
         cashPrice: Number(data.product.cashPrice),
         category: data.product.category,

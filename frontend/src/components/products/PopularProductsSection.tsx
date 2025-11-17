@@ -10,20 +10,19 @@ interface PopularProductsSectionProps {
 
 /**
  * PopularProductsSection Component
- * Displays top 5 products by active installment count
- * Requirements: 5.1-5.8
- * Performance: Preload images, memoized rendering
+ * Displays top 5 products by active installment count and monthly sales
+ * Shows sold quantity for the current month without product images
  */
 const PopularProductsSection: React.FC<PopularProductsSectionProps> = React.memo(
   ({ products, onProductClick, loading = false }) => {
-    // Hide section when no installments exist (Requirement 5.8)
+    // Hide section when no installments exist
     if (!loading && products.length === 0) {
       return null;
     }
 
     /**
      * Get badge color based on rank
-     * Requirement 5.4: Gold #1, burgundy #2-3, off-white #4-5
+     * Gold #1, burgundy #2-3, off-white #4-5
      */
     const getBadgeColor = (rank: number): string => {
       if (rank === 1) return 'bg-brand-secondary-400 text-brand-primary-900'; // Gold
@@ -54,7 +53,7 @@ const PopularProductsSection: React.FC<PopularProductsSectionProps> = React.memo
           <div className="grid grid-cols-1 tablet:grid-cols-3 desktop:grid-cols-5 gap-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="bg-brand-offwhite-200 rounded-lg h-48"></div>
+                <div className="bg-brand-offwhite-200 rounded-lg h-32"></div>
               </div>
             ))}
           </div>
@@ -68,41 +67,35 @@ const PopularProductsSection: React.FC<PopularProductsSectionProps> = React.memo
                 onClick={() => onProductClick(product.id)}
                 className="group relative bg-brand-offwhite-50 rounded-lg p-4 border-2 border-brand-offwhite-300 hover:border-brand-primary-900 hover:shadow-lg transition-all duration-300 text-right"
               >
-                {/* Rank Badge - Requirement 5.3, 5.4 */}
+                {/* Rank Badge */}
                 <div
                   className={`absolute top-2 left-2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md ${getBadgeColor(product.rank)}`}
                 >
                   {getRankIcon(product.rank)}
                 </div>
 
-                {/* Product Image - Requirement 5.3 */}
-                {/* Performance: Preload popular product images */}
-                <div className="w-full aspect-[4/3] bg-brand-offwhite-200 rounded-lg mb-3 overflow-hidden">
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      loading="eager"
-                      fetchPriority="high"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-brand-offwhite-500">
-                      <span className="text-4xl">📦</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Name - Requirement 5.3 */}
-                <h3 className="text-sm font-bold text-brand-primary-900 mb-2 line-clamp-2 min-h-[2.5rem]">
+                {/* Product Name */}
+                <h3 className="text-base font-bold text-brand-primary-900 mb-3 line-clamp-2 min-h-[3rem] pt-2">
                   {product.name}
                 </h3>
 
-                {/* Installment Count - Requirement 5.3, 5.5 */}
-                <div className="flex items-center justify-center gap-2 bg-brand-secondary-50 rounded-lg py-2 px-3">
-                  <span className="text-xs font-semibold text-brand-primary-900">
-                    {product.activeInstallmentsCount} قسط نشط
-                  </span>
+                {/* Statistics */}
+                <div className="space-y-2">
+                  {/* Active Installments Count */}
+                  <div className="flex items-center justify-between bg-brand-secondary-50 rounded-lg py-2 px-3">
+                    <span className="text-xs font-semibold text-brand-primary-900">
+                      {product.activeInstallmentsCount}
+                    </span>
+                    <span className="text-xs text-brand-offwhite-700">قسط نشط</span>
+                  </div>
+
+                  {/* Monthly Sold Quantity */}
+                  <div className="flex items-center justify-between bg-brand-primary-50 rounded-lg py-2 px-3">
+                    <span className="text-xs font-semibold text-brand-primary-900">
+                      {product.monthlySoldQuantity}
+                    </span>
+                    <span className="text-xs text-brand-offwhite-700">مبيعات الشهر</span>
+                  </div>
                 </div>
               </button>
             ))}

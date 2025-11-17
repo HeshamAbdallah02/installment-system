@@ -28,8 +28,8 @@ export interface Product {
 export interface PopularProduct {
   id: number;
   name: string;
-  imageUrl?: string;
   activeInstallmentsCount: number;
+  monthlySoldQuantity: number;
   rank: number;
 }
 
