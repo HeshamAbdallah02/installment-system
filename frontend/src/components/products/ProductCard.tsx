@@ -6,6 +6,9 @@ interface ProductCardProps {
   product: Product;
   onQuickAdd: (productId: number) => void;
   onViewDetails: (productId: number) => void;
+  onEdit?: (productId: number) => void;
+  onManageInventory?: (productId: number) => void;
+  onToggleStatus?: (productId: number) => void;
   isSelectable?: boolean;
   isSelected?: boolean;
   onSelect?: (productId: number) => void;
@@ -18,7 +21,17 @@ interface ProductCardProps {
  * Performance: Lazy loading images, memoized rendering
  */
 const ProductCard: React.FC<ProductCardProps> = React.memo(
-  ({ product, onQuickAdd, onViewDetails, isSelectable = false, isSelected = false, onSelect }) => {
+  ({
+    product,
+    onQuickAdd,
+    onViewDetails,
+    onEdit,
+    onManageInventory,
+    onToggleStatus,
+    isSelectable = false,
+    isSelected = false,
+    onSelect,
+  }) => {
     const [showMenu, setShowMenu] = React.useState(false);
     const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -225,8 +238,9 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // TODO: Implement edit functionality
-                    console.log('Edit product:', product.id);
+                    if (onEdit) {
+                      onEdit(product.id);
+                    }
                     setShowMenu(false);
                   }}
                   className="w-full px-4 py-2 text-right hover:bg-brand-offwhite-100 text-brand-primary-900 transition-colors"
@@ -237,8 +251,9 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // TODO: Implement manage inventory functionality
-                    console.log('Manage inventory:', product.id);
+                    if (onManageInventory) {
+                      onManageInventory(product.id);
+                    }
                     setShowMenu(false);
                   }}
                   className="w-full px-4 py-2 text-right hover:bg-brand-offwhite-100 text-brand-primary-900 transition-colors"
@@ -250,8 +265,9 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Implement deactivate functionality
-                      console.log('Deactivate product:', product.id);
+                      if (onToggleStatus) {
+                        onToggleStatus(product.id);
+                      }
                       setShowMenu(false);
                     }}
                     className="w-full px-4 py-2 text-right hover:bg-brand-offwhite-100 text-brand-primary-900 transition-colors border-t border-brand-offwhite-300"
@@ -263,8 +279,9 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Implement activate functionality
-                      console.log('Activate product:', product.id);
+                      if (onToggleStatus) {
+                        onToggleStatus(product.id);
+                      }
                       setShowMenu(false);
                     }}
                     className="w-full px-4 py-2 text-right hover:bg-brand-offwhite-100 text-brand-primary-900 transition-colors border-t border-brand-offwhite-300"

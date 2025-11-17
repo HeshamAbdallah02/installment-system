@@ -176,6 +176,41 @@ const ProductCatalog: React.FC = () => {
   };
 
   /**
+   * Handle toggle product status (activate/deactivate)
+   */
+  const handleToggleStatus = async (productId: number) => {
+    try {
+      const product = catalogData?.products.find((p) => p.id === productId);
+      if (!product) return;
+
+      const action = product.status === 'ACTIVE' ? 'deactivate' : 'activate';
+      const endpoint = `/api/products/${productId}/${action}`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle product status');
+      }
+
+      showSuccess(
+        product.status === 'ACTIVE' ? 'تم إيقاف المنتج بنجاح' : 'تم تفعيل المنتج بنجاح'
+      );
+
+      // Refresh catalog
+      setFilters({ ...filters });
+    } catch (error) {
+      showError('فشل في تغيير حالة المنتج');
+      console.error('Toggle status error:', error);
+    }
+  };;
+
+  /**
    * Handle add product
    */
   const handleAddProduct = () => {
@@ -355,6 +390,9 @@ const ProductCatalog: React.FC = () => {
         loading={catalogLoading}
         onProductClick={handleProductClick}
         onQuickAdd={handleQuickAdd}
+        onEdit={handleEditProduct}
+        onManageInventory={handleManageInventory}
+        onToggleStatus={handleToggleStatus}
         bulkSelectionMode={bulkSelectionMode}
         selectedProductIds={selectedProductIds}
         onProductSelect={handleProductSelect}

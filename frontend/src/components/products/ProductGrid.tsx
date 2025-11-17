@@ -7,6 +7,9 @@ interface ProductGridProps {
   loading?: boolean;
   onProductClick: (productId: number) => void;
   onQuickAdd?: (productId: number) => void;
+  onEdit?: (productId: number) => void;
+  onManageInventory?: (productId: number) => void;
+  onToggleStatus?: (productId: number) => void;
   bulkSelectionMode?: boolean;
   selectedProductIds?: Set<number>;
   onProductSelect?: (productId: number) => void;
@@ -24,6 +27,9 @@ const ProductGrid: React.FC<ProductGridProps> = React.memo(
     loading = false,
     onProductClick,
     onQuickAdd,
+    onEdit,
+    onManageInventory,
+    onToggleStatus,
     bulkSelectionMode = false,
     selectedProductIds = new Set(),
     onProductSelect,
@@ -83,6 +89,9 @@ const ProductGrid: React.FC<ProductGridProps> = React.memo(
             product={product}
             onQuickAdd={handleQuickAdd}
             onViewDetails={onProductClick}
+            onEdit={onEdit}
+            onManageInventory={onManageInventory}
+            onToggleStatus={onToggleStatus}
             isSelectable={bulkSelectionMode}
             isSelected={selectedProductIds.has(product.id)}
             onSelect={onProductSelect}
