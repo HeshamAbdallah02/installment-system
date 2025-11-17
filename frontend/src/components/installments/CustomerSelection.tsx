@@ -11,6 +11,7 @@ interface CustomerSelectionProps {
   wizardState: WizardState;
   updateWizardState: (updates: Partial<WizardState>) => void;
   onNext: () => void;
+  preSelectedCustomerId?: number | null;
 }
 
 /**
@@ -21,6 +22,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
   wizardState,
   updateWizardState,
   onNext,
+  preSelectedCustomerId = null,
 }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -42,6 +44,18 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
         });
         setCustomers(response.data);
         setFilteredCustomers(response.data);
+        
+        // Auto-select pre-selected customer if provided
+        if (preSelectedCustomerId) {
+          const preSelected = response.data.find((c) => c.id === preSelectedCustomerId);
+          if (preSelected) {
+            setSelectedCustomer(preSelected);
+            updateWizardState({
+              customerId: preSelected.id,
+              customerOutstanding: preSelected.totalOutstanding || 0,
+            });
+          }
+        }
       } catch (err) {
         const errorMessage = getErrorMessage(err);
         setError(errorMessage);

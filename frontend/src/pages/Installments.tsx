@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import InstallmentWizard from '../components/installments/InstallmentWizard';
@@ -20,12 +21,14 @@ import { getErrorMessage, logError } from '../utils/errorHandling';
  * Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9
  */
 const Installments: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [installments, setInstallments] = useState<InstallmentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [preSelectedCustomerId, setPreSelectedCustomerId] = useState<number | null>(null);
   const [isRemindersModalOpen, setIsRemindersModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [filters, setFilters] = useState<InstallmentFilters>({
@@ -71,6 +74,21 @@ const Installments: React.FC = () => {
   useEffect(() => {
     fetchInstallments();
   }, [fetchInstallments]);
+
+  // Check for pre-selected customer from URL query parameter
+  useEffect(() => {
+    const customerIdParam = searchParams.get('customerId');
+    if (customerIdParam) {
+      const customerId = parseInt(customerIdParam);
+      if (!isNaN(customerId)) {
+        setPreSelectedCustomerId(customerId);
+        setIsWizardOpen(true);
+        // Remove the query parameter from URL
+        searchParams.delete('customerId');
+        setSearchParams(searchParams);
+      }
+    }
+  }, [searchParams, setSearchParams]);
 
   // Handle search change
   const handleSearchChange = useCallback((search: string) => {
@@ -270,6 +288,7 @@ const Installments: React.FC = () => {
           onClose={handleCloseWizard}
           onSuccess={handleWizardSuccess}
           onError={handleWizardError}
+          preSelectedCustomerId={preSelectedCustomerId}
         />
 
         {/* Bulk Reminders Modal */}

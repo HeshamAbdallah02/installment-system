@@ -12,6 +12,7 @@ interface InstallmentWizardProps {
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
   preSelectedProductId?: number | null;
+  preSelectedCustomerId?: number | null;
 }
 
 /**
@@ -26,6 +27,7 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
   onSuccess,
   onError,
   preSelectedProductId = null,
+  preSelectedCustomerId = null,
 }) => {
   // Get first day of next month as default start date
   const getDefaultStartDate = () => {
@@ -193,6 +195,7 @@ const InstallmentWizard: React.FC<InstallmentWizardProps> = ({
                 wizardState={wizardState}
                 updateWizardState={updateWizardState}
                 onNext={handleNext}
+                preSelectedCustomerId={preSelectedCustomerId}
               />
             )}
             {wizardState.currentStep === 2 && (
