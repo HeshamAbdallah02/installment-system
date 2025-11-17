@@ -159,11 +159,21 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(
             <p className="text-sm text-brand-offwhite-700">{product.category}</p>
 
             {/* Cash Price - Requirement 1.5 */}
-            <div className="flex items-center justify-between pt-2 border-t border-brand-offwhite-300">
-              <span className="text-sm text-brand-offwhite-700">السعر النقدي</span>
-              <span className="text-xl font-bold text-brand-primary-900">
-                {formatCurrency(product.cashPrice)} ج.م
-              </span>
+            <div className="pt-2 border-t border-brand-offwhite-300 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-brand-offwhite-700">السعر النقدي</span>
+                <span className="text-xl font-bold text-brand-primary-900">
+                  {formatCurrency(product.cashPrice)} ج.م
+                </span>
+              </div>
+              
+              {/* Stock Quantity */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-brand-offwhite-700">الكمية المتاحة</span>
+                <span className="text-base font-semibold text-brand-primary-900">
+                  {product.stockQuantity} قطعة
+                </span>
+              </div>
             </div>
           </div>
         </button>
