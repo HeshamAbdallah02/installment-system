@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import ImageUpload from './ImageUpload';
-import CustomInstallmentRates from './CustomInstallmentRates';
 import productService from '../../services/productService';
 
 // Product categories for female wear and accessories retail store
@@ -35,7 +33,6 @@ interface ProductFormData {
   minDepositPercentage?: number;
   availableTerms: number[];
   customRates?: Record<number, number>;
-  image?: File | null;
   specifications?: Array<{ key: string; value: string }>;
   stockQuantity?: number;
 }
@@ -167,11 +164,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
     if (data.customRates) {
       formData.append('customRates', JSON.stringify(data.customRates));
-    }
-
-    // Only append image if a new one was selected
-    if (data.image) {
-      formData.append('image', data.image);
     }
 
     // Add specifications if provided
@@ -495,23 +487,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 </div>
 
                 {/* Note: All products automatically support 3 and 6 month installment plans */}
-
-                {/* Image Upload Section - Requirement 7.4 */}
-                <div>
-                  <Controller
-                    name="image"
-                    control={control}
-                    render={({ field }) => (
-                      <ImageUpload
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={errors.image?.message as string}
-                        disabled={updateProductMutation.isPending}
-                        currentImageUrl={product?.imageUrl}
-                      />
-                    )}
-                  />
-                </div>
 
                 {/* Specifications Section - Requirement 7.4 */}
                 <div className="space-y-4">
