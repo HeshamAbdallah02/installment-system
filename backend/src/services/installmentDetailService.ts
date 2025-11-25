@@ -89,7 +89,7 @@ class InstallmentDetailService {
   async getInstallmentDetail(installmentId: number, _userId: number, userBranchId?: number) {
     try {
       // Fetch installment plan with all relations
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -162,7 +162,7 @@ class InstallmentDetailService {
       const remainingBalance = Number(plan.totalWithRatio) - totalPaid;
 
       // Get other active installments for customer
-      const otherInstallments = await prisma.installmentPlan.count({
+      const otherInstallments = await prisma.installment_plans.count({
         where: {
           customerId: plan.customerId,
           id: { not: plan.id },
@@ -171,7 +171,7 @@ class InstallmentDetailService {
       });
 
       // Calculate total debt across all installments
-      const allInstallments = await prisma.installmentPlan.findMany({
+      const allInstallments = await prisma.installment_plans.findMany({
         where: {
           customerId: plan.customerId,
           status: { in: ['ACTIVE', 'PENDING'] },
@@ -450,7 +450,7 @@ class InstallmentDetailService {
   private async getPaymentHistory(planId: number): Promise<PaymentRecordDetail[]> {
     try {
       // Get all payment allocations for this plan
-      const allocations = await prisma.paymentAllocation.findMany({
+      const allocations = await prisma.payment_allocations.findMany({
         where: {
           schedule: {
             planId,
@@ -511,7 +511,7 @@ class InstallmentDetailService {
   private async getActivityLog(planId: number, _customerId: number): Promise<ActivityRecord[]> {
     try {
       // Get relevant events for this installment
-      const events = await prisma.eventLog.findMany({
+      const events = await prisma.event_log.findMany({
         where: {
           OR: [
             {
@@ -594,7 +594,7 @@ class InstallmentDetailService {
   ) {
     try {
       // Get comprehensive installment detail
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -632,7 +632,7 @@ class InstallmentDetailService {
         notes: string | null;
       }> = [];
       if (options.includePayments) {
-        const allocations = await prisma.paymentAllocation.findMany({
+        const allocations = await prisma.payment_allocations.findMany({
           where: {
             schedule: {
               planId: installmentId,
@@ -677,7 +677,7 @@ class InstallmentDetailService {
         users?: { fullName: string };
       }> = [];
       if (options.includeActivities) {
-        const events = await prisma.eventLog.findMany({
+        const events = await prisma.event_log.findMany({
           where: {
             OR: [
               {
@@ -764,7 +764,7 @@ class InstallmentDetailService {
   async cancelInstallment(installmentId: number, reason: string, userId: number) {
     try {
       // Get installment with schedule
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -859,7 +859,7 @@ class InstallmentDetailService {
   ) {
     try {
       // Get installment with schedule
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -1044,7 +1044,7 @@ class InstallmentDetailService {
   ) {
     try {
       // Get installment with schedule
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -1199,7 +1199,7 @@ class InstallmentDetailService {
   ) {
     try {
       // Get installment with customer and schedule
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -1241,7 +1241,7 @@ class InstallmentDetailService {
       console.log(`Reminder sent to ${plan.customer.fullName} via ${method}:`, message);
 
       // Log reminder activity
-      await prisma.eventLog.create({
+      await prisma.event_log.create({
         data: {
           eventType: 'REMINDER_SENT',
           entityType: 'INSTALLMENT_PLAN',
@@ -1289,7 +1289,7 @@ class InstallmentDetailService {
   ) {
     try {
       // Validate schedule exists and belongs to installment
-      const schedule = await prisma.installmentSchedule.findUnique({
+      const schedule = await prisma.installment_schedule.findUnique({
         where: { id: scheduleId },
         include: {
           plan: {

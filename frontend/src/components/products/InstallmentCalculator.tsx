@@ -79,7 +79,13 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
         interestPercentage,
       };
     });
-  }, [depositAmount, product.installmentPrice, product.availableTerms, product.customRates, ratios]);
+  }, [
+    depositAmount,
+    product.installmentPrice,
+    product.availableTerms,
+    product.customRates,
+    ratios,
+  ]);
 
   /**
    * Format currency - Requirement 9.6

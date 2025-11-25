@@ -360,7 +360,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                         min: { value: 1, message: 'السعر يجب أن يكون أكبر من صفر' },
                       })}
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                        errors.sellingPrice ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
+                        errors.sellingPrice
+                          ? 'border-brand-primary-700'
+                          : 'border-brand-offwhite-400'
                       }`}
                       placeholder="0.00"
                       step="0.01"
@@ -371,7 +373,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                     </span>
                   </div>
                   {errors.sellingPrice && (
-                    <p className="mt-1 text-sm text-brand-primary-700">{errors.sellingPrice.message}</p>
+                    <p className="mt-1 text-sm text-brand-primary-700">
+                      {errors.sellingPrice.message}
+                    </p>
                   )}
                 </div>
 
@@ -392,7 +396,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                         min: { value: 1, message: 'السعر يجب أن يكون أكبر من صفر' },
                       })}
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                        errors.installmentPrice ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
+                        errors.installmentPrice
+                          ? 'border-brand-primary-700'
+                          : 'border-brand-offwhite-400'
                       }`}
                       placeholder="0.00"
                       step="0.01"
@@ -403,7 +409,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                     </span>
                   </div>
                   {errors.installmentPrice && (
-                    <p className="mt-1 text-sm text-brand-primary-700">{errors.installmentPrice.message}</p>
+                    <p className="mt-1 text-sm text-brand-primary-700">
+                      {errors.installmentPrice.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -425,7 +433,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                       min: { value: 0, message: 'المبلغ يجب أن يكون صفر أو أكثر' },
                     })}
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                      errors.minDepositAmount ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
+                      errors.minDepositAmount
+                        ? 'border-brand-primary-700'
+                        : 'border-brand-offwhite-400'
                     }`}
                     placeholder="0.00"
                     step="0.01"
@@ -436,7 +446,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                   </span>
                 </div>
                 {errors.minDepositAmount && (
-                  <p className="mt-1 text-sm text-brand-primary-700">{errors.minDepositAmount.message}</p>
+                  <p className="mt-1 text-sm text-brand-primary-700">
+                    {errors.minDepositAmount.message}
+                  </p>
                 )}
               </div>
 

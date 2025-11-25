@@ -11,7 +11,7 @@ class UserService {
    */
   async getActiveUsers(): Promise<UserListItem[]> {
     try {
-      const users = await prisma.user.findMany({
+      const users = await prisma.users.findMany({
         where: {
           isActive: true,
         },
@@ -43,7 +43,7 @@ class UserService {
    */
   async getUserById(id: number) {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id },
         include: {
           branch: true,
@@ -62,7 +62,7 @@ class UserService {
    */
   async updateLastLogin(userId: number): Promise<void> {
     try {
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: userId },
         data: {
           lastLoginAt: new Date(),

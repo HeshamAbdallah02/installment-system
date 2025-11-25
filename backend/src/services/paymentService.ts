@@ -80,7 +80,7 @@ class PaymentService {
   async recordPayment(data: RecordPaymentData) {
     try {
       // Validate schedule exists and get details
-      const schedule = await prisma.installmentSchedule.findUnique({
+      const schedule = await prisma.installment_schedule.findUnique({
         where: { id: data.scheduleId },
         include: {
           plan: {
@@ -206,7 +206,7 @@ class PaymentService {
   async recordMultiplePayments(data: RecordMultiplePaymentsData) {
     try {
       // Validate schedules exist and belong to same customer
-      const schedules = await prisma.installmentSchedule.findMany({
+      const schedules = await prisma.installment_schedule.findMany({
         where: { id: { in: data.scheduleIds } },
         include: {
           plan: {
@@ -372,7 +372,7 @@ class PaymentService {
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       endOfMonth.setHours(23, 59, 59, 999);
 
-      const where: Prisma.InstallmentScheduleWhereInput = {
+      const where: prisma.installment_scheduleWhereInput = {
         dueDate: {
           gte: startOfMonth,
           lte: endOfMonth,
@@ -390,7 +390,7 @@ class PaymentService {
         };
       }
 
-      const dues = await prisma.installmentSchedule.findMany({
+      const dues = await prisma.installment_schedule.findMany({
         where,
         include: {
           plan: {
@@ -463,7 +463,7 @@ class PaymentService {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const upcomingInstallments = await prisma.installmentSchedule.findMany({
+      const upcomingInstallments = await prisma.installment_schedule.findMany({
         where: {
           plan: {
             customerId,
@@ -530,7 +530,7 @@ class PaymentService {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const where: Prisma.InstallmentScheduleWhereInput = {
+      const where: prisma.installment_scheduleWhereInput = {
         dueDate: {
           lt: today,
         },
@@ -547,7 +547,7 @@ class PaymentService {
         };
       }
 
-      const overdues = await prisma.installmentSchedule.findMany({
+      const overdues = await prisma.installment_schedule.findMany({
         where,
         include: {
           plan: {
@@ -675,7 +675,7 @@ class PaymentService {
       }
 
       const [payments, total] = await Promise.all([
-        prisma.payment.findMany({
+        prisma.payments.findMany({
           where,
           skip,
           take: limit,
@@ -692,7 +692,7 @@ class PaymentService {
             paymentDate: 'desc',
           },
         }),
-        prisma.payment.count({ where }),
+        prisma.payments.count({ where }),
       ]);
 
       const formattedPayments = payments.map((payment) => {
@@ -745,7 +745,7 @@ class PaymentService {
    */
   async getPaymentById(paymentId: number) {
     try {
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
           customer: true,
@@ -836,7 +836,7 @@ class PaymentService {
   async recordAdvancePayment(data: RecordAdvancePaymentData) {
     try {
       // Validate schedule exists and is in the future
-      const schedule = await prisma.installmentSchedule.findUnique({
+      const schedule = await prisma.installment_schedule.findUnique({
         where: { id: data.scheduleId },
         include: {
           plan: {
@@ -974,7 +974,7 @@ class PaymentService {
    */
   async generateReceipt(paymentId: number) {
     try {
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
           customer: true,
@@ -1270,7 +1270,7 @@ class PaymentService {
   async reversePayment(paymentId: number, reason: string, userId: number) {
     try {
       // Get original payment
-      const originalPayment = await prisma.payment.findUnique({
+      const originalPayment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
           allocations: {

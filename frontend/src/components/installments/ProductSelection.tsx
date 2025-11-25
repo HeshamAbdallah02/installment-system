@@ -499,7 +499,9 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
                       type="button"
                       onClick={() => handleUpdateCartQuantity(item.productId, item.quantity + 1)}
                       className="p-1 hover:bg-brand-offwhite-300 rounded transition-colors"
-                      disabled={!canAddProduct({ installmentPrice: item.productPrice } as Product, 1)}
+                      disabled={
+                        !canAddProduct({ installmentPrice: item.productPrice } as Product, 1)
+                      }
                       aria-label="زيادة الكمية"
                     >
                       <PlusIcon className="w-4 h-4 text-brand-primary-900" />

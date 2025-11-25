@@ -30,7 +30,7 @@ class AnalyticsService {
       const branches = await measureQueryPerformance(
         'AnalyticsService.getBranches',
         () =>
-          prisma.branch.findMany({
+          prisma.branches.findMany({
             where: {
               isActive: true,
             },
@@ -49,7 +49,7 @@ class AnalyticsService {
       const paymentsByBranch = await measureQueryPerformance(
         'AnalyticsService.getPaymentsByBranch',
         () =>
-          prisma.payment.groupBy({
+          prisma.payments.groupBy({
             by: ['orderId'],
             where: {
               createdAt: {
@@ -72,7 +72,7 @@ class AnalyticsService {
       const orders = await measureQueryPerformance(
         'AnalyticsService.getOrders',
         () =>
-          prisma.order.findMany({
+          prisma.orders.findMany({
             where: {
               id: {
                 in: orderIds,
@@ -108,7 +108,7 @@ class AnalyticsService {
       const installmentCounts = await measureQueryPerformance(
         'AnalyticsService.getInstallmentCounts',
         () =>
-          prisma.installmentPlan.groupBy({
+          prisma.installment_plans.groupBy({
             by: ['orderId'],
             where: {
               status: {
@@ -126,7 +126,7 @@ class AnalyticsService {
       const installmentOrders = await measureQueryPerformance(
         'AnalyticsService.getInstallmentOrders',
         () =>
-          prisma.order.findMany({
+          prisma.orders.findMany({
             where: {
               id: {
                 in: installmentOrderIds,
@@ -214,7 +214,7 @@ class AnalyticsService {
       const installmentPlans = await measureQueryPerformance(
         'AnalyticsService.getInstallmentPlans',
         () =>
-          prisma.installmentPlan.findMany({
+          prisma.installment_plans.findMany({
             where: {
               status: {
                 notIn: ['COMPLETED', 'CANCELLED'],
@@ -236,7 +236,7 @@ class AnalyticsService {
       const orderItems = await measureQueryPerformance(
         'AnalyticsService.getOrderItems',
         () =>
-          prisma.orderItem.findMany({
+          prisma.order_items.findMany({
             where: {
               orderId: {
                 in: orderIds,

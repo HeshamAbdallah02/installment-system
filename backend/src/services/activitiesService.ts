@@ -38,7 +38,7 @@ class ActivitiesService {
           const eventLogs = await measureQueryPerformance(
             'ActivitiesService.getEventLogs',
             () =>
-              prisma.eventLog.findMany({
+              prisma.event_log.findMany({
                 where: {
                   eventType: {
                     in: this.RELEVANT_EVENT_TYPES,

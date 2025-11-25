@@ -62,7 +62,7 @@ class CustomerService {
   async createCustomer(data: CreateCustomerData) {
     try {
       // Check if national ID already exists
-      const existingCustomer = await prisma.customer.findUnique({
+      const existingCustomer = await prisma.customers.findUnique({
         where: { nationalId: data.nationalId },
       });
 
@@ -71,7 +71,7 @@ class CustomerService {
       }
 
       // Create customer
-      const customer = await prisma.customer.create({
+      const customer = await prisma.customers.create({
         data: {
           fullName: data.fullName,
           nationalId: data.nationalId,
@@ -143,7 +143,7 @@ class CustomerService {
 
       // Get customers with installment counts
       const [customers, total] = await Promise.all([
-        prisma.customer.findMany({
+        prisma.customers.findMany({
           where,
           skip,
           take: limit,
@@ -177,7 +177,7 @@ class CustomerService {
             createdAt: 'desc',
           },
         }),
-        prisma.customer.count({ where }),
+        prisma.customers.count({ where }),
       ]);
 
       // Calculate payment status and outstanding balance for each customer
@@ -237,7 +237,7 @@ class CustomerService {
    */
   async getCustomerById(customerId: number) {
     try {
-      const customer = await prisma.customer.findUnique({
+      const customer = await prisma.customers.findUnique({
         where: { id: customerId },
         include: {
           createdByUser: {
@@ -369,7 +369,7 @@ class CustomerService {
    */
   async updateCustomer(customerId: number, data: UpdateCustomerData) {
     try {
-      const customer = await prisma.customer.update({
+      const customer = await prisma.customers.update({
         where: { id: customerId },
         data: {
           fullName: data.fullName,

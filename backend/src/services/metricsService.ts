@@ -124,7 +124,7 @@ class MetricsService {
    */
   private async getActiveInstallmentsCount(): Promise<number> {
     try {
-      const count = await prisma.installmentPlan.count({
+      const count = await prisma.installment_plans.count({
         where: {
           status: {
             notIn: ['COMPLETED', 'CANCELLED'],
@@ -149,7 +149,7 @@ class MetricsService {
     try {
       const endOfMonth = new Date(year, month + 1, 0);
 
-      const count = await prisma.installmentPlan.count({
+      const count = await prisma.installment_plans.count({
         where: {
           status: {
             notIn: ['COMPLETED', 'CANCELLED'],
@@ -179,7 +179,7 @@ class MetricsService {
       const startOfMonth = new Date(year, month, 1);
       const endOfMonth = new Date(year, month + 1, 0);
 
-      const result = await prisma.installmentSchedule.aggregate({
+      const result = await prisma.installment_schedule.aggregate({
         where: {
           status: 'PENDING',
           dueDate: {
@@ -209,7 +209,7 @@ class MetricsService {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const result = await prisma.installmentSchedule.aggregate({
+      const result = await prisma.installment_schedule.aggregate({
         where: {
           status: 'PENDING',
           dueDate: {
@@ -239,7 +239,7 @@ class MetricsService {
       const endOfMonth = new Date(year, month + 1, 0);
       endOfMonth.setHours(23, 59, 59, 999);
 
-      const result = await prisma.installmentSchedule.aggregate({
+      const result = await prisma.installment_schedule.aggregate({
         where: {
           status: 'PENDING',
           dueDate: {
@@ -271,7 +271,7 @@ class MetricsService {
       const endOfMonth = new Date(year, month + 1, 0);
 
       // Count total installments due in the month
-      const totalDue = await prisma.installmentSchedule.count({
+      const totalDue = await prisma.installment_schedule.count({
         where: {
           dueDate: {
             gte: startOfMonth,
@@ -286,7 +286,7 @@ class MetricsService {
       }
 
       // Count paid installments in the month
-      const totalPaid = await prisma.installmentSchedule.count({
+      const totalPaid = await prisma.installment_schedule.count({
         where: {
           dueDate: {
             gte: startOfMonth,

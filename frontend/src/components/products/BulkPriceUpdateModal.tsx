@@ -80,7 +80,8 @@ const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
       newPrice = Math.round(newPrice * 100) / 100;
 
       const change = newPrice - product.installmentPrice;
-      const changePercentage = product.installmentPrice > 0 ? (change / product.installmentPrice) * 100 : 0;
+      const changePercentage =
+        product.installmentPrice > 0 ? (change / product.installmentPrice) * 100 : 0;
 
       return {
         productId: product.id,

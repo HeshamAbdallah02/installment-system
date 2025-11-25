@@ -460,7 +460,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                       htmlFor="minDepositAmount"
                       className="block text-sm font-medium text-brand-primary-900 mb-1"
                     >
-                      الحد الأدنى للدفعة المقدمة (ج.م) <span className="text-brand-primary-700">*</span>
+                      الحد الأدنى للدفعة المقدمة (ج.م){' '}
+                      <span className="text-brand-primary-700">*</span>
                     </label>
                     <div className="relative">
                       <input

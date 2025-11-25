@@ -143,7 +143,7 @@ class ProductService {
 
       // Get products with installment counts
       const [products, total] = await Promise.all([
-        prisma.product.findMany({
+        prisma.products.findMany({
           where,
           skip,
           take: limit,
@@ -151,12 +151,12 @@ class ProductService {
             name: 'asc',
           },
         }),
-        prisma.product.count({ where }),
+        prisma.products.count({ where }),
       ]);
 
       // Get active installment counts for each product
       const productIds = products.map((p) => p.id);
-      const installmentCounts = await prisma.installmentPlan.groupBy({
+      const installmentCounts = await prisma.installment_plans.groupBy({
         by: ['orderId'],
         where: {
           status: 'ACTIVE',
@@ -173,7 +173,7 @@ class ProductService {
 
       // Map order IDs to product IDs
       const orderIds = installmentCounts.map((ic) => ic.orderId);
-      const orders = await prisma.order.findMany({
+      const orders = await prisma.orders.findMany({
         where: { id: { in: orderIds } },
         include: {
           orderItems: {
@@ -237,7 +237,7 @@ class ProductService {
    */
   async getProductById(productId: number) {
     try {
-      const product = await prisma.product.findUnique({
+      const product = await prisma.products.findUnique({
         where: { id: productId },
         include: {
           inventoryAdjustments: {
@@ -329,7 +329,7 @@ class ProductService {
       sixMonthsAgo.setHours(0, 0, 0, 0);
 
       // Get all active installment plans with their products
-      const installmentPlans = await prisma.installmentPlan.findMany({
+      const installmentPlans = await prisma.installment_plans.findMany({
         where: {
           status: 'ACTIVE',
         },
@@ -347,7 +347,7 @@ class ProductService {
       });
 
       // Get 6-month sales count per product
-      const sixMonthSales = await prisma.orderItem.groupBy({
+      const sixMonthSales = await prisma.order_items.groupBy({
         by: ['productId'],
         where: {
           order: {
@@ -412,7 +412,7 @@ class ProductService {
    */
   async getRelatedProducts(productId: number) {
     try {
-      const product = await prisma.product.findUnique({
+      const product = await prisma.products.findUnique({
         where: { id: productId },
       });
 
@@ -464,7 +464,7 @@ class ProductService {
   async getProductStatistics(productId: number): Promise<ProductStatistics> {
     try {
       // Get all installment plans for this product
-      const installmentPlans = await prisma.installmentPlan.findMany({
+      const installmentPlans = await prisma.installment_plans.findMany({
         where: {
           order: {
             orderItems: {
@@ -570,7 +570,7 @@ class ProductService {
   async createProduct(data: CreateProductData) {
     try {
       // Validate product code uniqueness
-      const existingProduct = await prisma.product.findUnique({
+      const existingProduct = await prisma.products.findUnique({
         where: { code: data.code },
       });
 
@@ -579,9 +579,16 @@ class ProductService {
       }
 
       // Validate required fields
-      if (!data.name || !data.code || data.sellingPrice === undefined || data.sellingPrice === null || 
-          data.installmentPrice === undefined || data.installmentPrice === null ||
-          data.minDepositAmount === undefined || data.minDepositAmount === null) {
+      if (
+        !data.name ||
+        !data.code ||
+        data.sellingPrice === undefined ||
+        data.sellingPrice === null ||
+        data.installmentPrice === undefined ||
+        data.installmentPrice === null ||
+        data.minDepositAmount === undefined ||
+        data.minDepositAmount === null
+      ) {
         throw new ProductError('REQUIRED_FIELDS', 'جميع الحقول المطلوبة يجب ملؤها');
       }
 
@@ -597,7 +604,10 @@ class ProductService {
 
       // Validate minimum deposit
       if (data.minDepositAmount < 0) {
-        throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للدفعة المقدمة يجب أن يكون صفر أو أكثر');
+        throw new ProductError(
+          'INVALID_DEPOSIT',
+          'الحد الأدنى للدفعة المقدمة يجب أن يكون صفر أو أكثر'
+        );
       }
 
       if (data.minDepositAmount >= data.installmentPrice) {
@@ -620,7 +630,7 @@ class ProductService {
       }
 
       // Create product
-      const product = await prisma.product.create({
+      const product = await prisma.products.create({
         data: {
           code: data.code,
           name: data.name,
@@ -684,7 +694,7 @@ class ProductService {
   async deactivateProduct(productId: number, reason: string, userId: number) {
     try {
       // Check if product exists
-      const existingProduct = await prisma.product.findUnique({
+      const existingProduct = await prisma.products.findUnique({
         where: { id: productId },
       });
 
@@ -703,7 +713,7 @@ class ProductService {
       }
 
       // Update product status
-      const product = await prisma.product.update({
+      const product = await prisma.products.update({
         where: { id: productId },
         data: {
           status: 'DISCONTINUED',
@@ -714,7 +724,7 @@ class ProductService {
       });
 
       // Log the deactivation in audit trail
-      await prisma.eventLog.create({
+      await prisma.event_log.create({
         data: {
           eventType: 'PRODUCT_DEACTIVATED',
           entityType: 'PRODUCT',
@@ -770,7 +780,7 @@ class ProductService {
   async activateProduct(productId: number, userId: number) {
     try {
       // Check if product exists
-      const existingProduct = await prisma.product.findUnique({
+      const existingProduct = await prisma.products.findUnique({
         where: { id: productId },
       });
 
@@ -784,7 +794,7 @@ class ProductService {
       }
 
       // Update product status
-      const product = await prisma.product.update({
+      const product = await prisma.products.update({
         where: { id: productId },
         data: {
           status: 'ACTIVE',
@@ -795,7 +805,7 @@ class ProductService {
       });
 
       // Log the activation in audit trail
-      await prisma.eventLog.create({
+      await prisma.event_log.create({
         data: {
           eventType: 'PRODUCT_ACTIVATED',
           entityType: 'PRODUCT',
@@ -851,7 +861,7 @@ class ProductService {
   async updateProduct(productId: number, data: UpdateProductData, userId: number) {
     try {
       // Check if product exists
-      const existingProduct = await prisma.product.findUnique({
+      const existingProduct = await prisma.products.findUnique({
         where: { id: productId },
       });
 
@@ -909,13 +919,13 @@ class ProductService {
       if (data.customRates !== undefined) updateData.customRates = data.customRates;
 
       // Update product
-      const product = await prisma.product.update({
+      const product = await prisma.products.update({
         where: { id: productId },
         data: updateData,
       });
 
       // Log the change in audit trail
-      await prisma.eventLog.create({
+      await prisma.event_log.create({
         data: {
           eventType: 'PRODUCT_UPDATED',
           entityType: 'PRODUCT',
@@ -983,7 +993,7 @@ class ProductService {
   ) {
     try {
       // Check if product exists
-      const existingProduct = await prisma.product.findUnique({
+      const existingProduct = await prisma.products.findUnique({
         where: { id: productId },
       });
 
@@ -1116,7 +1126,7 @@ class ProductService {
   async getInventoryHistory(productId: number) {
     try {
       // Check if product exists
-      const product = await prisma.product.findUnique({
+      const product = await prisma.products.findUnique({
         where: { id: productId },
       });
 
@@ -1125,7 +1135,7 @@ class ProductService {
       }
 
       // Get adjustment history
-      const adjustments = await prisma.inventoryAdjustment.findMany({
+      const adjustments = await prisma.inventory_adjustments.findMany({
         where: { productId },
         include: {
           adjustedByUser: {
@@ -1191,7 +1201,7 @@ class ProductService {
       }
 
       // Get products
-      const products = await prisma.product.findMany({
+      const products = await prisma.products.findMany({
         where: {
           id: { in: productIds },
           isActive: true,
@@ -1356,7 +1366,7 @@ class ProductService {
       }
 
       // Get products
-      const products = await prisma.product.findMany({
+      const products = await prisma.products.findMany({
         where,
         orderBy: {
           name: 'asc',
@@ -1424,5 +1434,3 @@ class ProductService {
 
 export default new ProductService();
 export { ProductError, ProductFilters, CreateProductData, UpdateProductData, ProductStatistics };
-
-

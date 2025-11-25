@@ -33,7 +33,7 @@ class AuthService {
   async login(userId: string, password: string, ipAddress: string): Promise<LoginResponse> {
     try {
       // Step 1: Fetch user by username with branch relation
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { username: userId },
         include: {
           branch: true,
@@ -122,7 +122,7 @@ class AuthService {
    */
   async validateUser(userId: string) {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { username: userId },
         include: {
           branch: true,

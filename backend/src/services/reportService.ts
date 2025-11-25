@@ -30,7 +30,7 @@ class ReportService {
       }
 
       // Get all payments for the day
-      const payments = await prisma.payment.findMany({
+      const payments = await prisma.payments.findMany({
         where,
         include: {
           customer: true,
@@ -145,7 +145,7 @@ class ReportService {
       }
 
       // Get all payments for the week
-      const payments = await prisma.payment.findMany({
+      const payments = await prisma.payments.findMany({
         where,
         include: {
           customer: true,
@@ -250,7 +250,7 @@ class ReportService {
         };
       }
 
-      const prevPayments = await prisma.payment.findMany({
+      const prevPayments = await prisma.payments.findMany({
         where: prevWhere,
       });
 
@@ -300,7 +300,7 @@ class ReportService {
       }
 
       // Get all payments for the month
-      const payments = await prisma.payment.findMany({
+      const payments = await prisma.payments.findMany({
         where,
         include: {
           customer: true,
@@ -412,7 +412,7 @@ class ReportService {
       }));
 
       // Calculate collection rate (collected / due)
-      const scheduleWhere: Prisma.InstallmentScheduleWhereInput = {
+      const scheduleWhere: prisma.installment_scheduleWhereInput = {
         dueDate: {
           gte: startDate,
           lte: endDate,
@@ -427,7 +427,7 @@ class ReportService {
         };
       }
 
-      const schedules = await prisma.installmentSchedule.findMany({
+      const schedules = await prisma.installment_schedule.findMany({
         where: scheduleWhere,
       });
 
@@ -435,7 +435,7 @@ class ReportService {
       const collectionRate = totalDue > 0 ? (totalCollected / totalDue) * 100 : 0;
 
       // Calculate overdue amounts at end of period
-      const overdueWhere: Prisma.InstallmentScheduleWhereInput = {
+      const overdueWhere: prisma.installment_scheduleWhereInput = {
         dueDate: {
           lt: endDate,
         },
@@ -452,7 +452,7 @@ class ReportService {
         };
       }
 
-      const overdueSchedules = await prisma.installmentSchedule.findMany({
+      const overdueSchedules = await prisma.installment_schedule.findMany({
         where: overdueWhere,
       });
 
@@ -483,7 +483,7 @@ class ReportService {
         };
       }
 
-      const prevPayments = await prisma.payment.findMany({
+      const prevPayments = await prisma.payments.findMany({
         where: prevWhere,
       });
 

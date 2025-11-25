@@ -53,7 +53,7 @@ class TrendsService {
       const payments = await measureQueryPerformance(
         'TrendsService.getPayments',
         () =>
-          prisma.payment.findMany({
+          prisma.payments.findMany({
             where: {
               createdAt: {
                 gte: startDate, // Only payments from startDate onwards

@@ -55,7 +55,7 @@ class InstallmentService {
   async createInstallment(data: CreateInstallmentData) {
     try {
       // Validate customer exists
-      const customer = await prisma.customer.findUnique({
+      const customer = await prisma.customers.findUnique({
         where: { id: data.customerId },
       });
 
@@ -65,7 +65,7 @@ class InstallmentService {
 
       // Check customer's current outstanding balance against credit limit
 
-      const activeInstallments = await prisma.installmentPlan.findMany({
+      const activeInstallments = await prisma.installment_plans.findMany({
         where: {
           customerId: data.customerId,
           status: {
@@ -94,7 +94,7 @@ class InstallmentService {
       }, 0);
 
       // Validate all products exist and have sufficient stock
-      const products = await prisma.product.findMany({
+      const products = await prisma.products.findMany({
         where: {
           id: { in: data.items.map((item) => item.productId) },
         },
@@ -263,7 +263,7 @@ class InstallmentService {
       const skip = (page - 1) * limit;
 
       // Build where clause
-      const where: Prisma.InstallmentPlanWhereInput = {};
+      const where: Prisma.installment_plansWhereInput = {};
 
       // Filter by status
       if (filters.status) {
@@ -306,7 +306,7 @@ class InstallmentService {
 
       // Get installments
       const [installments, total] = await Promise.all([
-        prisma.installmentPlan.findMany({
+        prisma.installment_plans.findMany({
           where,
           skip,
           take: limit,
@@ -338,7 +338,7 @@ class InstallmentService {
             createdAt: 'desc',
           },
         }),
-        prisma.installmentPlan.count({ where }),
+        prisma.installment_plans.count({ where }),
       ]);
 
       // Format installments with status and progress
@@ -395,7 +395,7 @@ class InstallmentService {
    */
   async getInstallmentById(installmentId: number) {
     try {
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -478,7 +478,7 @@ class InstallmentService {
    */
   async getInstallmentAgreement(installmentId: number) {
     try {
-      const plan = await prisma.installmentPlan.findUnique({
+      const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
           customer: true,
@@ -594,7 +594,7 @@ class InstallmentService {
       }
 
       // Fetch installments with customer and schedule data
-      const installments = await prisma.installmentPlan.findMany({
+      const installments = await prisma.installment_plans.findMany({
         where: {
           id: { in: installmentIds },
           status: { in: ['ACTIVE', 'PENDING'] },
@@ -712,7 +712,7 @@ class InstallmentService {
       }
 
       // Fetch installments with all required data
-      const installments = await prisma.installmentPlan.findMany({
+      const installments = await prisma.installment_plans.findMany({
         where: {
           id: { in: installmentIds },
         },
