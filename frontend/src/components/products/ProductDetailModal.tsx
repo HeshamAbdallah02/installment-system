@@ -213,9 +213,9 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                   {/* Cash Price - Requirement 3.4 */}
                   <div className="mb-4">
-                    <p className="text-sm text-brand-offwhite-700 mb-1">السعر النقدي</p>
+                    <p className="text-sm text-brand-offwhite-700 mb-1">سعر التقسيط</p>
                     <p className="text-4xl font-bold text-brand-primary-900">
-                      {formatCurrency(product.cashPrice)} ج.م
+                      {formatCurrency(product.installmentPrice)} ج.م
                     </p>
                   </div>
 

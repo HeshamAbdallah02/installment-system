@@ -36,8 +36,9 @@ interface CreateProductData {
   name: string;
   size?: string;
   description?: string;
-  cashPrice: number;
-  minDepositAmount?: number;
+  sellingPrice: number;
+  installmentPrice: number;
+  minDepositAmount: number;
   minDepositPercentage?: number;
   category?: string;
   imageUrl?: string;
@@ -53,7 +54,8 @@ interface CreateProductData {
 interface UpdateProductData {
   name?: string;
   description?: string;
-  cashPrice?: number;
+  sellingPrice?: number;
+  installmentPrice?: number;
   minDepositAmount?: number;
   minDepositPercentage?: number;
   category?: string;
@@ -111,14 +113,14 @@ class ProductService {
         where.category = filters.category;
       }
 
-      // Filter by price range
+      // Filter by price range (using installmentPrice)
       if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-        where.cashPrice = {};
+        where.installmentPrice = {};
         if (filters.minPrice !== undefined) {
-          where.cashPrice.gte = filters.minPrice;
+          where.installmentPrice.gte = filters.minPrice;
         }
         if (filters.maxPrice !== undefined) {
-          where.cashPrice.lte = filters.maxPrice;
+          where.installmentPrice.lte = filters.maxPrice;
         }
       }
 
@@ -194,8 +196,9 @@ class ProductService {
         code: product.code,
         name: product.name,
         description: product.description,
-        cashPrice: Number(product.cashPrice),
-        minDepositAmount: product.minDepositAmount ? Number(product.minDepositAmount) : null,
+        sellingPrice: Number(product.sellingPrice),
+        installmentPrice: Number(product.installmentPrice),
+        minDepositAmount: Number(product.minDepositAmount),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -281,8 +284,9 @@ class ProductService {
         code: product.code,
         name: product.name,
         description: product.description,
-        cashPrice: Number(product.cashPrice),
-        minDepositAmount: product.minDepositAmount ? Number(product.minDepositAmount) : null,
+        sellingPrice: Number(product.sellingPrice),
+        installmentPrice: Number(product.installmentPrice),
+        minDepositAmount: Number(product.minDepositAmount),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -416,17 +420,17 @@ class ProductService {
         return [];
       }
 
-      const cashPrice = Number(product.cashPrice);
-      const minPrice = cashPrice * 0.8; // -20%
-      const maxPrice = cashPrice * 1.2; // +20%
+      const installmentPrice = Number(product.installmentPrice);
+      const minPrice = installmentPrice * 0.8; // -20%
+      const maxPrice = installmentPrice * 1.2; // +20%
 
-      const relatedProducts = await prisma.product.findMany({
+      const relatedProducts = await prisma.products.findMany({
         where: {
           id: { not: productId },
           isActive: true,
           status: 'ACTIVE',
           category: product.category,
-          cashPrice: {
+          installmentPrice: {
             gte: minPrice,
             lte: maxPrice,
           },
@@ -441,7 +445,7 @@ class ProductService {
         id: p.id,
         code: p.code,
         name: p.name,
-        cashPrice: Number(p.cashPrice),
+        installmentPrice: Number(p.installmentPrice),
         imageUrl: p.imageUrl,
         category: p.category,
         stockStatus: p.stockStatus,
@@ -575,18 +579,29 @@ class ProductService {
       }
 
       // Validate required fields
-      if (!data.name || !data.code || data.cashPrice === undefined || data.cashPrice === null) {
+      if (!data.name || !data.code || data.sellingPrice === undefined || data.sellingPrice === null || 
+          data.installmentPrice === undefined || data.installmentPrice === null ||
+          data.minDepositAmount === undefined || data.minDepositAmount === null) {
         throw new ProductError('REQUIRED_FIELDS', 'جميع الحقول المطلوبة يجب ملؤها');
       }
 
-      // Validate cash price
-      if (data.cashPrice <= 0) {
-        throw new ProductError('INVALID_PRICE', 'السعر يجب أن يكون أكبر من صفر');
+      // Validate selling price
+      if (data.sellingPrice <= 0) {
+        throw new ProductError('INVALID_PRICE', 'سعر البيع يجب أن يكون أكبر من صفر');
       }
 
-      // Validate minimum deposit if provided
-      if (data.minDepositAmount && data.minDepositAmount >= data.cashPrice) {
-        throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من السعر');
+      // Validate installment price
+      if (data.installmentPrice <= 0) {
+        throw new ProductError('INVALID_PRICE', 'سعر التقسيط يجب أن يكون أكبر من صفر');
+      }
+
+      // Validate minimum deposit
+      if (data.minDepositAmount < 0) {
+        throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للدفعة المقدمة يجب أن يكون صفر أو أكثر');
+      }
+
+      if (data.minDepositAmount >= data.installmentPrice) {
+        throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من سعر التقسيط');
       }
 
       // Validate custom rates if provided
@@ -611,7 +626,8 @@ class ProductService {
           name: data.name,
           size: data.size,
           description: data.description,
-          cashPrice: data.cashPrice,
+          sellingPrice: data.sellingPrice,
+          installmentPrice: data.installmentPrice,
           minDepositAmount: data.minDepositAmount,
           minDepositPercentage: data.minDepositPercentage,
           category: data.category,
@@ -631,8 +647,9 @@ class ProductService {
         code: product.code,
         name: product.name,
         description: product.description,
-        cashPrice: Number(product.cashPrice),
-        minDepositAmount: product.minDepositAmount ? Number(product.minDepositAmount) : null,
+        sellingPrice: Number(product.sellingPrice),
+        installmentPrice: Number(product.installmentPrice),
+        minDepositAmount: Number(product.minDepositAmount),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -715,8 +732,9 @@ class ProductService {
         code: product.code,
         name: product.name,
         description: product.description,
-        cashPrice: Number(product.cashPrice),
-        minDepositAmount: product.minDepositAmount ? Number(product.minDepositAmount) : null,
+        sellingPrice: Number(product.sellingPrice),
+        installmentPrice: Number(product.installmentPrice),
+        minDepositAmount: Number(product.minDepositAmount),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -794,8 +812,9 @@ class ProductService {
         code: product.code,
         name: product.name,
         description: product.description,
-        cashPrice: Number(product.cashPrice),
-        minDepositAmount: product.minDepositAmount ? Number(product.minDepositAmount) : null,
+        sellingPrice: Number(product.sellingPrice),
+        installmentPrice: Number(product.installmentPrice),
+        minDepositAmount: Number(product.minDepositAmount),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -840,19 +859,24 @@ class ProductService {
         throw new ProductError('PRODUCT_NOT_FOUND', 'المنتج غير موجود');
       }
 
-      // Validate cash price if provided
-      if (data.cashPrice !== undefined && data.cashPrice <= 0) {
-        throw new ProductError('INVALID_PRICE', 'السعر يجب أن يكون أكبر من صفر');
+      // Validate selling price if provided
+      if (data.sellingPrice !== undefined && data.sellingPrice <= 0) {
+        throw new ProductError('INVALID_PRICE', 'سعر البيع يجب أن يكون أكبر من صفر');
+      }
+
+      // Validate installment price if provided
+      if (data.installmentPrice !== undefined && data.installmentPrice <= 0) {
+        throw new ProductError('INVALID_PRICE', 'سعر التقسيط يجب أن يكون أكبر من صفر');
       }
 
       // Validate minimum deposit if provided
-      if (data.minDepositAmount !== undefined && data.cashPrice !== undefined) {
-        if (data.minDepositAmount >= data.cashPrice) {
-          throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من السعر');
+      if (data.minDepositAmount !== undefined && data.installmentPrice !== undefined) {
+        if (data.minDepositAmount >= data.installmentPrice) {
+          throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من سعر التقسيط');
         }
       } else if (data.minDepositAmount !== undefined) {
-        if (data.minDepositAmount >= Number(existingProduct.cashPrice)) {
-          throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من السعر');
+        if (data.minDepositAmount >= Number(existingProduct.installmentPrice)) {
+          throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من سعر التقسيط');
         }
       }
 
@@ -872,7 +896,8 @@ class ProductService {
       > = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.description !== undefined) updateData.description = data.description;
-      if (data.cashPrice !== undefined) updateData.cashPrice = data.cashPrice;
+      if (data.sellingPrice !== undefined) updateData.sellingPrice = data.sellingPrice;
+      if (data.installmentPrice !== undefined) updateData.installmentPrice = data.installmentPrice;
       if (data.minDepositAmount !== undefined) updateData.minDepositAmount = data.minDepositAmount;
       if (data.minDepositPercentage !== undefined)
         updateData.minDepositPercentage = data.minDepositPercentage;
@@ -900,7 +925,8 @@ class ProductService {
             changes: updateData,
             previousData: {
               name: existingProduct.name,
-              cashPrice: Number(existingProduct.cashPrice),
+              sellingPrice: Number(existingProduct.sellingPrice),
+              installmentPrice: Number(existingProduct.installmentPrice),
               category: existingProduct.category,
             },
           },
@@ -912,8 +938,9 @@ class ProductService {
         code: product.code,
         name: product.name,
         description: product.description,
-        cashPrice: Number(product.cashPrice),
-        minDepositAmount: product.minDepositAmount ? Number(product.minDepositAmount) : null,
+        sellingPrice: Number(product.sellingPrice),
+        installmentPrice: Number(product.installmentPrice),
+        minDepositAmount: Number(product.minDepositAmount),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -1175,9 +1202,9 @@ class ProductService {
         throw new ProductError('NO_PRODUCTS_FOUND', 'لم يتم العثور على منتجات');
       }
 
-      // Calculate new prices
+      // Calculate new prices (updating installmentPrice)
       const priceChanges = products.map((product) => {
-        const currentPrice = Number(product.cashPrice);
+        const currentPrice = Number(product.installmentPrice);
         let newPrice = currentPrice;
 
         switch (updateMethod) {
@@ -1228,7 +1255,7 @@ class ProductService {
           const updated = await tx.product.update({
             where: { id: change.productId },
             data: {
-              cashPrice: change.newPrice,
+              installmentPrice: change.newPrice,
             },
           });
 
@@ -1253,7 +1280,7 @@ class ProductService {
             id: updated.id,
             code: updated.code,
             name: updated.name,
-            cashPrice: Number(updated.cashPrice),
+            installmentPrice: Number(updated.installmentPrice),
           });
         }
 
@@ -1397,3 +1424,5 @@ class ProductService {
 
 export default new ProductService();
 export { ProductError, ProductFilters, CreateProductData, UpdateProductData, ProductStatistics };
+
+

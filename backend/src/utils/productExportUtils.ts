@@ -8,7 +8,8 @@ interface ExportProductData {
   code: string;
   name: string;
   category: string | null;
-  cashPrice: number;
+  sellingPrice: number;
+  installmentPrice: number;
   stockQuantity: number;
   stockStatus: string;
   status: string;
@@ -42,7 +43,8 @@ export async function generateProductExcelExport(products: ExportProductData[]):
     { header: 'كود المنتج', key: 'code', width: 20 },
     { header: 'اسم المنتج', key: 'name', width: 30 },
     { header: 'الفئة', key: 'category', width: 20 },
-    { header: 'السعر النقدي', key: 'cashPrice', width: 18 },
+    { header: 'سعر البيع', key: 'sellingPrice', width: 18 },
+    { header: 'سعر التقسيط', key: 'installmentPrice', width: 18 },
     { header: 'الكمية', key: 'stockQuantity', width: 12 },
     { header: 'حالة المخزون', key: 'stockStatus', width: 18 },
     { header: 'الحالة', key: 'status', width: 15 },
@@ -94,7 +96,8 @@ export async function generateProductExcelExport(products: ExportProductData[]):
       code: product.code,
       name: product.name,
       category: product.category || '-',
-      cashPrice: `${product.cashPrice.toFixed(2)} ج.م`,
+      sellingPrice: `${product.sellingPrice.toFixed(2)} ج.م`,
+      installmentPrice: `${product.installmentPrice.toFixed(2)} ج.م`,
       stockQuantity: product.stockQuantity,
       stockStatus: translateStockStatus(product.stockStatus),
       status: translateStatus(product.status),
@@ -218,7 +221,8 @@ export function generateProductPDFExport(
       product.code,
       product.name.length > 20 ? product.name.substring(0, 20) + '...' : product.name,
       product.category || '-',
-      `${product.cashPrice.toFixed(2)} ج.م`,
+      `${product.sellingPrice.toFixed(2)} ج.م`,
+      `${product.installmentPrice.toFixed(2)} ج.م`,
       product.stockQuantity.toString(),
       translateStockStatus(product.stockStatus),
       translateStatus(product.status),

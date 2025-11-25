@@ -15,7 +15,7 @@ export interface ProductInfo {
   id: number;
   name: string;
   category: string;
-  cashPrice: number;
+  installmentPrice: number;
   imageUrl?: string;
   termMonths: number;
   interestRate: number;
@@ -137,7 +137,7 @@ const ProductInfoCard: React.FC<ProductInfoCardProps> = ({ product }) => {
             <p className="text-xs text-brand-offwhite-700 mb-1">السعر النقدي</p>
             <div className="flex items-baseline gap-1">
               <span className="text-sm font-bold text-brand-primary-900">
-                {formatCurrency(product.cashPrice)}
+                {formatCurrency(product.installmentPrice)}
               </span>
               <span className="text-xs text-brand-offwhite-700">ج.م</span>
             </div>

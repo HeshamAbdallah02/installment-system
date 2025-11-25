@@ -8,8 +8,9 @@ export interface Product {
   name: string;
   category: string;
   description?: string;
-  cashPrice: number;
-  minDepositAmount?: number;
+  sellingPrice: number;
+  installmentPrice: number;
+  minDepositAmount: number;
   minDepositPercentage?: number;
   imageUrl?: string;
   availableTerms: number[];

@@ -7,7 +7,7 @@ import type { InstallmentRatio } from '../../types/installment';
 interface CustomInstallmentRatesProps {
   availableTerms: number[];
   customRates?: Record<number, number>;
-  cashPrice: number;
+  installmentPrice: number;
   minDeposit: number;
   onChange: (customRates: Record<number, number> | undefined) => void;
   disabled?: boolean;
@@ -21,7 +21,7 @@ interface CustomInstallmentRatesProps {
 const CustomInstallmentRates: React.FC<CustomInstallmentRatesProps> = ({
   availableTerms,
   customRates,
-  cashPrice,
+  installmentPrice,
   minDeposit,
   onChange,
   disabled = false,
@@ -140,7 +140,7 @@ const CustomInstallmentRates: React.FC<CustomInstallmentRatesProps> = ({
    * Calculate monthly payment preview - Requirement 12.4
    */
   const calculateMonthlyPayment = (term: number, rate: number): number => {
-    const financedAmount = cashPrice - minDeposit;
+    const financedAmount = installmentPrice - minDeposit;
     return (financedAmount * rate) / term;
   };
 

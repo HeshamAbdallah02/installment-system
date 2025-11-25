@@ -26,7 +26,7 @@ interface CalculationResult {
  * Performance: Memoized calculations, cached ratios
  */
 const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }) => {
-  const minDeposit = product.minDepositAmount || product.cashPrice * 0.2; // Default 20% if not set
+  const minDeposit = product.minDepositAmount || product.installmentPrice * 0.2; // Default 20% if not set
   const [depositAmount, setDepositAmount] = useState<number>(minDeposit);
 
   // Fetch installment ratios - Requirement 9.3
@@ -56,7 +56,7 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
       const effectiveRatio = product.customRates?.[termMonths] || ratioMultiplier;
 
       // Calculate financed amount
-      const financedAmount = product.cashPrice - depositAmount;
+      const financedAmount = product.installmentPrice - depositAmount;
 
       // Calculate total cost with ratio
       const totalCost = depositAmount + financedAmount * effectiveRatio;
@@ -65,8 +65,8 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
       const monthlyPayment = (financedAmount * effectiveRatio) / termMonths;
 
       // Calculate interest
-      const interestAmount = totalCost - product.cashPrice;
-      const interestPercentage = (interestAmount / product.cashPrice) * 100;
+      const interestAmount = totalCost - product.installmentPrice;
+      const interestPercentage = (interestAmount / product.installmentPrice) * 100;
 
       return {
         termMonths,
@@ -79,7 +79,7 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
         interestPercentage,
       };
     });
-  }, [depositAmount, product.cashPrice, product.availableTerms, product.customRates, ratios]);
+  }, [depositAmount, product.installmentPrice, product.availableTerms, product.customRates, ratios]);
 
   /**
    * Format currency - Requirement 9.6
@@ -100,8 +100,8 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value) || 0;
 
-    // Ensure deposit is at least minimum and not more than cash price
-    if (value >= minDeposit && value <= product.cashPrice) {
+    // Ensure deposit is at least minimum and not more than installment price
+    if (value >= minDeposit && value <= product.installmentPrice) {
       setDepositAmount(value);
     }
   };
@@ -110,7 +110,7 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
    * Calculate savings when paying cash - Requirement 9.8
    */
   const calculateSavings = (totalCost: number): number => {
-    return totalCost - product.cashPrice;
+    return totalCost - product.installmentPrice;
   };
 
   return (
@@ -130,7 +130,7 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
             value={depositAmount}
             onChange={handleDepositChange}
             min={minDeposit}
-            max={product.cashPrice}
+            max={product.installmentPrice}
             step="100"
             className="w-full px-4 py-3 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 text-lg"
           />
@@ -205,9 +205,9 @@ const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }
           </h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-brand-offwhite-700 mb-1">السعر النقدي</p>
+              <p className="text-xs text-brand-offwhite-700 mb-1">سعر التقسيط</p>
               <p className="text-lg font-bold text-brand-primary-900">
-                {formatCurrency(product.cashPrice)} ج.م
+                {formatCurrency(product.installmentPrice)} ج.م
               </p>
             </div>
             <div>

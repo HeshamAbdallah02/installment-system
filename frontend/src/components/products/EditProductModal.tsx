@@ -29,8 +29,9 @@ interface ProductFormData {
   category: string;
   size?: string;
   description?: string;
-  cashPrice: number;
-  minDepositAmount?: number;
+  sellingPrice: number;
+  installmentPrice: number;
+  minDepositAmount: number;
   availableTerms: number[];
   customRates?: Record<number, number>;
   specifications?: Array<{ key: string; value: string }>;
@@ -88,7 +89,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
         category: product.category,
         size: productWithSize.size || '',
         description: product.description || '',
-        cashPrice: product.cashPrice,
+        sellingPrice: product.sellingPrice,
+        installmentPrice: product.installmentPrice,
         minDepositAmount: product.minDepositAmount,
         availableTerms: product.availableTerms || [],
         customRates: product.customRates,
@@ -143,7 +145,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
     // Requirement 7.5: Product code cannot be changed (not included in update)
     formData.append('name', data.name);
     formData.append('category', data.category);
-    formData.append('cashPrice', data.cashPrice.toString());
+    formData.append('sellingPrice', data.sellingPrice.toString());
+    formData.append('installmentPrice', data.installmentPrice.toString());
+    formData.append('minDepositAmount', data.minDepositAmount.toString());
 
     if (data.size) {
       formData.append('size', data.size);
@@ -151,10 +155,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
     if (data.description) {
       formData.append('description', data.description);
-    }
-
-    if (data.minDepositAmount) {
-      formData.append('minDepositAmount', data.minDepositAmount.toString());
     }
 
     if (data.stockQuantity !== undefined) {
@@ -380,24 +380,98 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                     التسعير
                   </h3>
 
-                  {/* Cash Price - Requirement 7.4 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Selling Price - Direct Sale */}
+                    <div>
+                      <label
+                        htmlFor="sellingPrice"
+                        className="block text-sm font-medium text-brand-primary-900 mb-1"
+                      >
+                        سعر البيع <span className="text-brand-primary-700">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          id="sellingPrice"
+                          {...register('sellingPrice', {
+                            required: 'سعر البيع مطلوب',
+                            min: { value: 1, message: 'السعر يجب أن يكون أكبر من صفر' },
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
+                            errors.sellingPrice
+                              ? 'border-brand-primary-700'
+                              : 'border-brand-offwhite-400'
+                          }`}
+                          placeholder="0.00"
+                          step="0.01"
+                          disabled={updateProductMutation.isPending}
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-offwhite-700">
+                          ج.م
+                        </span>
+                      </div>
+                      {errors.sellingPrice && (
+                        <p className="mt-1 text-sm text-brand-primary-700">
+                          {errors.sellingPrice.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Installment Price - Requirement 7.4 */}
+                    <div>
+                      <label
+                        htmlFor="installmentPrice"
+                        className="block text-sm font-medium text-brand-primary-900 mb-1"
+                      >
+                        سعر التقسيط <span className="text-brand-primary-700">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          id="installmentPrice"
+                          {...register('installmentPrice', {
+                            required: 'سعر التقسيط مطلوب',
+                            min: { value: 1, message: 'السعر يجب أن يكون أكبر من صفر' },
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
+                            errors.installmentPrice
+                              ? 'border-brand-primary-700'
+                              : 'border-brand-offwhite-400'
+                          }`}
+                          placeholder="0.00"
+                          step="0.01"
+                          disabled={updateProductMutation.isPending}
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-offwhite-700">
+                          ج.م
+                        </span>
+                      </div>
+                      {errors.installmentPrice && (
+                        <p className="mt-1 text-sm text-brand-primary-700">
+                          {errors.installmentPrice.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Minimum Deposit Amount - Now Required */}
                   <div>
                     <label
-                      htmlFor="cashPrice"
+                      htmlFor="minDepositAmount"
                       className="block text-sm font-medium text-brand-primary-900 mb-1"
                     >
-                      السعر النقدي <span className="text-brand-primary-700">*</span>
+                      الحد الأدنى للدفعة المقدمة (ج.م) <span className="text-brand-primary-700">*</span>
                     </label>
                     <div className="relative">
                       <input
                         type="number"
-                        id="cashPrice"
-                        {...register('cashPrice', {
-                          required: 'السعر النقدي مطلوب',
-                          min: { value: 1, message: 'السعر يجب أن يكون أكبر من صفر' },
+                        id="minDepositAmount"
+                        {...register('minDepositAmount', {
+                          required: 'الحد الأدنى للدفعة المقدمة مطلوب',
+                          min: { value: 0, message: 'المبلغ يجب أن يكون صفر أو أكثر' },
                         })}
                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                          errors.cashPrice
+                          errors.minDepositAmount
                             ? 'border-brand-primary-700'
                             : 'border-brand-offwhite-400'
                         }`}
@@ -409,30 +483,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                         ج.م
                       </span>
                     </div>
-                    {errors.cashPrice && (
+                    {errors.minDepositAmount && (
                       <p className="mt-1 text-sm text-brand-primary-700">
-                        {errors.cashPrice.message}
+                        {errors.minDepositAmount.message}
                       </p>
                     )}
-                  </div>
-
-                  {/* Minimum Discount Price */}
-                  <div>
-                    <label
-                      htmlFor="minDepositAmount"
-                      className="block text-sm font-medium text-brand-primary-900 mb-1"
-                    >
-                      الحد الأدنى للسعر في التخفيض (ج.م)
-                    </label>
-                    <input
-                      type="number"
-                      id="minDepositAmount"
-                      {...register('minDepositAmount')}
-                      className="w-full px-3 py-2 border border-brand-offwhite-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900"
-                      placeholder="0.00"
-                      step="0.01"
-                      disabled={updateProductMutation.isPending}
-                    />
                   </div>
 
                   {/* Stock Quantity - Requirement 7.4 */}

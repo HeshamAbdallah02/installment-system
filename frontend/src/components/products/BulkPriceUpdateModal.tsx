@@ -56,20 +56,20 @@ const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
     }
 
     return selectedProducts.map((product) => {
-      let newPrice = product.cashPrice;
+      let newPrice = product.installmentPrice;
 
       switch (updateMethod) {
         case 'PERCENTAGE_INCREASE':
-          newPrice = product.cashPrice * (1 + value / 100);
+          newPrice = product.installmentPrice * (1 + value / 100);
           break;
         case 'PERCENTAGE_DECREASE':
-          newPrice = product.cashPrice * (1 - value / 100);
+          newPrice = product.installmentPrice * (1 - value / 100);
           break;
         case 'FIXED_INCREASE':
-          newPrice = product.cashPrice + value;
+          newPrice = product.installmentPrice + value;
           break;
         case 'FIXED_DECREASE':
-          newPrice = product.cashPrice - value;
+          newPrice = product.installmentPrice - value;
           break;
       }
 
@@ -79,13 +79,13 @@ const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
       // Round to 2 decimal places
       newPrice = Math.round(newPrice * 100) / 100;
 
-      const change = newPrice - product.cashPrice;
-      const changePercentage = product.cashPrice > 0 ? (change / product.cashPrice) * 100 : 0;
+      const change = newPrice - product.installmentPrice;
+      const changePercentage = product.installmentPrice > 0 ? (change / product.installmentPrice) * 100 : 0;
 
       return {
         productId: product.id,
         productName: product.name,
-        currentPrice: product.cashPrice,
+        currentPrice: product.installmentPrice,
         newPrice,
         change,
         changePercentage,
@@ -223,7 +223,7 @@ const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
                         <li key={product.id} className="flex items-center justify-between text-sm">
                           <span className="text-brand-primary-900 font-medium">{product.name}</span>
                           <span className="text-brand-offwhite-700">
-                            {formatCurrency(product.cashPrice)} ج.م
+                            {formatCurrency(product.installmentPrice)} ج.م
                           </span>
                         </li>
                       ))}

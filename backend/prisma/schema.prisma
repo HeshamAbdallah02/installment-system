@@ -219,9 +219,10 @@ model products {
   code                  String                  @unique @db.VarChar(50)
   name                  String                  @db.VarChar(200)
   description           String?
-  cashPrice             Decimal                 @db.Decimal(12, 2)
+  sellingPrice          Decimal                 @db.Decimal(12, 2)
+  installmentPrice      Decimal                 @db.Decimal(12, 2)
   requiresDeposit       Boolean                 @default(false)
-  minDepositAmount      Decimal?                @db.Decimal(12, 2)
+  minDepositAmount      Decimal                 @db.Decimal(12, 2)
   category              String?                 @db.VarChar(50)
   isActive              Boolean                 @default(true)
   createdAt             DateTime                @default(now())

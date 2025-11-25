@@ -67,14 +67,14 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
         // Check if product is available
         if (preSelectedProduct.stockQuantity > 0) {
           const quantity = 1;
-          const subtotal = preSelectedProduct.cashPrice * quantity;
+          const subtotal = preSelectedProduct.installmentPrice * quantity;
 
           // Check credit limit
           if (subtotal <= availableCredit) {
             const newCartItem: CartItem = {
               productId: preSelectedProduct.id,
               productName: preSelectedProduct.name,
-              productPrice: preSelectedProduct.cashPrice,
+              productPrice: preSelectedProduct.installmentPrice,
               quantity,
               subtotal,
             };
@@ -112,7 +112,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
         return;
       }
 
-      const subtotal = product.cashPrice * quantity;
+      const subtotal = product.installmentPrice * quantity;
 
       // Check if adding this would exceed credit limit
       if (subtotal > availableCredit) {
@@ -147,7 +147,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
           {
             productId: product.id,
             productName: product.name,
-            productPrice: product.cashPrice,
+            productPrice: product.installmentPrice,
             quantity,
             subtotal,
           },
@@ -245,7 +245,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
 
   // Check if product can be added
   const canAddProduct = (product: Product, qty: number) => {
-    const subtotal = product.cashPrice * qty;
+    const subtotal = product.installmentPrice * qty;
     return subtotal <= availableCredit;
   };
 
@@ -343,7 +343,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredProducts.map((product) => {
             const qty = quantities[product.id] || 1;
-            const subtotal = product.cashPrice * qty;
+            const subtotal = product.installmentPrice * qty;
             const canAdd = canAddProduct(product, qty);
             const inCart = wizardState.cartItems.some((item) => item.productId === product.id);
             const lowStock = product.stockQuantity < 5;
@@ -383,7 +383,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
 
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-brand-primary-900">
-                      {formatCurrency(product.cashPrice)}
+                      {formatCurrency(product.installmentPrice)}
                     </span>
                     <span className="text-brand-offwhite-700">ج.م</span>
                   </div>
@@ -499,7 +499,7 @@ const ProductSelection: React.FC<ProductSelectionProps> = ({
                       type="button"
                       onClick={() => handleUpdateCartQuantity(item.productId, item.quantity + 1)}
                       className="p-1 hover:bg-brand-offwhite-300 rounded transition-colors"
-                      disabled={!canAddProduct({ cashPrice: item.productPrice } as Product, 1)}
+                      disabled={!canAddProduct({ installmentPrice: item.productPrice } as Product, 1)}
                       aria-label="زيادة الكمية"
                     >
                       <PlusIcon className="w-4 h-4 text-brand-primary-900" />

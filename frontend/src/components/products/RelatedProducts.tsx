@@ -72,7 +72,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ products, onViewDetai
 
               {/* Price */}
               <p className="text-lg font-bold text-brand-primary-900 mb-3">
-                {formatCurrency(product.cashPrice)} ج.م
+                {formatCurrency(product.installmentPrice)} ج.م
               </p>
 
               {/* Quick View Button - Requirement 15.5, 15.6 */}
