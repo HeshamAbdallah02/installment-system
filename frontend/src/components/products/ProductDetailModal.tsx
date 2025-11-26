@@ -226,11 +226,11 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </div>
 
                   {/* Minimum Deposit */}
-                  {product.minDepositAmount && (
+                  {product.minPrice && (
                     <div className="pt-4 border-t border-brand-offwhite-300">
-                      <p className="text-sm text-brand-offwhite-700 mb-1">الحد الأدنى للمقدم</p>
+                      <p className="text-sm text-brand-offwhite-700 mb-1">الحد الأدنى للسعر</p>
                       <p className="text-xl font-bold text-brand-primary-900">
-                        {formatCurrency(product.minDepositAmount)} ج.م
+                        {formatCurrency(product.minPrice)} ج.م
                         {product.minDepositPercentage && (
                           <span className="text-sm text-brand-offwhite-700 font-normal mr-2">
                             ({product.minDepositPercentage}%)

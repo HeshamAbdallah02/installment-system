@@ -12,6 +12,7 @@ import installmentRouter from './routes/installment.routes';
 import productRouter from './routes/product.routes';
 import paymentRouter from './routes/payment.routes';
 import reportRouter from './routes/report.routes';
+import migrationRouter from './routes/migration.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -64,6 +65,7 @@ app.use('/api/installments', installmentRouter);
 app.use('/api/products', productRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/reports', reportRouter);
+app.use('/api/migration', migrationRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);

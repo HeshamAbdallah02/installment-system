@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../hooks/useToast';
@@ -53,7 +53,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
 
   // Format date
   const formatDate = (date: Date | null) => {
-    if (!date) return 'غير محدد';
+    if (!date) return '??? ????';
     return new Intl.DateTimeFormat('ar-EG', {
       year: 'numeric',
       month: 'long',
@@ -62,7 +62,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
   };
 
   // Prepare reminder message preview
-  const reminderMessage = `عزيزي ${customerName}، نذكرك بموعد دفعة القسط المستحقة\nالمبلغ: ${formatCurrency(nextDueAmount)} ج.م\nتاريخ الاستحقاق: ${formatDate(nextDueDate)}`;
+  const reminderMessage = `????? ${customerName}? ????? ????? ???? ????? ????????\n??????: ${formatCurrency(nextDueAmount)} ?.?\n????? ?????????: ${formatDate(nextDueDate)}`;
 
   // Send reminder mutation
   const sendReminderMutation = useMutation({
@@ -73,7 +73,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
       return response.data;
     },
     onSuccess: () => {
-      showSuccess('تم إرسال التذكير بنجاح');
+      showSuccess('?? ????? ??????? ?????');
 
       // Invalidate queries to refresh activity log
       queryClient.invalidateQueries({ queryKey: ['installmentDetail', installmentId] });
@@ -82,7 +82,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
       handleClose();
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ أثناء إرسال التذكير';
+      const errorMessage = error instanceof Error ? error.message : '??? ??? ????? ????? ???????';
       showError(errorMessage);
       console.error('Send reminder error:', error);
     },
@@ -90,12 +90,12 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
 
   const handleSendReminder = () => {
     if (!isValidPhone) {
-      showError('رقم الهاتف غير صالح');
+      showError('??? ?????? ??? ????');
       return;
     }
 
     if (sendReminderMutation.isPending) {
-      showError('جاري إرسال التذكير. يرجى الانتظار');
+      showError('???? ????? ???????. ???? ????????');
       return;
     }
 
@@ -122,12 +122,12 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
       >
         {/* Modal Header */}
         <div className="sticky top-0 bg-brand-primary-900 px-6 py-4 flex items-center justify-between rounded-t-xl">
-          <h2 className="text-xl font-bold text-white">إرسال تذكير بالدفع</h2>
+          <h2 className="text-xl font-bold text-white">????? ????? ??????</h2>
           <button
             type="button"
             onClick={handleClose}
             className="text-white hover:text-brand-secondary-200 transition-colors"
-            aria-label="إغلاق"
+            aria-label="?????"
             disabled={sendReminderMutation.isPending}
           >
             <XMarkIcon className="w-6 h-6" />
@@ -138,26 +138,26 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
         <div className="p-6 space-y-6">
           {/* Customer Info */}
           <div className="bg-brand-offwhite-100 border border-brand-offwhite-400 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-brand-primary-900 mb-3">معلومات العميل</h3>
+            <h3 className="text-sm font-semibold text-brand-primary-900 mb-3">??????? ??????</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-brand-offwhite-700">الاسم:</span>
+                <span className="text-brand-offwhite-700">?????:</span>
                 <span className="text-brand-primary-900 font-medium">{customerName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-offwhite-700">رقم الهاتف:</span>
+                <span className="text-brand-offwhite-700">??? ??????:</span>
                 <span className="text-brand-primary-900 font-medium">
-                  {customerPhone || 'غير متوفر'}
+                  {customerPhone || '??? ?????'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-offwhite-700">المبلغ المستحق:</span>
+                <span className="text-brand-offwhite-700">?????? ???????:</span>
                 <span className="text-brand-primary-900 font-bold">
-                  {formatCurrency(nextDueAmount)} ج.م
+                  {formatCurrency(nextDueAmount)} ?.?
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-offwhite-700">تاريخ الاستحقاق:</span>
+                <span className="text-brand-offwhite-700">????? ?????????:</span>
                 <span className="text-brand-primary-900 font-medium">
                   {formatDate(nextDueDate)}
                 </span>
@@ -171,10 +171,10 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
               <ExclamationTriangleIcon className="w-5 h-5 text-brand-primary-900 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-brand-primary-900">
-                  ⚠️ رقم الهاتف غير صالح
+                  ?? ??? ?????? ??? ????
                 </p>
                 <p className="text-sm text-brand-offwhite-700 mt-1">
-                  لا يمكن إرسال التذكير. يرجى تحديث رقم هاتف العميل أولاً.
+                  ?? ???? ????? ???????. ???? ????? ??? ???? ?????? ?????.
                 </p>
               </div>
             </div>
@@ -183,7 +183,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
           {/* Message Preview */}
           <div>
             <label className="block text-sm font-semibold text-brand-primary-900 mb-2">
-              معاينة الرسالة
+              ?????? ???????
             </label>
             <div className="bg-brand-offwhite-100 border border-brand-offwhite-400 rounded-lg p-4">
               <p className="text-brand-offwhite-900 whitespace-pre-line text-sm">
@@ -195,7 +195,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
           {/* Reminder Method Selector */}
           <div>
             <label className="block text-sm font-semibold text-brand-primary-900 mb-3">
-              اختر طريقة الإرسال
+              ???? ????? ???????
             </label>
             <div className="space-y-2">
               {/* WhatsApp */}
@@ -209,7 +209,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
                   className="w-4 h-4 text-brand-primary-900 focus:ring-brand-primary-900"
                   disabled={sendReminderMutation.isPending || !isValidPhone}
                 />
-                <span className="flex-1 text-brand-primary-900 font-medium">واتساب</span>
+                <span className="flex-1 text-brand-primary-900 font-medium">??????</span>
               </label>
 
               {/* SMS */}
@@ -223,7 +223,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
                   className="w-4 h-4 text-brand-primary-900 focus:ring-brand-primary-900"
                   disabled={sendReminderMutation.isPending || !isValidPhone}
                 />
-                <span className="flex-1 text-brand-primary-900 font-medium">رسالة نصية (SMS)</span>
+                <span className="flex-1 text-brand-primary-900 font-medium">????? ???? (SMS)</span>
               </label>
 
               {/* Both */}
@@ -238,7 +238,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
                   disabled={sendReminderMutation.isPending || !isValidPhone}
                 />
                 <span className="flex-1 text-brand-primary-900 font-medium">
-                  كلاهما (واتساب + SMS)
+                  ?????? (?????? + SMS)
                 </span>
               </label>
             </div>
@@ -253,7 +253,7 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
             disabled={sendReminderMutation.isPending}
             className="flex-1 px-6 py-3 border-2 border-brand-offwhite-400 hover:bg-brand-offwhite-100 text-brand-primary-900 font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            إلغاء
+            ?????
           </button>
           <button
             type="button"
@@ -283,10 +283,10 @@ const SendReminderModal: React.FC<SendReminderModalProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                جاري الإرسال...
+                ???? ???????...
               </>
             ) : (
-              'إرسال التذكير'
+              '????? ???????'
             )}
           </button>
         </div>

@@ -222,7 +222,7 @@ model products {
   sellingPrice          Decimal                 @db.Decimal(12, 2)
   installmentPrice      Decimal                 @db.Decimal(12, 2)
   requiresDeposit       Boolean                 @default(false)
-  minDepositAmount      Decimal                 @db.Decimal(12, 2)
+  minPrice              Decimal                 @db.Decimal(12, 2)
   category              String?                 @db.VarChar(50)
   isActive              Boolean                 @default(true)
   createdAt             DateTime                @default(now())

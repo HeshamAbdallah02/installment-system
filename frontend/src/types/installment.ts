@@ -9,7 +9,7 @@ export interface Product {
   description?: string;
   cashPrice: number;
   requiresDeposit: boolean;
-  minDepositAmount?: number;
+  minPrice?: number;
   category?: string;
   isActive: boolean;
   availableTerms: number[];

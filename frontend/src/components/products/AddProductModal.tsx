@@ -30,7 +30,7 @@ interface ProductFormData {
   description?: string;
   sellingPrice: number;
   installmentPrice: number;
-  minDepositAmount: number;
+  minPrice: number;
   minDepositPercentage?: number;
   availableTerms: number[];
   customRates?: Record<number, number>;
@@ -72,7 +72,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   });
 
   // Watch values for calculations
-  // Removed: cashPrice, minDepositAmount, availableTerms watches (not needed)
+  // Removed: cashPrice, minPrice, availableTerms watches (not needed)
 
   /**
    * Create product mutation
@@ -114,7 +114,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     formData.append('category', data.category);
     formData.append('sellingPrice', data.sellingPrice.toString());
     formData.append('installmentPrice', data.installmentPrice.toString());
-    formData.append('minDepositAmount', data.minDepositAmount.toString());
+    formData.append('minPrice', data.minPrice.toString());
 
     if (data.size) {
       formData.append('size', data.size);
@@ -419,21 +419,21 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               {/* Minimum Deposit Amount - Now Required */}
               <div>
                 <label
-                  htmlFor="minDepositAmount"
+                  htmlFor="minPrice"
                   className="block text-sm font-medium text-brand-primary-900 mb-1"
                 >
-                  الحد الأدنى للدفعة المقدمة (ج.م) <span className="text-brand-primary-700">*</span>
+                  الحد الأدنى للسعر (ج.م) <span className="text-brand-primary-700">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="number"
-                    id="minDepositAmount"
-                    {...register('minDepositAmount', {
-                      required: 'الحد الأدنى للدفعة المقدمة مطلوب',
+                    id="minPrice"
+                    {...register('minPrice', {
+                      required: 'الحد الأدنى للسعر مطلوب',
                       min: { value: 0, message: 'المبلغ يجب أن يكون صفر أو أكثر' },
                     })}
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                      errors.minDepositAmount
+                      errors.minPrice
                         ? 'border-brand-primary-700'
                         : 'border-brand-offwhite-400'
                     }`}
@@ -445,9 +445,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                     ج.م
                   </span>
                 </div>
-                {errors.minDepositAmount && (
+                {errors.minPrice && (
                   <p className="mt-1 text-sm text-brand-primary-700">
-                    {errors.minDepositAmount.message}
+                    {errors.minPrice.message}
                   </p>
                 )}
               </div>

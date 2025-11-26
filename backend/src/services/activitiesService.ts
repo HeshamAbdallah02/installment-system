@@ -50,7 +50,7 @@ class ActivitiesService {
                   eventData: true,
                   createdAt: true,
                   userId: true,
-                  user: {
+                  users: {
                     select: {
                       id: true,
                       fullName: true,
@@ -82,7 +82,7 @@ class ActivitiesService {
               description,
               timestamp: log.createdAt,
               userId: log.userId,
-              userName: log.user.fullName,
+              userName: log.users.fullName,
               metadata,
             };
           });

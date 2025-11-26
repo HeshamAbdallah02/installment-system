@@ -127,8 +127,8 @@ class InstallmentCalculationService {
       }
 
       // Check if deposit is required
-      if (product.requiresDeposit && product.minDepositAmount) {
-        const minDeposit = Number(product.minDepositAmount);
+      if (product.requiresDeposit && product.minPrice) {
+        const minDeposit = Number(product.minPrice);
         if (depositAmount < minDeposit) {
           throw new CalculationError(
             'INSUFFICIENT_DEPOSIT',

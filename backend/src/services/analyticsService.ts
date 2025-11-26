@@ -245,7 +245,7 @@ class AnalyticsService {
             select: {
               orderId: true,
               productId: true,
-              product: {
+              products: {
                 select: {
                   id: true,
                   name: true,
@@ -264,7 +264,7 @@ class AnalyticsService {
         if (!orderToProductMap.has(item.orderId)) {
           orderToProductMap.set(item.orderId, {
             productId: item.productId,
-            productName: item.product.name,
+            productName: item.products.name,
           });
         }
       });

@@ -38,7 +38,7 @@ interface CreateProductData {
   description?: string;
   sellingPrice: number;
   installmentPrice: number;
-  minDepositAmount: number;
+  minPrice: number;
   minDepositPercentage?: number;
   category?: string;
   imageUrl?: string;
@@ -56,7 +56,7 @@ interface UpdateProductData {
   description?: string;
   sellingPrice?: number;
   installmentPrice?: number;
-  minDepositAmount?: number;
+  minPrice?: number;
   minDepositPercentage?: number;
   category?: string;
   imageUrl?: string;
@@ -160,8 +160,8 @@ class ProductService {
         by: ['orderId'],
         where: {
           status: 'ACTIVE',
-          order: {
-            orderItems: {
+          orders: {
+            order_items: {
               some: {
                 productId: { in: productIds },
               },
@@ -176,7 +176,7 @@ class ProductService {
       const orders = await prisma.orders.findMany({
         where: { id: { in: orderIds } },
         include: {
-          orderItems: {
+          order_items: {
             select: { productId: true },
           },
         },
@@ -184,7 +184,7 @@ class ProductService {
 
       const productInstallmentCounts = new Map<number, number>();
       orders.forEach((order) => {
-        order.orderItems.forEach((item) => {
+        order.order_items.forEach((item) => {
           const count = productInstallmentCounts.get(item.productId) || 0;
           productInstallmentCounts.set(item.productId, count + 1);
         });
@@ -198,7 +198,7 @@ class ProductService {
         description: product.description,
         sellingPrice: Number(product.sellingPrice),
         installmentPrice: Number(product.installmentPrice),
-        minDepositAmount: Number(product.minDepositAmount),
+        minPrice: Number(product.minPrice),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -240,9 +240,9 @@ class ProductService {
       const product = await prisma.products.findUnique({
         where: { id: productId },
         include: {
-          inventoryAdjustments: {
+          inventory_adjustments: {
             include: {
-              adjustedByUser: {
+              users: {
                 select: {
                   id: true,
                   fullName: true,
@@ -268,14 +268,14 @@ class ProductService {
       const relatedProducts = await this.getRelatedProducts(productId);
 
       // Format inventory history
-      const inventoryHistory = product.inventoryAdjustments.map((adj) => ({
+      const inventoryHistory = product.inventory_adjustments.map((adj) => ({
         id: adj.id,
         type: adj.type,
         quantity: adj.quantity,
         previousQuantity: adj.previousQuantity,
         newQuantity: adj.newQuantity,
         reason: adj.reason,
-        adjustedBy: adj.adjustedByUser.fullName,
+        adjustedBy: adj.users.fullName,
         createdAt: adj.createdAt,
       }));
 
@@ -286,7 +286,7 @@ class ProductService {
         description: product.description,
         sellingPrice: Number(product.sellingPrice),
         installmentPrice: Number(product.installmentPrice),
-        minDepositAmount: Number(product.minDepositAmount),
+        minPrice: Number(product.minPrice),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -334,11 +334,11 @@ class ProductService {
           status: 'ACTIVE',
         },
         include: {
-          order: {
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
             },
@@ -350,7 +350,7 @@ class ProductService {
       const sixMonthSales = await prisma.order_items.groupBy({
         by: ['productId'],
         where: {
-          order: {
+          orders: {
             createdAt: {
               gte: sixMonthsAgo,
             },
@@ -372,13 +372,13 @@ class ProductService {
       >();
 
       installmentPlans.forEach((plan) => {
-        plan.order.orderItems.forEach((item) => {
+        plan.orders.order_items.forEach((item) => {
           const existing = productCounts.get(item.productId);
           if (existing) {
             existing.count++;
           } else {
             productCounts.set(item.productId, {
-              product: item.product,
+              product: item.products,
               count: 1,
             });
           }
@@ -466,8 +466,8 @@ class ProductService {
       // Get all installment plans for this product
       const installmentPlans = await prisma.installment_plans.findMany({
         where: {
-          order: {
-            orderItems: {
+          orders: {
+            order_items: {
               some: {
                 productId: productId,
               },
@@ -475,7 +475,7 @@ class ProductService {
           },
         },
         include: {
-          schedule: true,
+          installment_schedule: true,
         },
       });
 
@@ -586,8 +586,8 @@ class ProductService {
         data.sellingPrice === null ||
         data.installmentPrice === undefined ||
         data.installmentPrice === null ||
-        data.minDepositAmount === undefined ||
-        data.minDepositAmount === null
+        data.minPrice === undefined ||
+        data.minPrice === null
       ) {
         throw new ProductError('REQUIRED_FIELDS', 'جميع الحقول المطلوبة يجب ملؤها');
       }
@@ -602,16 +602,16 @@ class ProductService {
         throw new ProductError('INVALID_PRICE', 'سعر التقسيط يجب أن يكون أكبر من صفر');
       }
 
-      // Validate minimum deposit
-      if (data.minDepositAmount < 0) {
+      // Validate minimum price
+      if (data.minPrice < 0) {
         throw new ProductError(
           'INVALID_DEPOSIT',
-          'الحد الأدنى للدفعة المقدمة يجب أن يكون صفر أو أكثر'
+          'الحد الأدنى للسعر يجب أن يكون صفر أو أكثر'
         );
       }
 
-      if (data.minDepositAmount >= data.installmentPrice) {
-        throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من سعر التقسيط');
+      if (data.minPrice >= data.installmentPrice) {
+        throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للسعر يجب أن يكون أقل من سعر التقسيط');
       }
 
       // Validate custom rates if provided
@@ -638,7 +638,7 @@ class ProductService {
           description: data.description,
           sellingPrice: data.sellingPrice,
           installmentPrice: data.installmentPrice,
-          minDepositAmount: data.minDepositAmount,
+          minPrice: data.minPrice,
           minDepositPercentage: data.minDepositPercentage,
           category: data.category,
           imageUrl: data.imageUrl,
@@ -659,7 +659,7 @@ class ProductService {
         description: product.description,
         sellingPrice: Number(product.sellingPrice),
         installmentPrice: Number(product.installmentPrice),
-        minDepositAmount: Number(product.minDepositAmount),
+        minPrice: Number(product.minPrice),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -744,7 +744,7 @@ class ProductService {
         description: product.description,
         sellingPrice: Number(product.sellingPrice),
         installmentPrice: Number(product.installmentPrice),
-        minDepositAmount: Number(product.minDepositAmount),
+        minPrice: Number(product.minPrice),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -824,7 +824,7 @@ class ProductService {
         description: product.description,
         sellingPrice: Number(product.sellingPrice),
         installmentPrice: Number(product.installmentPrice),
-        minDepositAmount: Number(product.minDepositAmount),
+        minPrice: Number(product.minPrice),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -880,13 +880,13 @@ class ProductService {
       }
 
       // Validate minimum deposit if provided
-      if (data.minDepositAmount !== undefined && data.installmentPrice !== undefined) {
-        if (data.minDepositAmount >= data.installmentPrice) {
+      if (data.minPrice !== undefined && data.installmentPrice !== undefined) {
+        if (data.minPrice >= data.installmentPrice) {
           throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من سعر التقسيط');
         }
-      } else if (data.minDepositAmount !== undefined) {
-        if (data.minDepositAmount >= Number(existingProduct.installmentPrice)) {
-          throw new ProductError('INVALID_DEPOSIT', 'المقدم يجب أن يكون أقل من سعر التقسيط');
+      } else if (data.minPrice !== undefined) {
+        if (data.minPrice >= Number(existingProduct.installmentPrice)) {
+          throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للسعر يجب أن يكون أقل من سعر التقسيط');
         }
       }
 
@@ -908,7 +908,7 @@ class ProductService {
       if (data.description !== undefined) updateData.description = data.description;
       if (data.sellingPrice !== undefined) updateData.sellingPrice = data.sellingPrice;
       if (data.installmentPrice !== undefined) updateData.installmentPrice = data.installmentPrice;
-      if (data.minDepositAmount !== undefined) updateData.minDepositAmount = data.minDepositAmount;
+      if (data.minPrice !== undefined) updateData.minPrice = data.minPrice;
       if (data.minDepositPercentage !== undefined)
         updateData.minDepositPercentage = data.minDepositPercentage;
       if (data.category !== undefined) updateData.category = data.category;
@@ -950,7 +950,7 @@ class ProductService {
         description: product.description,
         sellingPrice: Number(product.sellingPrice),
         installmentPrice: Number(product.installmentPrice),
-        minDepositAmount: Number(product.minDepositAmount),
+        minPrice: Number(product.minPrice),
         minDepositPercentage: product.minDepositPercentage
           ? Number(product.minDepositPercentage)
           : null,
@@ -1401,7 +1401,7 @@ class ProductService {
             code: string;
             name: string;
             cashPrice: number;
-            minDepositAmount: number;
+            minPrice: number;
             availableTerms: number[];
             customRates: Record<number, number> | null;
             imageUrl: string | null;

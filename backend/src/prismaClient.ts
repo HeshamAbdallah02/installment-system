@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 // Create Prisma client with extended connection timeout
 const prismaClient = new PrismaClient({

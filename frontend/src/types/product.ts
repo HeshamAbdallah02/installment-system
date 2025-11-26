@@ -10,7 +10,7 @@ export interface Product {
   description?: string;
   sellingPrice: number;
   installmentPrice: number;
-  minDepositAmount: number;
+  minPrice: number;
   minDepositPercentage?: number;
   imageUrl?: string;
   availableTerms: number[];

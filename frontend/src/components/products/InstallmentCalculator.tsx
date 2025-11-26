@@ -26,7 +26,7 @@ interface CalculationResult {
  * Performance: Memoized calculations, cached ratios
  */
 const InstallmentCalculator: React.FC<InstallmentCalculatorProps> = ({ product }) => {
-  const minDeposit = product.minDepositAmount || product.installmentPrice * 0.2; // Default 20% if not set
+  const minDeposit = product.minPrice || product.installmentPrice * 0.2; // Default 20% if not set
   const [depositAmount, setDepositAmount] = useState<number>(minDeposit);
 
   // Fetch installment ratios - Requirement 9.3

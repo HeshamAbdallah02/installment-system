@@ -31,7 +31,7 @@ interface ProductFormData {
   description?: string;
   sellingPrice: number;
   installmentPrice: number;
-  minDepositAmount: number;
+  minPrice: number;
   availableTerms: number[];
   customRates?: Record<number, number>;
   specifications?: Array<{ key: string; value: string }>;
@@ -75,7 +75,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   });
 
   // Watch values for calculations
-  // Removed: cashPrice, minDepositAmount, availableTerms watches (not needed)
+  // Removed: cashPrice, minPrice, availableTerms watches (not needed)
 
   /**
    * Pre-fill form with product data - Requirement 7.3
@@ -91,7 +91,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
         description: product.description || '',
         sellingPrice: product.sellingPrice,
         installmentPrice: product.installmentPrice,
-        minDepositAmount: product.minDepositAmount,
+        minPrice: product.minPrice,
         availableTerms: product.availableTerms || [],
         customRates: product.customRates,
         stockQuantity: product.stockQuantity,
@@ -147,7 +147,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
     formData.append('category', data.category);
     formData.append('sellingPrice', data.sellingPrice.toString());
     formData.append('installmentPrice', data.installmentPrice.toString());
-    formData.append('minDepositAmount', data.minDepositAmount.toString());
+    formData.append('minPrice', data.minPrice.toString());
 
     if (data.size) {
       formData.append('size', data.size);
@@ -457,22 +457,22 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   {/* Minimum Deposit Amount - Now Required */}
                   <div>
                     <label
-                      htmlFor="minDepositAmount"
+                      htmlFor="minPrice"
                       className="block text-sm font-medium text-brand-primary-900 mb-1"
                     >
-                      الحد الأدنى للدفعة المقدمة (ج.م){' '}
+                      الحد الأدنى للسعر (ج.م){' '}
                       <span className="text-brand-primary-700">*</span>
                     </label>
                     <div className="relative">
                       <input
                         type="number"
-                        id="minDepositAmount"
-                        {...register('minDepositAmount', {
-                          required: 'الحد الأدنى للدفعة المقدمة مطلوب',
+                        id="minPrice"
+                        {...register('minPrice', {
+                          required: 'الحد الأدنى للسعر مطلوب',
                           min: { value: 0, message: 'المبلغ يجب أن يكون صفر أو أكثر' },
                         })}
                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                          errors.minDepositAmount
+                          errors.minPrice
                             ? 'border-brand-primary-700'
                             : 'border-brand-offwhite-400'
                         }`}
@@ -484,9 +484,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                         ج.م
                       </span>
                     </div>
-                    {errors.minDepositAmount && (
+                    {errors.minPrice && (
                       <p className="mt-1 text-sm text-brand-primary-700">
-                        {errors.minDepositAmount.message}
+                        {errors.minPrice.message}
                       </p>
                     )}
                   </div>

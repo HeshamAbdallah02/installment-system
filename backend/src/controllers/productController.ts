@@ -213,7 +213,7 @@ class ProductController {
         size,
         description,
         cashPrice,
-        minDepositAmount,
+        minPrice,
         minDepositPercentage,
         category,
         specifications,
@@ -249,7 +249,7 @@ class ProductController {
         size,
         description,
         cashPrice: parseFloat(cashPrice),
-        minDepositAmount: minDepositAmount ? parseFloat(minDepositAmount) : undefined,
+        minPrice: minPrice ? parseFloat(minPrice) : undefined,
         minDepositPercentage: minDepositPercentage ? parseFloat(minDepositPercentage) : undefined,
         category,
         imageUrl: undefined, // No longer using images
@@ -446,7 +446,7 @@ class ProductController {
         name,
         description,
         cashPrice,
-        minDepositAmount,
+        minPrice,
         minDepositPercentage,
         category,
         specifications,
@@ -464,8 +464,8 @@ class ProductController {
       if (name !== undefined) updateData.name = name;
       if (description !== undefined) updateData.description = description;
       if (cashPrice !== undefined) updateData.cashPrice = parseFloat(cashPrice);
-      if (minDepositAmount !== undefined)
-        updateData.minDepositAmount = parseFloat(minDepositAmount);
+      if (minPrice !== undefined)
+        updateData.minPrice = parseFloat(minPrice);
       if (minDepositPercentage !== undefined)
         updateData.minDepositPercentage = parseFloat(minDepositPercentage);
       if (category !== undefined) updateData.category = category;
