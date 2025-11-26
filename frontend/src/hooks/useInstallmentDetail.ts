@@ -1,9 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import installmentDetailService from '../services/installmentDetailService';
 import type { ApiError } from '../constants/errors';
+import type { InstallmentDetail, InstallmentStats, Activity } from '../types/installment';
+import type { ScheduleItem } from '../components/installments/NextPaymentDueCard';
+import type { PaymentRecord } from '../types/payment';
+import type { CustomerInfo } from '../components/installments/CustomerInfoCard';
+import type { ProductInfo } from '../components/installments/ProductInfoCard';
+
+export interface InstallmentDetailData extends InstallmentDetail {
+  nextDuePayment: ScheduleItem | null;
+  schedule: ScheduleItem[];
+  payments: PaymentRecord[];
+  customer: CustomerInfo | null;
+  product: ProductInfo | null;
+  statistics: InstallmentStats | null;
+  activities: Activity[];
+}
 
 interface UseInstallmentDetailResult {
-  data: Record<string, unknown> | null;
+  data: InstallmentDetailData | null;
   loading: boolean;
   error: ApiError | null;
   refetch: () => Promise<void>;
@@ -12,7 +27,7 @@ interface UseInstallmentDetailResult {
 
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
-const cache = new Map<number, { data: Record<string, unknown>; timestamp: number }>();
+const cache = new Map<number, { data: InstallmentDetailData; timestamp: number }>();
 
 /**
  * Custom hook for fetching and managing installment detail data with caching
@@ -20,7 +35,7 @@ const cache = new Map<number, { data: Record<string, unknown>; timestamp: number
  * Performance: Caches data for 5 minutes to reduce API calls
  */
 export function useInstallmentDetail(installmentId: number | null): UseInstallmentDetailResult {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [data, setData] = useState<InstallmentDetailData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
   const isMountedRef = useRef(true);
@@ -49,11 +64,11 @@ export function useInstallmentDetail(installmentId: number | null): UseInstallme
 
         // Only update state if component is still mounted
         if (isMountedRef.current) {
-          setData(result);
+          setData(result as unknown as InstallmentDetailData);
 
           // Update cache
           cache.set(installmentId, {
-            data: result,
+            data: result as unknown as InstallmentDetailData,
             timestamp: Date.now(),
           });
         }

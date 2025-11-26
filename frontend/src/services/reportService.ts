@@ -4,10 +4,9 @@ import type { DailyReportData, WeeklyReportData, MonthlyReportData } from '../ty
 /**
  * Get daily collection report
  */
-export const getDailyReport = async (date: Date, branchId?: number): Promise<DailyReportData> => {
+export const getDailyReport = async (date: Date): Promise<DailyReportData> => {
   const params = new URLSearchParams();
   params.append('date', date.toISOString().split('T')[0]);
-  if (branchId) params.append('branchId', branchId.toString());
 
   const response = await apiClient.get<DailyReportData>(`/api/reports/daily?${params.toString()}`);
   return response.data;
@@ -18,13 +17,11 @@ export const getDailyReport = async (date: Date, branchId?: number): Promise<Dai
  */
 export const getWeeklyReport = async (
   startDate: Date,
-  endDate: Date,
-  branchId?: number
+  endDate: Date
 ): Promise<WeeklyReportData> => {
   const params = new URLSearchParams();
   params.append('startDate', startDate.toISOString().split('T')[0]);
   params.append('endDate', endDate.toISOString().split('T')[0]);
-  if (branchId) params.append('branchId', branchId.toString());
 
   const response = await apiClient.get<WeeklyReportData>(
     `/api/reports/weekly?${params.toString()}`
@@ -35,15 +32,10 @@ export const getWeeklyReport = async (
 /**
  * Get monthly collection report
  */
-export const getMonthlyReport = async (
-  month: number,
-  year: number,
-  branchId?: number
-): Promise<MonthlyReportData> => {
+export const getMonthlyReport = async (month: number, year: number): Promise<MonthlyReportData> => {
   const params = new URLSearchParams();
   params.append('month', month.toString());
   params.append('year', year.toString());
-  if (branchId) params.append('branchId', branchId.toString());
 
   const response = await apiClient.get<MonthlyReportData>(
     `/api/reports/monthly?${params.toString()}`
@@ -58,13 +50,11 @@ export const exportReport = async (
   reportType: 'daily' | 'weekly' | 'monthly',
   startDate: Date,
   endDate: Date,
-  format: 'excel' | 'pdf',
-  branchId?: number
+  format: 'excel' | 'pdf'
 ): Promise<Blob> => {
   const payload: Record<string, string | number | undefined> = {
     reportType,
     format,
-    branchId,
   };
 
   // Add appropriate date parameters based on report type

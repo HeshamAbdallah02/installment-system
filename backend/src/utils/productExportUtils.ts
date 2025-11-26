@@ -13,18 +13,22 @@ interface ExportProductData {
   stockQuantity: number;
   stockStatus: string;
   status: string;
-  imageUrl?: string;
-  statistics?: {
-    totalInstallments: number;
-    activeInstallments: number;
-    totalRevenue: number;
-  };
-  inventoryHistory?: Array<{
-    type: string;
-    quantity: number;
-    reason: string;
-    createdAt: Date;
-  }>;
+  imageUrl?: string | null;
+  statistics?:
+    | {
+        totalInstallments: number;
+        activeInstallments: number;
+        totalRevenue: number;
+      }
+    | unknown;
+  inventoryHistory?:
+    | Array<{
+        type: string;
+        quantity: number;
+        reason: string;
+        createdAt: Date;
+      }>
+    | unknown;
 }
 
 /**
@@ -104,10 +108,18 @@ export async function generateProductExcelExport(products: ExportProductData[]):
     };
 
     // Add statistics if included
-    if (product.statistics) {
-      rowData.totalInstallments = product.statistics.totalInstallments;
-      rowData.activeInstallments = product.statistics.activeInstallments;
-      rowData.totalRevenue = `${product.statistics.totalRevenue.toFixed(2)} ج.م`;
+    if (product.statistics && typeof product.statistics === 'object') {
+      const stats = product.statistics as {
+        totalInstallments?: number;
+        activeInstallments?: number;
+        totalRevenue?: number;
+      };
+      if (stats.totalInstallments !== undefined)
+        rowData.totalInstallments = stats.totalInstallments;
+      if (stats.activeInstallments !== undefined)
+        rowData.activeInstallments = stats.activeInstallments;
+      if (stats.totalRevenue !== undefined)
+        rowData.totalRevenue = `${stats.totalRevenue.toFixed(2)} ج.م`;
     }
 
     worksheet.addRow(rowData);

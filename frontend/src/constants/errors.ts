@@ -106,8 +106,22 @@ export interface ApiError {
  * Extract error information from axios error
  */
 export function extractApiError(error: unknown): ApiError {
+  const axiosError = error as {
+    response?: {
+      data?: {
+        error?: {
+          code?: string;
+          message?: string;
+          details?: Record<string, string | number | boolean | null>;
+        };
+      };
+      status?: number;
+    };
+    code?: string;
+  };
+
   // Network error
-  if (!error.response) {
+  if (!axiosError.response) {
     return {
       code: 'NETWORK_ERROR',
       message: INSTALLMENT_DETAIL_ERRORS.NETWORK_ERROR,
@@ -115,7 +129,7 @@ export function extractApiError(error: unknown): ApiError {
   }
 
   // Timeout error
-  if (error.code === 'ECONNABORTED') {
+  if (axiosError.code === 'ECONNABORTED') {
     return {
       code: 'TIMEOUT_ERROR',
       message: INSTALLMENT_DETAIL_ERRORS.TIMEOUT_ERROR,
@@ -123,7 +137,7 @@ export function extractApiError(error: unknown): ApiError {
   }
 
   // API error response
-  const errorData = error.response?.data?.error;
+  const errorData = axiosError.response?.data?.error;
   if (errorData) {
     return {
       code: errorData.code || 'SERVER_ERROR',
@@ -133,7 +147,7 @@ export function extractApiError(error: unknown): ApiError {
   }
 
   // HTTP status errors
-  const status = error.response?.status;
+  const status = axiosError.response?.status;
   if (status === 404) {
     return {
       code: 'INSTALLMENT_NOT_FOUND',

@@ -248,8 +248,9 @@ class ProductController {
         name,
         size,
         description,
-        cashPrice: parseFloat(cashPrice),
-        minPrice: minPrice ? parseFloat(minPrice) : undefined,
+        sellingPrice: parseFloat(cashPrice),
+        installmentPrice: parseFloat(cashPrice), // Default to same as selling price
+        minPrice: minPrice ? parseFloat(minPrice) : 0,
         minDepositPercentage: minDepositPercentage ? parseFloat(minDepositPercentage) : undefined,
         category,
         imageUrl: undefined, // No longer using images
@@ -265,7 +266,7 @@ class ProductController {
       const product = await productService.createProduct(productData);
 
       // Log the creation in audit trail
-      await prisma.eventLog.create({
+      await prisma.event_log.create({
         data: {
           eventType: 'PRODUCT_CREATED',
           entityType: 'PRODUCT',
@@ -275,7 +276,7 @@ class ProductController {
             product: {
               code: product.code,
               name: product.name,
-              cashPrice: product.cashPrice,
+              sellingPrice: product.sellingPrice,
             },
           },
         },

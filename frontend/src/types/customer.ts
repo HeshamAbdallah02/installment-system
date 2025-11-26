@@ -7,8 +7,6 @@ export interface Customer {
   fullName: string;
   nationalId: string;
   phone: string;
-  branchName: string;
-  branchId: number | null;
   activeInstallmentsCount: number;
   totalOutstanding: number;
   paymentStatus: 'on-track' | 'overdue' | 'completed';

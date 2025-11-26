@@ -28,14 +28,6 @@ router.get('/metrics', dashboardController.getMetrics);
 router.get('/collection-trends', dashboardController.getCollectionTrends);
 
 /**
- * GET /api/dashboard/branch-distribution
- * Get branch distribution for specified period
- * Query params: period (optional, default 'current_month')
- * Requirements: 3.1
- */
-router.get('/branch-distribution', dashboardController.getBranchDistribution);
-
-/**
  * GET /api/dashboard/top-products
  * Get top 5 products by active installment count
  * Requirements: 4.1

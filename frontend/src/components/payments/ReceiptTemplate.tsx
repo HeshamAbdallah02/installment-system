@@ -170,10 +170,6 @@ const ReceiptTemplate: React.FC<ReceiptTemplateProps> = ({ receipt, onClose }) =
                     {receipt.customerPhone}
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-brand-offwhite-700 mb-1">الفرع</p>
-                  <p className="font-semibold text-brand-primary-900">{receipt.branchName}</p>
-                </div>
               </div>
             </div>
 

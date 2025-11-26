@@ -154,10 +154,18 @@ class ProductService {
   /**
    * Get inventory adjustment history
    */
-  async getInventoryHistory(
-    productId: number
-  ): Promise<
-    Array<{ id: number; productId: number; quantity: number; reason: string; createdAt: string }>
+  async getInventoryHistory(productId: number): Promise<
+    Array<{
+      id: number;
+      productId: number;
+      type: string;
+      quantity: number;
+      previousQuantity: number;
+      newQuantity: number;
+      reason: string;
+      adjustedBy: string;
+      createdAt: Date;
+    }>
   > {
     try {
       const response = await api.get(`/api/products/${productId}/inventory/history`);

@@ -40,7 +40,6 @@ export interface Payment {
   installmentNumber?: number;
   totalInstallments?: number;
   productName?: string;
-  branchName?: string;
 }
 
 export interface ReceiptData extends Payment {
@@ -51,7 +50,6 @@ export interface ReceiptData extends Payment {
   installmentNumber: number;
   totalInstallments: number;
   productName: string;
-  branchName: string;
 }
 
 export interface PaymentFormData {
@@ -145,7 +143,6 @@ export interface PaymentDetails {
   collector: {
     id: number;
     name: string;
-    branchName: string;
   };
 }
 

@@ -86,30 +86,29 @@ class InstallmentDetailService {
    * Get comprehensive installment detail with all relations
    * Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.8, 1.9
    */
-  async getInstallmentDetail(installmentId: number, _userId: number, userBranchId?: number) {
+  async getInstallmentDetail(installmentId: number, _userId: number) {
     try {
       // Fetch installment plan with all relations
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
-              branch: true,
             },
           },
-          schedule: {
+          installment_schedule: {
             include: {
-              allocations: {
+              payment_allocations: {
                 include: {
-                  payment: {
+                  payments: {
                     include: {
-                      collectedByUser: true,
+                      users: true,
                     },
                   },
                 },
@@ -119,7 +118,7 @@ class InstallmentDetailService {
               sequenceNumber: 'asc',
             },
           },
-          createdByUser: true,
+          users: true,
         },
       });
 
@@ -127,25 +126,20 @@ class InstallmentDetailService {
         throw new InstallmentDetailError('INSTALLMENT_NOT_FOUND', 'القسط غير موجود');
       }
 
-      // Validate user has access to installment (branch-based)
-      if (userBranchId && plan.order.branchId !== userBranchId) {
-        throw new InstallmentDetailError('UNAUTHORIZED_ACCESS', 'غير مصرح بالوصول لهذا القسط');
-      }
-
       // Get product details
-      const product = plan.order.orderItems[0]?.product;
+      const product = plan.orders.order_items[0]?.products;
       if (!product) {
         throw new InstallmentDetailError('PRODUCT_NOT_FOUND', 'المنتج غير موجود');
       }
 
       // Calculate statistics
-      const statistics = await this.calculateStatistics(plan.id, plan.schedule);
+      const statistics = await this.calculateStatistics(plan.id, plan.installment_schedule);
 
       // Get next due payment
-      const nextDuePayment = this.calculateNextDuePayment(plan.schedule);
+      const nextDuePayment = this.calculateNextDuePayment(plan.installment_schedule);
 
       // Format schedule with status
-      const formattedSchedule = this.formatSchedule(plan.schedule, nextDuePayment?.id);
+      const formattedSchedule = this.formatSchedule(plan.installment_schedule, nextDuePayment?.id);
 
       // Get payment history
       const paymentHistory = await this.getPaymentHistory(plan.id);
@@ -154,11 +148,11 @@ class InstallmentDetailService {
       const activities = await this.getActivityLog(plan.id, plan.customerId);
 
       // Calculate progress
-      const paidInstallments = plan.schedule.filter((s) => s.status === 'PAID').length;
-      const progressPercentage = (paidInstallments / plan.schedule.length) * 100;
+      const paidInstallments = plan.installment_schedule.filter((s) => s.status === 'PAID').length;
+      const progressPercentage = (paidInstallments / plan.installment_schedule.length) * 100;
 
       // Calculate remaining balance
-      const totalPaid = plan.schedule.reduce((sum, s) => sum + Number(s.paidAmount), 0);
+      const totalPaid = plan.installment_schedule.reduce((sum, s) => sum + Number(s.paidAmount), 0);
       const remainingBalance = Number(plan.totalWithRatio) - totalPaid;
 
       // Get other active installments for customer
@@ -177,7 +171,7 @@ class InstallmentDetailService {
           status: { in: ['ACTIVE', 'PENDING'] },
         },
         include: {
-          schedule: {
+          installment_schedule: {
             where: {
               status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
             },
@@ -186,7 +180,7 @@ class InstallmentDetailService {
       });
 
       const totalDebtAcrossAll = allInstallments.reduce((sum, inst) => {
-        const instDebt = inst.schedule.reduce(
+        const instDebt = inst.installment_schedule.reduce(
           (scheduleSum, s) => scheduleSum + (Number(s.totalAmount) - Number(s.paidAmount)),
           0
         );
@@ -197,16 +191,16 @@ class InstallmentDetailService {
         id: plan.id,
         planId: `INST-${plan.id}`,
         customerId: plan.customerId,
-        customerName: plan.customer.fullName,
-        customerPhone: plan.customer.phone,
-        customerNationalId: plan.customer.nationalId,
-        customerAddress: plan.customer.address || '',
-        customerCity: plan.customer.city || '',
+        customerName: plan.customers.fullName,
+        customerPhone: plan.customers.phone,
+        customerNationalId: plan.customers.nationalId,
+        customerAddress: plan.customers.address || '',
+        customerCity: plan.customers.city || '',
         productId: product.id,
         productName: product.name,
         productImage: '', // TODO: Add product image URL
         productCategory: product.category || '',
-        cashPrice: Number(product.cashPrice),
+        cashPrice: Number(product.sellingPrice),
         totalAmount: Number(plan.totalAmount),
         depositAmount: Number(plan.depositAmount),
         financedAmount: Number(plan.financedAmount),
@@ -219,19 +213,18 @@ class InstallmentDetailService {
         status: plan.status,
         remainingBalance,
         paidInstallments,
-        totalInstallments: plan.schedule.length,
+        totalInstallments: plan.installment_schedule.length,
         progressPercentage: Math.round(progressPercentage),
         createdAt: plan.createdAt,
-        createdBy: plan.createdByUser.fullName,
-        branchName: plan.order.branch?.name || 'No Branch',
+        createdBy: plan.users.fullName,
         customer: {
-          id: plan.customer.id,
-          fullName: plan.customer.fullName,
-          nationalId: plan.customer.nationalId,
-          phone: plan.customer.phone,
-          phoneSecondary: plan.customer.phoneSecondary,
-          address: plan.customer.address,
-          city: plan.customer.city,
+          id: plan.customers.id,
+          fullName: plan.customers.fullName,
+          nationalId: plan.customers.nationalId,
+          phone: plan.customers.phone,
+          phoneSecondary: plan.customers.phoneSecondary,
+          address: plan.customers.address,
+          city: plan.customers.city,
           otherActiveInstallmentsCount: otherInstallments,
           totalDebtAcrossAll,
         },
@@ -241,10 +234,10 @@ class InstallmentDetailService {
           code: product.code,
           description: product.description,
           category: product.category,
-          cashPrice: Number(product.cashPrice),
+          cashPrice: Number(product.sellingPrice),
           imageUrl: '', // TODO: Add product image URL
         },
-        schedule: formattedSchedule,
+        installment_schedule: formattedSchedule,
         payments: paymentHistory,
         activities,
         statistics,
@@ -265,23 +258,26 @@ class InstallmentDetailService {
    */
   private async calculateStatistics(
     _planId: number,
-    schedule: Array<{
+    installment_schedule: Array<{
       status: string;
       dueDate: Date;
-      amountDue: number;
-      amountPaid: number;
-      remainingAmount: number;
+      totalAmount: unknown;
+      paidAmount: unknown;
+      extraAmount: unknown;
+      paidDate?: Date | null;
     }>
   ): Promise<InstallmentStats> {
     try {
       // Get all paid schedule items with payment dates
-      const paidSchedules = schedule.filter((s) => s.status === 'PAID' && s.paidDate);
+      const paidSchedules = installment_schedule.filter(
+        (s: { status: string; paidDate?: Date | string | null }) => s.status === 'PAID' && s.paidDate
+      );
 
       let onTimePaymentsCount = 0;
       let latePaymentsCount = 0;
       let totalDaysToPay = 0;
 
-      paidSchedules.forEach((s) => {
+      paidSchedules.forEach((s: { dueDate: Date | string; paidDate?: Date | string | null }) => {
         const dueDate = new Date(s.dueDate);
         const paidDate = new Date(s.paidDate);
         const daysDiff = Math.ceil(
@@ -312,13 +308,16 @@ class InstallmentDetailService {
       }
 
       // Calculate total interest paid vs remaining
-      const paidInterest = paidSchedules.reduce((sum, s) => sum + Number(s.extraAmount), 0);
-      const remainingInterest = schedule
-        .filter((s) => s.status !== 'PAID')
-        .reduce((sum, s) => sum + Number(s.extraAmount), 0);
+      const paidInterest = paidSchedules.reduce(
+        (sum: number, s: { extraAmount?: number | string | null }) => sum + Number(s.extraAmount || 0),
+        0
+      );
+      const remainingInterest = installment_schedule
+        .filter((s: { status: string }) => s.status !== 'PAID')
+        .reduce((sum: number, s: { extraAmount?: number | string | null }) => sum + Number(s.extraAmount || 0), 0);
 
       // Estimate expected completion date based on payment pattern
-      const pendingSchedules = schedule.filter((s) => s.status !== 'PAID');
+      const pendingSchedules = installment_schedule.filter((s: { status: string }) => s.status !== 'PAID');
       let expectedCompletionDate = new Date();
 
       if (pendingSchedules.length > 0) {
@@ -355,21 +354,25 @@ class InstallmentDetailService {
    * Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8
    */
   private calculateNextDuePayment(
-    schedule: Array<{
+    installment_schedule: Array<{
       id: number;
       status: string;
       dueDate: Date;
-      amountDue: number;
-      amountPaid: number;
-      remainingAmount: number;
-      installmentNumber: number;
+      sequenceNumber: number;
+      totalAmount: unknown;
+      principalAmount: unknown;
+      extraAmount: unknown;
+      paidAmount: unknown;
+      paidDate?: Date | null;
     }>
   ): ScheduleItemDetail | null {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     // Find first pending or partial payment
-    const nextDue = schedule.find((s) => s.status === 'PENDING' || s.status === 'PARTIAL');
+    const nextDue = installment_schedule.find(
+      (s) => s.status === 'PENDING' || s.status === 'PARTIAL'
+    );
 
     if (!nextDue) {
       return null;
@@ -389,7 +392,7 @@ class InstallmentDetailService {
       extraAmount: Number(nextDue.extraAmount),
       paidAmount: Number(nextDue.paidAmount),
       status: nextDue.status,
-      paidDate: nextDue.paidDate,
+      paidDate: nextDue.paidDate || null,
       daysOverdue: daysDiff < 0 ? Math.abs(daysDiff) : undefined,
       isNextDue: true,
     };
@@ -400,21 +403,32 @@ class InstallmentDetailService {
    * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9
    */
   private formatSchedule(
-    schedule: Array<{
+    installment_schedule: Array<{
       id: number;
       status: string;
       dueDate: Date;
-      amountDue: number;
-      amountPaid: number;
-      remainingAmount: number;
-      installmentNumber: number;
+      sequenceNumber: number;
+      totalAmount: unknown;
+      principalAmount: unknown;
+      extraAmount: unknown;
+      paidAmount: unknown;
+      paidDate?: Date | null;
     }>,
     nextDueId?: number
   ): ScheduleItemDetail[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return schedule.map((item) => {
+    return installment_schedule.map((item: {
+      id: number;
+      dueDate: Date | string;
+      status: string;
+      amount: number | string;
+      paidAmount?: number | string | null;
+      paidDate?: Date | string | null;
+      extraAmount?: number | string | null;
+      paymentMethod?: string | null;
+    }) => {
       const dueDate = new Date(item.dueDate);
       dueDate.setHours(0, 0, 0, 0);
 
@@ -452,20 +466,20 @@ class InstallmentDetailService {
       // Get all payment allocations for this plan
       const allocations = await prisma.payment_allocations.findMany({
         where: {
-          schedule: {
+          installment_schedule: {
             planId,
           },
         },
         include: {
-          payment: {
+          payments: {
             include: {
-              collectedByUser: true,
+              users: true,
             },
           },
-          schedule: true,
+          installment_schedule: true,
         },
         orderBy: {
-          payment: {
+          payments: {
             paymentDate: 'desc',
           },
         },
@@ -475,10 +489,10 @@ class InstallmentDetailService {
       const paymentMap = new Map<number, PaymentRecordDetail>();
 
       allocations.forEach((alloc) => {
-        const payment = alloc.payment;
+        const payment = alloc.payments;
 
         if (!paymentMap.has(payment.id)) {
-          const isPartial = Number(alloc.amount) < Number(alloc.schedule.totalAmount);
+          const isPartial = Number(alloc.amount) < Number(alloc.installment_schedule.totalAmount);
 
           paymentMap.set(payment.id, {
             id: payment.id,
@@ -487,9 +501,9 @@ class InstallmentDetailService {
             amount: Number(payment.amount),
             paymentMethod: payment.paymentMethod,
             referenceNumber: undefined, // TODO: Add reference number field
-            collectorName: payment.collectedByUser.fullName,
+            collectorName: payment.users.fullName,
             scheduleId: alloc.scheduleId,
-            installmentNumber: alloc.schedule.sequenceNumber,
+            installmentNumber: alloc.installment_schedule.sequenceNumber,
             isPartial,
             isReversal: payment.isReversal,
             reversalReason: payment.reversalReason || undefined,
@@ -528,7 +542,7 @@ class InstallmentDetailService {
           ],
         },
         include: {
-          user: true,
+          users: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -542,7 +556,7 @@ class InstallmentDetailService {
         entityType: event.entityType,
         entityId: event.entityId,
         userId: event.userId,
-        userName: event.user.fullName,
+        userName: event.users.fullName,
         eventData:
           (event.eventData as Record<string, string | number | boolean | null | undefined>) || {},
         createdAt: event.createdAt,
@@ -597,18 +611,17 @@ class InstallmentDetailService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
-              branch: true,
             },
           },
-          schedule: {
+          installment_schedule: {
             orderBy: {
               sequenceNumber: 'asc',
             },
@@ -620,7 +633,7 @@ class InstallmentDetailService {
         throw new InstallmentDetailError('INSTALLMENT_NOT_FOUND', 'القسط غير موجود');
       }
 
-      const product = plan.order.orderItems[0]?.product;
+      const product = plan.orders.order_items[0]?.products;
 
       // Get payment history if requested
       let payments: Array<{
@@ -634,20 +647,20 @@ class InstallmentDetailService {
       if (options.includePayments) {
         const allocations = await prisma.payment_allocations.findMany({
           where: {
-            schedule: {
+            installment_schedule: {
               planId: installmentId,
             },
           },
           include: {
-            payment: {
+            payments: {
               include: {
-                collectedByUser: true,
+                users: true,
               },
             },
-            schedule: true,
+            installment_schedule: true,
           },
           orderBy: {
-            payment: {
+            payments: {
               paymentDate: 'desc',
             },
           },
@@ -655,13 +668,13 @@ class InstallmentDetailService {
 
         const paymentMap = new Map();
         allocations.forEach((alloc) => {
-          if (!paymentMap.has(alloc.payment.id)) {
-            paymentMap.set(alloc.payment.id, {
-              paymentNumber: alloc.payment.paymentNumber,
-              date: alloc.payment.paymentDate,
-              amount: Number(alloc.payment.amount),
-              paymentMethod: alloc.payment.paymentMethod,
-              collectorName: alloc.payment.collectedByUser.fullName,
+          if (!paymentMap.has(alloc.payments.id)) {
+            paymentMap.set(alloc.payments.id, {
+              paymentNumber: alloc.payments.paymentNumber,
+              date: alloc.payments.paymentDate,
+              amount: Number(alloc.payments.amount),
+              paymentMethod: alloc.payments.paymentMethod,
+              collectorName: alloc.payments.users.fullName,
             });
           }
         });
@@ -670,11 +683,9 @@ class InstallmentDetailService {
 
       // Get activities if requested
       let activities: Array<{
-        id: number;
         eventType: string;
-        eventData: unknown;
+        userName: string;
         createdAt: Date;
-        users?: { fullName: string };
       }> = [];
       if (options.includeActivities) {
         const events = await prisma.event_log.findMany({
@@ -687,7 +698,7 @@ class InstallmentDetailService {
             ],
           },
           include: {
-            user: true,
+            users: true,
           },
           orderBy: {
             createdAt: 'desc',
@@ -697,7 +708,7 @@ class InstallmentDetailService {
 
         activities = events.map((event) => ({
           eventType: event.eventType,
-          userName: event.user.fullName,
+          userName: event.users.fullName,
           createdAt: event.createdAt,
         }));
       }
@@ -708,16 +719,16 @@ class InstallmentDetailService {
         planId: `INST-${plan.id}`,
         customer: options.includeCustomer
           ? {
-              fullName: plan.customer.fullName,
-              nationalId: plan.customer.nationalId,
-              phone: plan.customer.phone,
-              address: plan.customer.address,
-              city: plan.customer.city,
+              fullName: plan.customers.fullName,
+              nationalId: plan.customers.nationalId,
+              phone: plan.customers.phone,
+              address: plan.customers.address,
+              city: plan.customers.city,
             }
           : undefined,
         product: {
           name: product?.name || 'Unknown',
-          cashPrice: Number(product?.cashPrice || 0),
+          cashPrice: Number(product?.sellingPrice || 0),
         },
         terms: {
           totalAmount: Number(plan.totalAmount),
@@ -731,8 +742,8 @@ class InstallmentDetailService {
           endDate: plan.endDate,
         },
         status: plan.status,
-        schedule: options.includeSchedule
-          ? plan.schedule.map((s) => ({
+        installment_schedule: options.includeSchedule
+          ? plan.installment_schedule.map((s) => ({
               sequenceNumber: s.sequenceNumber,
               dueDate: s.dueDate,
               totalAmount: Number(s.totalAmount),
@@ -767,8 +778,8 @@ class InstallmentDetailService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          schedule: {
+          customers: true,
+          installment_schedule: {
             where: {
               status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
             },
@@ -789,7 +800,7 @@ class InstallmentDetailService {
       }
 
       // Calculate remaining balance
-      const remainingBalance = plan.schedule.reduce(
+      const remainingBalance = plan.installment_schedule.reduce(
         (sum, s) => sum + (Number(s.totalAmount) - Number(s.paidAmount)),
         0
       );
@@ -797,13 +808,13 @@ class InstallmentDetailService {
       // Cancel installment in transaction
       await prisma.$transaction(async (tx) => {
         // Update installment status to CANCELLED
-        await tx.installmentPlan.update({
+        await tx.installment_plans.update({
           where: { id: installmentId },
           data: { status: 'CANCELLED' },
         });
 
         // Mark all pending payments as cancelled (using OVERDUE as proxy since no CANCELLED status)
-        await tx.installmentSchedule.updateMany({
+        await tx.installment_schedule.updateMany({
           where: {
             planId: installmentId,
             status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
@@ -814,7 +825,7 @@ class InstallmentDetailService {
         });
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'INSTALLMENT_CANCELLED',
             entityType: 'INSTALLMENT_PLAN',
@@ -823,7 +834,7 @@ class InstallmentDetailService {
             eventData: {
               reason,
               remainingBalance,
-              customerName: plan.customer.fullName,
+              customerName: plan.customers.fullName,
             },
           },
         });
@@ -862,17 +873,17 @@ class InstallmentDetailService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
             },
           },
-          schedule: {
+          installment_schedule: {
             orderBy: {
               sequenceNumber: 'asc',
             },
@@ -889,8 +900,8 @@ class InstallmentDetailService {
       }
 
       // Check if more than 50% complete
-      const paidCount = plan.schedule.filter((s) => s.status === 'PAID').length;
-      const completionPercentage = (paidCount / plan.schedule.length) * 100;
+      const paidCount = plan.installment_schedule.filter((s) => s.status === 'PAID').length;
+      const completionPercentage = (paidCount / plan.installment_schedule.length) * 100;
 
       if (completionPercentage > 50) {
         throw new InstallmentDetailError(
@@ -905,7 +916,7 @@ class InstallmentDetailService {
       }
 
       // Calculate remaining balance
-      const remainingSchedules = plan.schedule.filter((s) => s.status !== 'PAID');
+      const remainingSchedules = plan.installment_schedule.filter((s) => s.status !== 'PAID');
       const remainingBalance = remainingSchedules.reduce(
         (sum, s) => sum + (Number(s.totalAmount) - Number(s.paidAmount)),
         0
@@ -930,8 +941,13 @@ class InstallmentDetailService {
 
       // Generate new payment schedule for remaining installments
       const startDate = remainingSchedules[0]?.dueDate || new Date();
-      const newSchedule: Array<{ installmentNumber: number; dueDate: Date; amountDue: number }> =
-        [];
+      const newSchedule: Array<{
+        sequenceNumber: number;
+        dueDate: Date;
+        totalAmount: number;
+        principalAmount: number;
+        extraAmount: number;
+      }> = [];
 
       for (let i = 0; i < termMonths; i++) {
         const dueDate = new Date(startDate);
@@ -952,7 +968,7 @@ class InstallmentDetailService {
       // Update plan and schedule in transaction
       await prisma.$transaction(async (tx) => {
         // Delete remaining unpaid schedules
-        await tx.installmentSchedule.deleteMany({
+        await tx.installment_schedule.deleteMany({
           where: {
             planId: installmentId,
             status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
@@ -960,7 +976,7 @@ class InstallmentDetailService {
         });
 
         // Create new schedule
-        await tx.installmentSchedule.createMany({
+        await tx.installment_schedule.createMany({
           data: newSchedule.map((item) => ({
             planId: installmentId,
             sequenceNumber: item.sequenceNumber,
@@ -969,11 +985,12 @@ class InstallmentDetailService {
             principalAmount: item.principalAmount,
             extraAmount: item.extraAmount,
             status: 'PENDING',
+            updatedAt: new Date(),
           })),
         });
 
         // Update plan
-        const updatedPlan = await tx.installmentPlan.update({
+        const updatedPlan = await tx.installment_plans.update({
           where: { id: installmentId },
           data: {
             monthlyAmount,
@@ -985,7 +1002,7 @@ class InstallmentDetailService {
         });
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'TERMS_MODIFIED',
             entityType: 'INSTALLMENT_PLAN',
@@ -1000,7 +1017,7 @@ class InstallmentDetailService {
               newTermMonths: paidCount + termMonths,
               oldInterestRate: (Number(plan.ratioMultiplier) - 1) * 100,
               newInterestRate: interestRate,
-              customerName: plan.customer.fullName,
+              customerName: plan.customers.fullName,
             },
           },
         });
@@ -1047,9 +1064,9 @@ class InstallmentDetailService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          order: true,
-          schedule: {
+          customers: true,
+          orders: true,
+          installment_schedule: {
             where: {
               status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
             },
@@ -1065,16 +1082,19 @@ class InstallmentDetailService {
         throw new InstallmentDetailError('ALREADY_COMPLETED', 'القسط مكتمل بالفعل');
       }
 
-      if (plan.schedule.length === 0) {
+      if (plan.installment_schedule.length === 0) {
         throw new InstallmentDetailError('NO_PENDING_PAYMENTS', 'لا توجد دفعات معلقة');
       }
 
       // Calculate remaining amounts
-      const remainingPrincipal = plan.schedule.reduce(
+      const remainingPrincipal = plan.installment_schedule.reduce(
         (sum, s) => sum + (Number(s.principalAmount) - Number(s.paidAmount)),
         0
       );
-      const remainingInterest = plan.schedule.reduce((sum, s) => sum + Number(s.extraAmount), 0);
+      const remainingInterest = plan.installment_schedule.reduce(
+        (sum, s) => sum + Number(s.extraAmount),
+        0
+      );
       const totalRemaining = remainingPrincipal + remainingInterest;
 
       // Validate discount
@@ -1101,7 +1121,7 @@ class InstallmentDetailService {
       // Process settlement in transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create settlement payment
-        const payment = await tx.payment.create({
+        const payment = await tx.payments.create({
           data: {
             paymentNumber,
             customerId: plan.customerId,
@@ -1116,8 +1136,8 @@ class InstallmentDetailService {
 
         // Update all remaining schedule items to PAID
         // Update each schedule item individually to set paidAmount = totalAmount
-        for (const schedule of plan.schedule) {
-          await tx.installmentSchedule.update({
+        for (const schedule of plan.installment_schedule) {
+          await tx.installment_schedule.update({
             where: { id: schedule.id },
             data: {
               status: 'PAID',
@@ -1128,9 +1148,9 @@ class InstallmentDetailService {
         }
 
         // Create payment allocations for each schedule item
-        for (const schedule of plan.schedule) {
+        for (const schedule of plan.installment_schedule) {
           const remainingForSchedule = Number(schedule.totalAmount) - Number(schedule.paidAmount);
-          await tx.paymentAllocation.create({
+          await tx.payment_allocations.create({
             data: {
               paymentId: payment.id,
               scheduleId: schedule.id,
@@ -1141,13 +1161,13 @@ class InstallmentDetailService {
         }
 
         // Update installment status to COMPLETED
-        await tx.installmentPlan.update({
+        await tx.installment_plans.update({
           where: { id: installmentId },
           data: { status: 'COMPLETED' },
         });
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'EARLY_SETTLEMENT',
             entityType: 'INSTALLMENT_PLAN',
@@ -1160,7 +1180,7 @@ class InstallmentDetailService {
               discountAmount,
               finalSettlementAmount,
               approvedBy,
-              customerName: plan.customer.fullName,
+              customerName: plan.customers.fullName,
             },
           },
         });
@@ -1202,8 +1222,8 @@ class InstallmentDetailService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          schedule: {
+          customers: true,
+          installment_schedule: {
             where: scheduleId
               ? { id: scheduleId }
               : {
@@ -1222,23 +1242,23 @@ class InstallmentDetailService {
       }
 
       // Validate customer has valid phone number
-      const phone = plan.customer.phone;
+      const phone = plan.customers.phone;
       if (!phone || !/^01\d{9}$/.test(phone)) {
         throw new InstallmentDetailError('INVALID_PHONE', 'رقم الهاتف غير صالح');
       }
 
       // Get next due payment
-      const nextDue = plan.schedule[0];
+      const nextDue = plan.installment_schedule[0];
       if (!nextDue) {
         throw new InstallmentDetailError('NO_PENDING_PAYMENTS', 'لا توجد دفعات معلقة');
       }
 
       // Prepare reminder message
       const dueDate = new Date(nextDue.dueDate).toLocaleDateString('ar-EG');
-      const message = `عزيزي ${plan.customer.fullName}، نذكرك بموعد دفعة القسط المستحقة\nالمبلغ: ${Number(nextDue.totalAmount).toFixed(2)} ج.م\nتاريخ الاستحقاق: ${dueDate}`;
+      const message = `عزيزي ${plan.customers.fullName}، نذكرك بموعد دفعة القسط المستحقة\nالمبلغ: ${Number(nextDue.totalAmount).toFixed(2)} ج.م\nتاريخ الاستحقاق: ${dueDate}`;
 
       // In a real implementation, integrate with WhatsApp/SMS API here
-      console.log(`Reminder sent to ${plan.customer.fullName} via ${method}:`, message);
+      console.log(`Reminder sent to ${plan.customers.fullName} via ${method}:`, message);
 
       // Log reminder activity
       await prisma.event_log.create({
@@ -1249,7 +1269,7 @@ class InstallmentDetailService {
           userId,
           eventData: {
             method,
-            customerName: plan.customer.fullName,
+            customerName: plan.customers.fullName,
             phone,
             amount: Number(nextDue.totalAmount),
             dueDate: nextDue.dueDate,
@@ -1260,7 +1280,7 @@ class InstallmentDetailService {
 
       return {
         success: true,
-        customerName: plan.customer.fullName,
+        customerName: plan.customers.fullName,
         phone,
         method,
         message,
@@ -1292,10 +1312,10 @@ class InstallmentDetailService {
       const schedule = await prisma.installment_schedule.findUnique({
         where: { id: scheduleId },
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: true,
+              customers: true,
+              orders: true,
             },
           },
         },
@@ -1333,11 +1353,11 @@ class InstallmentDetailService {
       // Create payment and update schedule in transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create payment record
-        const payment = await tx.payment.create({
+        const payment = await tx.payments.create({
           data: {
             paymentNumber,
-            customerId: schedule.plan.customerId,
-            orderId: schedule.plan.orderId,
+            customerId: schedule.installment_plans.customerId,
+            orderId: schedule.installment_plans.orderId,
             amount,
             paymentMethod,
             paymentDate,
@@ -1347,7 +1367,7 @@ class InstallmentDetailService {
         });
 
         // Create payment allocation
-        await tx.paymentAllocation.create({
+        await tx.payment_allocations.create({
           data: {
             paymentId: payment.id,
             scheduleId,
@@ -1360,7 +1380,7 @@ class InstallmentDetailService {
         const newPaidAmount = Number(schedule.paidAmount) + amount;
         const newStatus = newPaidAmount >= Number(schedule.totalAmount) ? 'PAID' : 'PARTIAL';
 
-        const updatedSchedule = await tx.installmentSchedule.update({
+        const updatedSchedule = await tx.installment_schedule.update({
           where: { id: scheduleId },
           data: {
             paidAmount: newPaidAmount,
@@ -1370,7 +1390,7 @@ class InstallmentDetailService {
         });
 
         // Check if all installments are paid and update plan status
-        const allSchedules = await tx.installmentSchedule.findMany({
+        const allSchedules = await tx.installment_schedule.findMany({
           where: { planId: installmentId },
         });
 
@@ -1379,14 +1399,14 @@ class InstallmentDetailService {
         );
 
         if (allPaid) {
-          await tx.installmentPlan.update({
+          await tx.installment_plans.update({
             where: { id: installmentId },
             data: { status: 'COMPLETED' },
           });
         }
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'PAYMENT_RECORDED',
             entityType: 'PAYMENT',
@@ -1398,7 +1418,7 @@ class InstallmentDetailService {
               paymentMethod,
               scheduleId,
               installmentPlanId: installmentId,
-              customerName: schedule.plan.customer.fullName,
+              customerName: schedule.installment_plans.customers.fullName,
             },
           },
         });

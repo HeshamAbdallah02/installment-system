@@ -32,12 +32,9 @@ class AuthService {
    */
   async login(userId: string, password: string, ipAddress: string): Promise<LoginResponse> {
     try {
-      // Step 1: Fetch user by username with branch relation
+      // Step 1: Fetch user by username
       const user = await prisma.users.findUnique({
         where: { username: userId },
-        include: {
-          branch: true,
-        },
       });
 
       // Step 2: Check if user exists
@@ -83,7 +80,6 @@ class AuthService {
         userId: user.id,
         username: user.username,
         role: user.role,
-        branchId: user.branchId,
       });
 
       // Step 6: Update lastLoginAt timestamp
@@ -100,7 +96,6 @@ class AuthService {
           id: user.id,
           fullName: user.fullName,
           role: user.role as 'SELLER' | 'MANAGER' | 'ADMIN',
-          branch: user.branch?.name || 'No Branch',
         },
       };
     } catch (error) {
@@ -124,9 +119,6 @@ class AuthService {
     try {
       const user = await prisma.users.findUnique({
         where: { username: userId },
-        include: {
-          branch: true,
-        },
       });
 
       if (!user || !user.isActive) {

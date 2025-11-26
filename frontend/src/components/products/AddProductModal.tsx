@@ -95,7 +95,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           message: 'كود المنتج موجود بالفعل',
         });
       } else {
-        onError(error?.response?.data?.error?.message || 'فشل في إضافة المنتج');
+        onError(apiError?.response?.data?.error?.message || 'فشل في إضافة المنتج');
       }
     },
   });

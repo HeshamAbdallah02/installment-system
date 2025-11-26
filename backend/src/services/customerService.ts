@@ -43,7 +43,6 @@ interface UpdateCustomerData {
  */
 interface CustomerFilters {
   search?: string;
-  branchId?: number;
   status?: string;
   page?: number;
   limit?: number;
@@ -80,13 +79,10 @@ class CustomerService {
           address: data.address,
           city: data.city,
           createdBy: data.createdBy,
+          updatedAt: new Date(),
         },
         include: {
-          createdByUser: {
-            include: {
-              branch: true,
-            },
-          },
+          users: true,
         },
       });
 
@@ -98,8 +94,6 @@ class CustomerService {
         phoneSecondary: customer.phoneSecondary,
         address: customer.address,
         city: customer.city,
-        branchName: customer.createdByUser.branch?.name || 'No Branch',
-        branchId: customer.createdByUser.branchId,
         createdAt: customer.createdAt,
       };
     } catch (error) {
@@ -123,7 +117,7 @@ class CustomerService {
       const skip = (page - 1) * limit;
 
       // Build where clause
-      const where: Prisma.CustomerWhereInput = {};
+      const where: Prisma.customersWhereInput = {};
 
       // Search by name, national ID, or phone
       if (filters.search) {
@@ -134,13 +128,6 @@ class CustomerService {
         ];
       }
 
-      // Filter by branch (through createdByUser)
-      if (filters.branchId) {
-        where.createdByUser = {
-          branchId: filters.branchId,
-        };
-      }
-
       // Get customers with installment counts
       const [customers, total] = await Promise.all([
         prisma.customers.findMany({
@@ -148,19 +135,15 @@ class CustomerService {
           skip,
           take: limit,
           include: {
-            createdByUser: {
-              include: {
-                branch: true,
-              },
-            },
-            installmentPlans: {
+            users: true,
+            installment_plans: {
               where: {
                 status: {
                   in: ['ACTIVE', 'PENDING'],
                 },
               },
               include: {
-                schedule: {
+                installment_schedule: {
                   where: {
                     status: {
                       in: ['PENDING', 'PARTIAL', 'OVERDUE'],
@@ -184,17 +167,17 @@ class CustomerService {
       const customersWithStatus = customers.map((customer) => {
         let paymentStatus: 'on-track' | 'overdue' | 'completed' = 'completed';
 
-        if (customer.installmentPlans.length > 0) {
-          const hasOverdue = customer.installmentPlans.some((plan) =>
-            plan.schedule.some((s) => s.status === 'OVERDUE')
+        if (customer.installment_plans.length > 0) {
+          const hasOverdue = customer.installment_plans.some((plan) =>
+            plan.installment_schedule.some((s) => s.status === 'OVERDUE')
           );
 
           paymentStatus = hasOverdue ? 'overdue' : 'on-track';
         }
 
         // Calculate total outstanding balance
-        const totalOutstanding = customer.installmentPlans.reduce((sum, plan) => {
-          const planOutstanding = plan.schedule.reduce(
+        const totalOutstanding = customer.installment_plans.reduce((sum, plan) => {
+          const planOutstanding = plan.installment_schedule.reduce(
             (planSum, schedule) =>
               planSum + (Number(schedule.totalAmount) - Number(schedule.paidAmount)),
             0
@@ -207,9 +190,7 @@ class CustomerService {
           fullName: customer.fullName,
           nationalId: customer.nationalId,
           phone: customer.phone,
-          branchName: customer.createdByUser?.branch?.name || 'No Branch',
-          branchId: customer.createdByUser?.branchId || null,
-          activeInstallmentsCount: customer.installmentPlans.length,
+          activeInstallmentsCount: customer.installment_plans.length,
           totalOutstanding,
           paymentStatus,
         };
@@ -240,28 +221,24 @@ class CustomerService {
       const customer = await prisma.customers.findUnique({
         where: { id: customerId },
         include: {
-          createdByUser: {
-            include: {
-              branch: true,
-            },
-          },
-          installmentPlans: {
+          users: true,
+          installment_plans: {
             where: {
               status: {
                 in: ['ACTIVE', 'PENDING'],
               },
             },
             include: {
-              order: {
+              orders: {
                 include: {
-                  orderItems: {
+                  order_items: {
                     include: {
-                      product: true,
+                      products: true,
                     },
                   },
                 },
               },
-              schedule: {
+              installment_schedule: {
                 orderBy: {
                   sequenceNumber: 'asc',
                 },
@@ -270,7 +247,7 @@ class CustomerService {
           },
           payments: {
             include: {
-              order: true,
+              orders: true,
             },
             orderBy: {
               paymentDate: 'desc',
@@ -285,17 +262,24 @@ class CustomerService {
       }
 
       // Calculate installment details
-      const installments = customer.installmentPlans.map((plan) => {
-        const totalPaid = plan.schedule.reduce((sum, s) => sum + Number(s.paidAmount), 0);
+      const installments = customer.installment_plans.map((plan) => {
+        const totalPaid = plan.installment_schedule.reduce(
+          (sum: number, s) => sum + Number(s.paidAmount),
+          0
+        );
         const totalAmount = Number(plan.totalWithRatio);
         const remainingBalance = totalAmount - totalPaid;
-        const paidInstallments = plan.schedule.filter((s) => s.status === 'PAID').length;
-        const progressPercentage = (paidInstallments / plan.schedule.length) * 100;
+        const paidInstallments = plan.installment_schedule.filter(
+          (s) => s.status === 'PAID'
+        ).length;
+        const progressPercentage = (paidInstallments / plan.installment_schedule.length) * 100;
 
         // Determine status
         let status = 'on-track';
-        const hasOverdue = plan.schedule.some((s) => s.status === 'OVERDUE');
-        const nextDue = plan.schedule.find((s) => s.status === 'PENDING' || s.status === 'PARTIAL');
+        const hasOverdue = plan.installment_schedule.some((s) => s.status === 'OVERDUE');
+        const nextDue = plan.installment_schedule.find(
+          (s) => s.status === 'PENDING' || s.status === 'PARTIAL'
+        );
 
         if (hasOverdue) {
           status = 'overdue';
@@ -308,7 +292,7 @@ class CustomerService {
           }
         }
 
-        const productName = plan.order.orderItems[0]?.product.name || 'Unknown Product';
+        const productName = plan.orders.order_items[0]?.products.name || 'Unknown Product';
 
         return {
           id: plan.id,
@@ -319,7 +303,7 @@ class CustomerService {
           status,
           progressPercentage: Math.round(progressPercentage),
           paidInstallments,
-          totalInstallments: plan.schedule.length,
+          totalInstallments: plan.installment_schedule.length,
         };
       });
 
@@ -328,13 +312,16 @@ class CustomerService {
         id: payment.id,
         date: payment.paymentDate,
         amount: Number(payment.amount),
-        orderNumber: payment.order.orderNumber,
+        orderNumber: payment.orders.orderNumber,
         paymentMethod: payment.paymentMethod,
       }));
 
       // Calculate totals
       const totalActiveInstallments = installments.length;
-      const totalRemainingBalance = installments.reduce((sum, i) => sum + i.remainingBalance, 0);
+      const totalRemainingBalance = installments.reduce(
+        (sum: number, i) => sum + i.remainingBalance,
+        0
+      );
 
       return {
         id: customer.id,
@@ -344,8 +331,6 @@ class CustomerService {
         phoneSecondary: customer.phoneSecondary,
         address: customer.address,
         city: customer.city,
-        branchName: customer.createdByUser.branch?.name || 'No Branch',
-        branchId: customer.createdByUser.branchId,
         createdAt: customer.createdAt,
         totalActiveInstallments,
         totalRemainingBalance,
@@ -379,11 +364,7 @@ class CustomerService {
           city: data.city,
         },
         include: {
-          createdByUser: {
-            include: {
-              branch: true,
-            },
-          },
+          users: true,
         },
       });
 
@@ -395,8 +376,6 @@ class CustomerService {
         phoneSecondary: customer.phoneSecondary,
         address: customer.address,
         city: customer.city,
-        branchName: customer.createdByUser.branch?.name || 'No Branch',
-        branchId: customer.createdByUser.branchId,
       };
     } catch (error) {
       console.error('Update customer error:', error);

@@ -101,9 +101,6 @@ const CustomersTable: React.FC<CustomersTableProps> = ({
                 الهاتف
               </th>
               <th className="px-6 py-3 text-right text-xs font-semibold text-brand-primary-900 uppercase tracking-wider">
-                الفرع
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-brand-primary-900 uppercase tracking-wider">
                 الأقساط
               </th>
               <th className="px-6 py-3 text-right text-xs font-semibold text-brand-primary-900 uppercase tracking-wider">
@@ -124,7 +121,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({
             ) : customers.length === 0 ? (
               // Empty state
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
+                <td colSpan={5} className="px-6 py-12 text-center">
                   <p className="text-brand-offwhite-700 text-base">لا توجد نتائج</p>
                 </td>
               </tr>
@@ -150,9 +147,6 @@ const CustomersTable: React.FC<CustomersTableProps> = ({
                     <div className="text-sm text-brand-offwhite-900" dir="ltr">
                       {customer.phone}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-brand-offwhite-900">{customer.branchName}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-brand-offwhite-900 text-center">

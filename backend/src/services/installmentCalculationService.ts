@@ -138,7 +138,7 @@ class InstallmentCalculationService {
       }
 
       // Check if deposit exceeds product price
-      const productPrice = Number(product.cashPrice);
+      const productPrice = Number(product.sellingPrice);
       if (depositAmount > productPrice) {
         throw new CalculationError('INVALID_DEPOSIT', 'المقدم لا يمكن أن يكون أكبر من سعر المنتج');
       }

@@ -63,5 +63,4 @@ export interface ReportFilters {
   reportType: ReportType;
   startDate: Date;
   endDate: Date;
-  branchId?: number;
 }

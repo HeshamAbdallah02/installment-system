@@ -4,7 +4,6 @@ import { dashboardService } from '../services/dashboardService';
 import type {
   DashboardMetrics,
   MonthlyCollection,
-  BranchData,
   ProductData,
   Activity,
 } from '../store/dashboardSlice';
@@ -40,27 +39,6 @@ export function useCollectionTrends(
     queryFn: () => dashboardService.getCollectionTrends(months),
     staleTime: 1 * 60 * 1000, // 1 minute instead of 10
     gcTime: 15 * 60 * 1000, // 15 minutes garbage collection
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-  });
-}
-
-/**
- * Hook to fetch branch distribution data
- * @param period - Time period for data (default: 'current_month')
- * @returns UseQueryResult with branch distribution data
- */
-export function useBranchDistribution(
-  period: string = 'current_month'
-): UseQueryResult<BranchData[], Error> {
-  return useQuery({
-    queryKey: queryKeys.dashboard.branchDistribution(period),
-    queryFn: () => dashboardService.getBranchDistribution(period),
-    staleTime: 1 * 60 * 1000, // 1 minute instead of 5
-    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

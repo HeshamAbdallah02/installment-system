@@ -25,12 +25,11 @@ class ReportController {
         return;
       }
 
-      const { date, branch } = req.query;
+      const { date } = req.query;
 
       const reportDate = date ? new Date(date as string) : new Date();
-      const branchId = branch ? parseInt(branch as string) : req.user.branchId || undefined;
 
-      const report = await reportService.getDailyReport(reportDate, branchId);
+      const report = await reportService.getDailyReport(reportDate);
 
       res.status(200).json({
         success: true,
@@ -65,7 +64,7 @@ class ReportController {
         return;
       }
 
-      const { startDate, endDate, branch } = req.query;
+      const { startDate, endDate } = req.query;
 
       if (!startDate || !endDate) {
         res.status(400).json({
@@ -80,9 +79,8 @@ class ReportController {
 
       const start = new Date(startDate as string);
       const end = new Date(endDate as string);
-      const branchId = branch ? parseInt(branch as string) : req.user.branchId || undefined;
 
-      const report = await reportService.getWeeklyReport(start, end, branchId);
+      const report = await reportService.getWeeklyReport(start, end);
 
       res.status(200).json({
         success: true,
@@ -117,7 +115,7 @@ class ReportController {
         return;
       }
 
-      const { month, year, branch } = req.query;
+      const { month, year } = req.query;
 
       if (!month || !year) {
         res.status(400).json({
@@ -132,7 +130,6 @@ class ReportController {
 
       const monthNum = parseInt(month as string);
       const yearNum = parseInt(year as string);
-      const branchId = branch ? parseInt(branch as string) : req.user.branchId || undefined;
 
       if (monthNum < 1 || monthNum > 12) {
         res.status(400).json({
@@ -145,7 +142,7 @@ class ReportController {
         return;
       }
 
-      const report = await reportService.getMonthlyReport(monthNum, yearNum, branchId);
+      const report = await reportService.getMonthlyReport(monthNum, yearNum);
 
       res.status(200).json({
         success: true,
@@ -182,7 +179,7 @@ class ReportController {
         return;
       }
 
-      const { reportType, format, date, startDate, endDate, month, year, branch } = req.body;
+      const { reportType, format, date, startDate, endDate, month, year } = req.body;
 
       if (!reportType || !format) {
         res.status(400).json({
@@ -223,7 +220,6 @@ class ReportController {
         endDate: endDate ? new Date(endDate) : undefined,
         month: month ? parseInt(month) : undefined,
         year: year ? parseInt(year) : undefined,
-        branchId: branch ? parseInt(branch) : req.user.branchId || undefined,
       };
 
       const exportData = await reportService.exportReport(reportType, format, params);
@@ -294,7 +290,9 @@ class ReportController {
           pattern: 'solid',
           fgColor: { argb: 'FFEACB95' },
         };
-        worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+        if (worksheet.lastRow) {
+          worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+        }
 
         worksheet.addRow([
           'الإجمالي المحصل',
@@ -332,7 +330,9 @@ class ReportController {
           pattern: 'solid',
           fgColor: { argb: 'FFEACB95' },
         };
-        worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+        if (worksheet.lastRow) {
+          worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+        }
 
         worksheet.addRow([
           'نقدي',
@@ -368,7 +368,9 @@ class ReportController {
             pattern: 'solid',
             fgColor: { argb: 'FFEACB95' },
           };
-          worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+          if (worksheet.lastRow) {
+            worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+          }
 
           const collectorTableHeader = worksheet.addRow(['الاسم', 'عدد الدفعات', 'الإجمالي']);
           collectorTableHeader.font = { bold: true };
@@ -403,7 +405,9 @@ class ReportController {
             pattern: 'solid',
             fgColor: { argb: 'FFEACB95' },
           };
-          worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+          if (worksheet.lastRow) {
+            worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+          }
 
           const customersTableHeader = worksheet.addRow([
             'اسم العميل',
@@ -438,7 +442,9 @@ class ReportController {
             pattern: 'solid',
             fgColor: { argb: 'FFEACB95' },
           };
-          worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+          if (worksheet.lastRow) {
+            worksheet.mergeCells(worksheet.lastRow.number, 1, worksheet.lastRow.number, 3);
+          }
 
           const dailyTableHeader = worksheet.addRow(['التاريخ', 'عدد الدفعات', 'الإجمالي']);
           dailyTableHeader.font = { bold: true };

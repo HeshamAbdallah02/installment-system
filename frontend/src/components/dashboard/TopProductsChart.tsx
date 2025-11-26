@@ -48,14 +48,9 @@ const CustomTooltip = ({
 };
 
 // Custom label to show count at bar end
-const renderCustomLabel = (props: {
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  value?: number;
-}) => {
-  const { x, y, width, height, value } = props;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const renderCustomLabel = (props: any) => {
+  const { x = 0, y = 0, width = 0, height = 0, value } = props;
   return (
     <text
       x={x + width + 10}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import type { Product, InventoryAdjustmentType, InventoryAdjustment } from '../../types/product';
+import type { Product, InventoryAdjustmentType } from '../../types/product';
 import productService from '../../services/productService';
 
 interface ManageInventoryModalProps {
@@ -53,9 +53,7 @@ const ManageInventoryModal: React.FC<ManageInventoryModalProps> = ({
   const quantity = watch('quantity');
 
   // Fetch inventory history - Requirement 8.7
-  const { data: inventoryHistory = [], isLoading: historyLoading } = useQuery<
-    InventoryAdjustment[]
-  >({
+  const { data: inventoryHistory = [], isLoading: historyLoading } = useQuery({
     queryKey: ['inventoryHistory', product.id],
     queryFn: () => productService.getInventoryHistory(product.id),
     enabled: isOpen,
@@ -413,7 +411,7 @@ const ManageInventoryModal: React.FC<ManageInventoryModalProps> = ({
                                   : 'bg-brand-primary-100 text-brand-primary-900'
                               }`}
                             >
-                              {getAdjustmentTypeLabel(adjustment.type)}
+                              {getAdjustmentTypeLabel(adjustment.type as InventoryAdjustmentType)}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm">

@@ -6,6 +6,7 @@ import {
   InstallmentListItem,
   InstallmentFilters,
   InstallmentAgreement,
+  InstallmentRatio,
 } from '../types/installment';
 import { Product } from '../types/product';
 
@@ -149,6 +150,17 @@ class InstallmentService {
       }
     );
     return response.data;
+  }
+
+  /**
+   * Get installment ratios for different term periods
+   */
+  async getInstallmentRatios(): Promise<InstallmentRatio[]> {
+    // Return default ratios - these could be fetched from API if needed
+    return [
+      { periodMonths: 3, ratioMultiplier: 1.03, description: '3 أشهر' },
+      { periodMonths: 6, ratioMultiplier: 1.05, description: '6 أشهر' },
+    ];
   }
 }
 

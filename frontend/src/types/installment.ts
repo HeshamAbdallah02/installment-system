@@ -88,7 +88,6 @@ export interface InstallmentListItem {
   monthlyPayment: number;
   nextDueDate: Date | null;
   status: 'on-track' | 'due-soon' | 'overdue';
-  branchName: string;
 }
 
 export interface InstallmentFilters {
@@ -182,6 +181,12 @@ export interface InstallmentDetail {
 }
 
 export type PaymentConsistency = 'GOOD' | 'FAIR' | 'POOR';
+
+export interface InstallmentRatio {
+  periodMonths: number;
+  ratioMultiplier: number;
+  description: string;
+}
 
 export interface InstallmentStats {
   onTimePaymentsCount: number;

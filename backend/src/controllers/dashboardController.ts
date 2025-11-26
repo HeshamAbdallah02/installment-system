@@ -7,17 +7,6 @@ import activitiesService from '../services/activitiesService';
 import { DASHBOARD_ERRORS, DashboardErrorCode } from '../constants/dashboardErrors';
 
 /**
- * Valid period values for branch distribution
- */
-const VALID_PERIODS = [
-  'current_month',
-  'last_month',
-  'last_3_months',
-  'last_6_months',
-  'current_year',
-];
-
-/**
  * Helper function to handle errors consistently
  * Requirements: 8.1, 8.4, 8.5, 8.6
  */
@@ -144,48 +133,6 @@ class DashboardController {
       // Handle database errors - return 500
       // Requirements: 1.8, 8.1, 8.4, 8.5, 8.6
       handleError(res, error, 'collection trends');
-    }
-  }
-
-  /**
-   * Handle request to get branch distribution
-   * GET /api/dashboard/branch-distribution?period=current_month
-   * Requirements: 3.1, 3.9, 8.1, 8.4
-   *
-   * @param req - Authenticated Express request with optional period query param
-   * @param res - Express response
-   */
-  async getBranchDistribution(req: AuthenticatedRequest, res: Response): Promise<void> {
-    try {
-      // Parse and validate period parameter
-      // Requirements: 8.4
-      const period = (req.query.period as string) || 'current_month';
-
-      // Validate period parameter - return 400 for invalid input
-      // Requirements: 8.4
-      if (!VALID_PERIODS.includes(period)) {
-        handleValidationError(res, 'INVALID_PERIOD');
-        return;
-      }
-
-      // Get branch distribution
-      const distribution = await analyticsService.getBranchDistribution(period);
-
-      // Set cache control headers to prevent browser caching
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.setHeader('Surrogate-Control', 'no-store');
-
-      // Return success response
-      res.status(200).json({
-        success: true,
-        data: distribution,
-      });
-    } catch (error) {
-      // Handle database errors - return 500
-      // Requirements: 1.8, 8.1, 8.4, 8.5, 8.6
-      handleError(res, error, 'branch distribution');
     }
   }
 

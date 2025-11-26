@@ -8,8 +8,6 @@ import { lazy } from 'react';
 
 export const CollectionTrendsChart = lazy(() => import('./CollectionTrendsChart'));
 
-export const BranchDistributionChart = lazy(() => import('./BranchDistributionChart'));
-
 export const TopProductsChart = lazy(() => import('./TopProductsChart'));
 
 // Chart loading fallback component

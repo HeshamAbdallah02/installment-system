@@ -15,6 +15,7 @@ import Toast from '../components/common/Toast';
 import { useProductCatalog, usePopularProducts } from '../hooks/useProductCatalog';
 import type { ProductFilters, Product } from '../types/product';
 import { useToast } from '../hooks/useToast';
+import productService from '../services/productService';
 
 // Product categories for female wear and accessories retail store
 const PRODUCT_CATEGORIES = [

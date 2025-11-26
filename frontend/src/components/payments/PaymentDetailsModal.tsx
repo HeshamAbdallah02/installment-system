@@ -311,12 +311,6 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({
                       {paymentDetails.collector.name}
                     </p>
                   </div>
-                  <div className="bg-brand-offwhite-50 p-4 rounded-lg">
-                    <p className="text-sm text-brand-offwhite-700 mb-1">الفرع</p>
-                    <p className="text-brand-primary-900 font-medium">
-                      {paymentDetails.collector.branchName}
-                    </p>
-                  </div>
                 </div>
               </div>
 

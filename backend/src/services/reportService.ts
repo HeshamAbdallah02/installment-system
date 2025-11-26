@@ -8,14 +8,14 @@ class ReportService {
   /**
    * Generate daily collection report
    */
-  async getDailyReport(date: Date, branchId?: number) {
+  async getDailyReport(date: Date) {
     try {
       const startOfDay = new Date(date);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const where: Prisma.PaymentWhereInput = {
+      const where: Prisma.paymentsWhereInput = {
         paymentDate: {
           gte: startOfDay,
           lte: endOfDay,
@@ -23,23 +23,13 @@ class ReportService {
         isReversal: false,
       };
 
-      if (branchId) {
-        where.order = {
-          branchId,
-        };
-      }
-
       // Get all payments for the day
       const payments = await prisma.payments.findMany({
         where,
         include: {
-          customer: true,
-          collectedByUser: true,
-          order: {
-            include: {
-              branch: true,
-            },
-          },
+          customers: true,
+          users: true,
+          orders: true,
         },
       });
 
@@ -79,7 +69,7 @@ class ReportService {
         const collectorId = payment.collectedBy;
         if (!collectorMap.has(collectorId)) {
           collectorMap.set(collectorId, {
-            name: payment.collectedByUser.fullName,
+            name: payment.users.fullName,
             count: 0,
             total: 0,
           });
@@ -99,10 +89,10 @@ class ReportService {
       // Detailed payments list
       const detailedPayments = payments.map((payment) => ({
         paymentNumber: payment.paymentNumber,
-        customerName: payment.customer.fullName,
+        customerName: payment.customers.fullName,
         amount: Number(payment.amount),
         paymentMethod: payment.paymentMethod,
-        collectorName: payment.collectedByUser.fullName,
+        collectorName: payment.users.fullName,
         time: payment.createdAt,
       }));
 
@@ -123,14 +113,14 @@ class ReportService {
   /**
    * Generate weekly collection report
    */
-  async getWeeklyReport(startDate: Date, endDate: Date, branchId?: number) {
+  async getWeeklyReport(startDate: Date, endDate: Date) {
     try {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
 
-      const where: Prisma.PaymentWhereInput = {
+      const where: Prisma.paymentsWhereInput = {
         paymentDate: {
           gte: start,
           lte: end,
@@ -138,18 +128,12 @@ class ReportService {
         isReversal: false,
       };
 
-      if (branchId) {
-        where.order = {
-          branchId,
-        };
-      }
-
       // Get all payments for the week
       const payments = await prisma.payments.findMany({
         where,
         include: {
-          customer: true,
-          collectedByUser: true,
+          customers: true,
+          users: true,
         },
       });
 
@@ -213,7 +197,7 @@ class ReportService {
         const collectorId = payment.collectedBy;
         if (!collectorMap.has(collectorId)) {
           collectorMap.set(collectorId, {
-            name: payment.collectedByUser.fullName,
+            name: payment.users.fullName,
             count: 0,
             total: 0,
           });
@@ -236,19 +220,13 @@ class ReportService {
       const prevEnd = new Date(end);
       prevEnd.setDate(prevEnd.getDate() - 7);
 
-      const prevWhere: Prisma.PaymentWhereInput = {
+      const prevWhere: Prisma.paymentsWhereInput = {
         paymentDate: {
           gte: prevStart,
           lte: prevEnd,
         },
         isReversal: false,
       };
-
-      if (branchId) {
-        prevWhere.order = {
-          branchId,
-        };
-      }
 
       const prevPayments = await prisma.payments.findMany({
         where: prevWhere,
@@ -278,14 +256,14 @@ class ReportService {
   /**
    * Generate monthly collection report
    */
-  async getMonthlyReport(month: number, year: number, branchId?: number) {
+  async getMonthlyReport(month: number, year: number) {
     try {
       const startDate = new Date(year, month - 1, 1);
       startDate.setHours(0, 0, 0, 0);
       const endDate = new Date(year, month, 0);
       endDate.setHours(23, 59, 59, 999);
 
-      const where: Prisma.PaymentWhereInput = {
+      const where: Prisma.paymentsWhereInput = {
         paymentDate: {
           gte: startDate,
           lte: endDate,
@@ -293,18 +271,12 @@ class ReportService {
         isReversal: false,
       };
 
-      if (branchId) {
-        where.order = {
-          branchId,
-        };
-      }
-
       // Get all payments for the month
       const payments = await prisma.payments.findMany({
         where,
         include: {
-          customer: true,
-          collectedByUser: true,
+          customers: true,
+          users: true,
         },
       });
 
@@ -368,7 +340,7 @@ class ReportService {
         const customerId = payment.customerId;
         if (!customerMap.has(customerId)) {
           customerMap.set(customerId, {
-            name: payment.customer.fullName,
+            name: payment.customers.fullName,
             total: 0,
             count: 0,
           });
@@ -394,7 +366,7 @@ class ReportService {
         const collectorId = payment.collectedBy;
         if (!collectorMap.has(collectorId)) {
           collectorMap.set(collectorId, {
-            name: payment.collectedByUser.fullName,
+            name: payment.users.fullName,
             count: 0,
             total: 0,
           });
@@ -412,20 +384,12 @@ class ReportService {
       }));
 
       // Calculate collection rate (collected / due)
-      const scheduleWhere: prisma.installment_scheduleWhereInput = {
+      const scheduleWhere: Prisma.installment_scheduleWhereInput = {
         dueDate: {
           gte: startDate,
           lte: endDate,
         },
       };
-
-      if (branchId) {
-        scheduleWhere.plan = {
-          order: {
-            branchId,
-          },
-        };
-      }
 
       const schedules = await prisma.installment_schedule.findMany({
         where: scheduleWhere,
@@ -435,7 +399,7 @@ class ReportService {
       const collectionRate = totalDue > 0 ? (totalCollected / totalDue) * 100 : 0;
 
       // Calculate overdue amounts at end of period
-      const overdueWhere: prisma.installment_scheduleWhereInput = {
+      const overdueWhere: Prisma.installment_scheduleWhereInput = {
         dueDate: {
           lt: endDate,
         },
@@ -443,14 +407,6 @@ class ReportService {
           in: ['PENDING', 'PARTIAL', 'OVERDUE'],
         },
       };
-
-      if (branchId) {
-        overdueWhere.plan = {
-          order: {
-            branchId,
-          },
-        };
-      }
 
       const overdueSchedules = await prisma.installment_schedule.findMany({
         where: overdueWhere,
@@ -469,19 +425,13 @@ class ReportService {
       const prevEndDate = new Date(prevYear, prevMonth, 0);
       prevEndDate.setHours(23, 59, 59, 999);
 
-      const prevWhere: Prisma.PaymentWhereInput = {
+      const prevWhere: Prisma.paymentsWhereInput = {
         paymentDate: {
           gte: prevStartDate,
           lte: prevEndDate,
         },
         isReversal: false,
       };
-
-      if (branchId) {
-        prevWhere.order = {
-          branchId,
-        };
-      }
 
       const prevPayments = await prisma.payments.findMany({
         where: prevWhere,
@@ -525,11 +475,44 @@ class ReportService {
       endDate?: Date;
       month?: number;
       year?: number;
-      branchId?: number;
     }
-  ) {
+  ): Promise<{
+    reportType: string;
+    format: string;
+    data: {
+      date?: Date;
+      startDate?: Date;
+      endDate?: Date;
+      month?: number;
+      year?: number;
+      totalCollected: number;
+      paymentCount: number;
+      paymentMethodBreakdown: {
+        cash: number;
+        bankTransfer: number;
+        card: number;
+        check: number;
+      };
+      collectorPerformance: Array<{
+        collectorId: number;
+        collectorName: string;
+        paymentCount: number;
+        totalCollected: number;
+      }>;
+      dailyTotals?: Array<{ date: Date; amount: number; count: number }>;
+      averageDaily?: number;
+      topCustomers?: Array<{
+        customerId: number;
+        customerName: string;
+        totalPaid: number;
+        paymentCount: number;
+      }>;
+      collectionRate?: number;
+      comparisonToPrevious?: number;
+    };
+  }> {
     try {
-      let reportData: { summary: Record<string, number | string>; data: Record<string, unknown> };
+      let reportData;
 
       // Get report data based on type
       switch (reportType) {
@@ -537,23 +520,19 @@ class ReportService {
           if (!params.date) {
             throw new Error('Date is required for daily report');
           }
-          reportData = await this.getDailyReport(params.date, params.branchId);
+          reportData = await this.getDailyReport(params.date);
           break;
         case 'weekly':
           if (!params.startDate || !params.endDate) {
             throw new Error('Start and end dates are required for weekly report');
           }
-          reportData = await this.getWeeklyReport(
-            params.startDate,
-            params.endDate,
-            params.branchId
-          );
+          reportData = await this.getWeeklyReport(params.startDate, params.endDate);
           break;
         case 'monthly':
           if (!params.month || !params.year) {
             throw new Error('Month and year are required for monthly report');
           }
-          reportData = await this.getMonthlyReport(params.month, params.year, params.branchId);
+          reportData = await this.getMonthlyReport(params.month, params.year);
           break;
         default:
           throw new Error('Invalid report type');

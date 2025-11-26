@@ -28,7 +28,6 @@ interface CreateInstallmentData {
   }>;
   termMonths: number;
   startDate: Date;
-  branchId: number;
   createdBy: number;
 }
 
@@ -37,7 +36,6 @@ interface CreateInstallmentData {
  */
 interface InstallmentFilters {
   status?: string;
-  branchId?: number;
   search?: string;
   page?: number;
   limit?: number;
@@ -73,7 +71,7 @@ class InstallmentService {
           },
         },
         include: {
-          schedule: {
+          installment_schedule: {
             where: {
               status: {
                 in: ['PENDING', 'OVERDUE'],
@@ -85,7 +83,7 @@ class InstallmentService {
 
       // Calculate total outstanding balance
       const totalOutstanding = activeInstallments.reduce((sum, plan) => {
-        const planOutstanding = plan.schedule.reduce(
+        const planOutstanding = plan.installment_schedule.reduce(
           (planSum, schedule) =>
             planSum + (Number(schedule.totalAmount) - Number(schedule.paidAmount)),
           0
@@ -151,17 +149,17 @@ class InstallmentService {
       // Create order, installment plan, schedule, and update inventory in a transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create order with multiple items
-        const order = await tx.order.create({
+        const order = await tx.orders.create({
           data: {
             orderNumber,
             customerId: data.customerId,
-            branchId: data.branchId,
             orderDate: new Date(),
             totalAmount: calculation.totalToPay,
             paymentType: 'INSTALLMENT',
             status: 'CONFIRMED',
             createdBy: data.createdBy,
-            orderItems: {
+            updatedAt: new Date(),
+            order_items: {
               create: data.items.map((item) => ({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -174,7 +172,7 @@ class InstallmentService {
 
         // Decrease product quantities
         for (const item of data.items) {
-          await tx.product.update({
+          await tx.products.update({
             where: { id: item.productId },
             data: {
               stockQuantity: {
@@ -185,7 +183,7 @@ class InstallmentService {
         }
 
         // Create installment plan (no deposit)
-        const plan = await tx.installmentPlan.create({
+        const plan = await tx.installment_plans.create({
           data: {
             orderId: order.id,
             customerId: data.customerId,
@@ -200,11 +198,12 @@ class InstallmentService {
             endDate,
             status: 'ACTIVE',
             createdBy: data.createdBy,
+            updatedAt: new Date(),
           },
         });
 
         // Create installment schedule
-        await tx.installmentSchedule.createMany({
+        await tx.installment_schedule.createMany({
           data: schedule.map((item) => ({
             planId: plan.id,
             sequenceNumber: item.sequenceNumber,
@@ -213,6 +212,7 @@ class InstallmentService {
             principalAmount: item.principalAmount,
             extraAmount: item.extraAmount,
             status: 'PENDING',
+            updatedAt: new Date(),
           })),
         });
 
@@ -275,26 +275,19 @@ class InstallmentService {
         };
       }
 
-      // Filter by branch
-      if (filters.branchId) {
-        where.order = {
-          branchId: filters.branchId,
-        };
-      }
-
       // Search by customer name or product name
       if (filters.search) {
         where.OR = [
           {
-            customer: {
+            customers: {
               fullName: { contains: filters.search, mode: 'insensitive' },
             },
           },
           {
-            order: {
-              orderItems: {
+            orders: {
+              order_items: {
                 some: {
-                  product: {
+                  products: {
                     name: { contains: filters.search, mode: 'insensitive' },
                   },
                 },
@@ -311,18 +304,17 @@ class InstallmentService {
           skip,
           take: limit,
           include: {
-            customer: true,
-            order: {
+            customers: true,
+            orders: {
               include: {
-                orderItems: {
+                order_items: {
                   include: {
-                    product: true,
+                    products: true,
                   },
                 },
-                branch: true,
               },
             },
-            schedule: {
+            installment_schedule: {
               where: {
                 status: {
                   in: ['PENDING', 'PARTIAL', 'OVERDUE'],
@@ -343,8 +335,8 @@ class InstallmentService {
 
       // Format installments with status and progress
       const formattedInstallments = installments.map((plan) => {
-        const productName = plan.order.orderItems[0]?.product.name || 'Unknown Product';
-        const nextDue = plan.schedule[0];
+        const productName = plan.orders.order_items[0]?.products.name || 'Unknown Product';
+        const nextDue = plan.installment_schedule[0];
 
         // Determine status
         let status = 'on-track';
@@ -363,13 +355,12 @@ class InstallmentService {
 
         return {
           id: plan.id,
-          customerName: plan.customer.fullName,
+          customerName: plan.customers.fullName,
           customerId: plan.customerId,
           productName,
           monthlyPayment: Number(plan.monthlyAmount),
           nextDueDate: nextDue?.dueDate || null,
           status,
-          branchName: plan.order.branch?.name || 'No Branch',
         };
       });
 
@@ -398,18 +389,17 @@ class InstallmentService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
-              branch: true,
             },
           },
-          schedule: {
+          installment_schedule: {
             orderBy: {
               sequenceNumber: 'asc',
             },
@@ -421,21 +411,21 @@ class InstallmentService {
         throw new InstallmentError('INSTALLMENT_NOT_FOUND', 'خطة التقسيط غير موجودة');
       }
 
-      const productName = plan.order.orderItems[0]?.product.name || 'Unknown Product';
-      const productPrice = Number(plan.order.orderItems[0]?.unitPrice || 0);
+      const productName = plan.orders.order_items[0]?.products.name || 'Unknown Product';
+      const productPrice = Number(plan.orders.order_items[0]?.unitPrice || 0);
 
       // Calculate progress
-      const paidInstallments = plan.schedule.filter((s) => s.status === 'PAID').length;
-      const progressPercentage = (paidInstallments / plan.schedule.length) * 100;
+      const paidInstallments = plan.installment_schedule.filter((s) => s.status === 'PAID').length;
+      const progressPercentage = (paidInstallments / plan.installment_schedule.length) * 100;
 
       return {
         id: plan.id,
-        orderNumber: plan.order.orderNumber,
+        orderNumber: plan.orders.orderNumber,
         customer: {
-          id: plan.customer.id,
-          fullName: plan.customer.fullName,
-          nationalId: plan.customer.nationalId,
-          phone: plan.customer.phone,
+          id: plan.customers.id,
+          fullName: plan.customers.fullName,
+          nationalId: plan.customers.nationalId,
+          phone: plan.customers.phone,
         },
         product: {
           name: productName,
@@ -450,7 +440,7 @@ class InstallmentService {
           startDate: plan.startDate,
           endDate: plan.endDate,
         },
-        schedule: plan.schedule.map((item) => ({
+        schedule: plan.installment_schedule.map((item) => ({
           sequenceNumber: item.sequenceNumber,
           dueDate: item.dueDate,
           totalAmount: Number(item.totalAmount),
@@ -459,7 +449,6 @@ class InstallmentService {
         })),
         status: plan.status,
         progressPercentage: Math.round(progressPercentage),
-        branchName: plan.order.branch?.name || 'No Branch',
         createdAt: plan.createdAt,
       };
     } catch (error) {
@@ -481,23 +470,22 @@ class InstallmentService {
       const plan = await prisma.installment_plans.findUnique({
         where: { id: installmentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
-              branch: true,
             },
           },
-          schedule: {
+          installment_schedule: {
             orderBy: {
               sequenceNumber: 'asc',
             },
           },
-          createdByUser: true,
+          users: true,
         },
       });
 
@@ -505,18 +493,18 @@ class InstallmentService {
         throw new InstallmentError('INSTALLMENT_NOT_FOUND', 'خطة التقسيط غير موجودة');
       }
 
-      const productName = plan.order.orderItems[0]?.product.name || 'Unknown Product';
-      const productPrice = Number(plan.order.orderItems[0]?.unitPrice || 0);
+      const productName = plan.orders.order_items[0]?.products.name || 'Unknown Product';
+      const productPrice = Number(plan.orders.order_items[0]?.unitPrice || 0);
 
       return {
-        agreementNumber: `AGR-${plan.id}-${plan.order.orderNumber}`,
+        agreementNumber: `AGR-${plan.id}-${plan.orders.orderNumber}`,
         agreementDate: plan.createdAt,
         customer: {
-          fullName: plan.customer.fullName,
-          nationalId: plan.customer.nationalId,
-          phone: plan.customer.phone,
-          address: plan.customer.address,
-          city: plan.customer.city,
+          fullName: plan.customers.fullName,
+          nationalId: plan.customers.nationalId,
+          phone: plan.customers.phone,
+          address: plan.customers.address,
+          city: plan.customers.city,
         },
         product: {
           name: productName,
@@ -532,18 +520,13 @@ class InstallmentService {
           startDate: plan.startDate,
           endDate: plan.endDate,
         },
-        schedule: plan.schedule.map((item) => ({
+        schedule: plan.installment_schedule.map((item) => ({
           sequenceNumber: item.sequenceNumber,
           dueDate: item.dueDate,
           amount: Number(item.totalAmount),
         })),
-        branch: {
-          name: plan.order.branch?.name || 'No Branch',
-          address: plan.order.branch?.address,
-          phone: plan.order.branch?.phone,
-        },
         seller: {
-          fullName: plan.createdByUser.fullName,
+          fullName: plan.users.fullName,
         },
       };
     } catch (error) {
@@ -600,8 +583,8 @@ class InstallmentService {
           status: { in: ['ACTIVE', 'PENDING'] },
         },
         include: {
-          customer: true,
-          schedule: {
+          customers: true,
+          installment_schedule: {
             where: {
               status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
             },
@@ -620,11 +603,11 @@ class InstallmentService {
       // Validate phone numbers
       const invalidPhoneCustomers: string[] = [];
       const validInstallments = installments.filter((plan) => {
-        const phone = plan.customer.phone;
+        const phone = plan.customers.phone;
         // Egyptian phone validation: 11 digits starting with 01
         const isValid = phone && /^01\d{9}$/.test(phone);
         if (!isValid) {
-          invalidPhoneCustomers.push(plan.customer.fullName);
+          invalidPhoneCustomers.push(plan.customers.fullName);
         }
         return isValid;
       });
@@ -642,25 +625,25 @@ class InstallmentService {
         // Process batch in parallel for better performance
         const batchPromises = batch.map(async (plan) => {
           try {
-            const nextDue = plan.schedule[0];
+            const nextDue = plan.installment_schedule[0];
             if (!nextDue) {
               return { success: false, reason: 'no_pending' };
             }
 
             // Prepare reminder message
-            const message = `عزيزي ${plan.customer.fullName}، نذكرك بموعد دفعة القسط المستحقة\nالمبلغ: ${Number(nextDue.totalAmount).toFixed(2)} ج.م\nتاريخ الاستحقاق: ${new Date(nextDue.dueDate).toLocaleDateString('ar-EG')}`;
+            const message = `عزيزي ${plan.customers.fullName}، نذكرك بموعد دفعة القسط المستحقة\nالمبلغ: ${Number(nextDue.totalAmount).toFixed(2)} ج.م\nتاريخ الاستحقاق: ${new Date(nextDue.dueDate).toLocaleDateString('ar-EG')}`;
 
             // In a real implementation, you would integrate with WhatsApp/SMS API here
             // For now, we just log the activity
-            console.log(`Reminder sent to ${plan.customer.fullName} via ${method}:`, message);
+            console.log(`Reminder sent to ${plan.customers.fullName} via ${method}:`, message);
 
             // Simulate API delay (remove in production)
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            return { success: true, customerName: plan.customer.fullName };
+            return { success: true, customerName: plan.customers.fullName };
           } catch (error) {
-            console.error(`Failed to send reminder to ${plan.customer.fullName}:`, error);
-            return { success: false, customerName: plan.customer.fullName };
+            console.error(`Failed to send reminder to ${plan.customers.fullName}:`, error);
+            return { success: false, customerName: plan.customers.fullName };
           }
         });
 
@@ -717,18 +700,17 @@ class InstallmentService {
           id: { in: installmentIds },
         },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
-              branch: true,
             },
           },
-          schedule: {
+          installment_schedule: {
             where: {
               status: {
                 in: ['PENDING', 'PARTIAL', 'OVERDUE'],
@@ -751,12 +733,12 @@ class InstallmentService {
 
       // Format data for export
       const exportData = installments.map((plan) => {
-        const productName = plan.order.orderItems[0]?.product.name || 'Unknown Product';
-        const nextDue = plan.schedule[0];
+        const productName = plan.orders.order_items[0]?.products.name || 'Unknown Product';
+        const nextDue = plan.installment_schedule[0];
 
         // Calculate progress
         const totalSchedule = plan.periodMonths;
-        const paidSchedule = totalSchedule - plan.schedule.length;
+        const paidSchedule = totalSchedule - plan.installment_schedule.length;
         const progressPercentage = Math.round((paidSchedule / totalSchedule) * 100);
 
         // Determine status
@@ -777,8 +759,8 @@ class InstallmentService {
         }
 
         return {
-          customerName: plan.customer.fullName,
-          nationalId: plan.customer.nationalId,
+          customerName: plan.customers.fullName,
+          nationalId: plan.customers.nationalId,
           product: productName,
           totalAmount: Number(plan.totalAmount),
           monthlyPayment: Number(plan.monthlyAmount),

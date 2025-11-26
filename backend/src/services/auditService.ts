@@ -32,7 +32,7 @@ class AuditService {
       // Sanitize event data to prevent logging sensitive information
       const sanitizedData = this.sanitizeEventData(eventData);
 
-      await prisma.eventLog.create({
+      await prisma.event_log.create({
         data: {
           eventType,
           entityType: 'USER',

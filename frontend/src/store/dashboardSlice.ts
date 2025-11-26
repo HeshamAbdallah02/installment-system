@@ -28,20 +28,21 @@ export interface MonthlyCollection {
   date: string;
 }
 
-export interface BranchData {
-  branchId: number;
-  branchName: string;
-  amount: number;
-  percentage: number;
-  installmentCount: number;
-}
-
 export interface ProductData {
   productId: number;
   productName: string;
   installmentCount: number;
   totalValue: number;
   rank: number;
+}
+
+// BranchData kept for backward compatibility (branches removed from system)
+export interface BranchData {
+  branchId: number;
+  branchName: string;
+  amount: number;
+  percentage: number;
+  installmentCount: number;
 }
 
 export interface Activity {
@@ -64,7 +65,6 @@ export interface Activity {
 interface DashboardState {
   metrics: DashboardMetrics | null;
   collectionTrends: MonthlyCollection[];
-  branchDistribution: BranchData[];
   topProducts: ProductData[];
   activities: Activity[];
   lastUpdated: string | null;
@@ -73,7 +73,6 @@ interface DashboardState {
 const initialState: DashboardState = {
   metrics: null,
   collectionTrends: [],
-  branchDistribution: [],
   topProducts: [],
   activities: [],
   lastUpdated: null,
@@ -89,9 +88,6 @@ const dashboardSlice = createSlice({
     },
     setCollectionTrends: (state, action: PayloadAction<MonthlyCollection[]>) => {
       state.collectionTrends = action.payload;
-    },
-    setBranchDistribution: (state, action: PayloadAction<BranchData[]>) => {
-      state.branchDistribution = action.payload;
     },
     setTopProducts: (state, action: PayloadAction<ProductData[]>) => {
       state.topProducts = action.payload;
@@ -110,7 +106,6 @@ const dashboardSlice = createSlice({
     clearDashboard: (state) => {
       state.metrics = null;
       state.collectionTrends = [];
-      state.branchDistribution = [];
       state.topProducts = [];
       state.activities = [];
       state.lastUpdated = null;
@@ -121,7 +116,6 @@ const dashboardSlice = createSlice({
 export const {
   setMetrics,
   setCollectionTrends,
-  setBranchDistribution,
   setTopProducts,
   setActivities,
   addActivity,

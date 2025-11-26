@@ -6,17 +6,14 @@ import { UserListItem } from '../types/auth.types';
  */
 class UserService {
   /**
-   * Fetch all active users with their branch information
-   * @returns Promise resolving to array of active users with branch names
+   * Fetch all active users
+   * @returns Promise resolving to array of active users
    */
   async getActiveUsers(): Promise<UserListItem[]> {
     try {
       const users = await prisma.users.findMany({
         where: {
           isActive: true,
-        },
-        include: {
-          branches: true,
         },
         orderBy: {
           fullName: 'asc',
@@ -28,7 +25,6 @@ class UserService {
         id: user.id.toString(),
         username: user.username,
         fullName: user.fullName,
-        branchName: user.branches?.name || 'No Branch',
         isActive: user.isActive,
       }));
     } catch (error) {
@@ -45,9 +41,6 @@ class UserService {
     try {
       const user = await prisma.users.findUnique({
         where: { id },
-        include: {
-          branches: true,
-        },
       });
       return user;
     } catch (error) {

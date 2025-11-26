@@ -56,7 +56,6 @@ class InstallmentController {
         })),
         termMonths: parseInt(termMonths),
         startDate: new Date(startDate),
-        branchId: req.user.branchId || 0,
         createdBy: req.user.userId,
       };
 
@@ -253,8 +252,7 @@ class InstallmentController {
 
       const detail = await installmentDetailService.getInstallmentDetail(
         installmentId,
-        req.user.userId,
-        req.user.branchId || undefined
+        req.user.userId
       );
 
       res.status(200).json({

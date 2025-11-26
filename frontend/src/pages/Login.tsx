@@ -143,7 +143,7 @@ const Login = () => {
       authService.storeCurrentUser({
         name: response.user.name,
         role: response.user.role,
-        branch: response.user.branch,
+        branch: (response.user as { branch?: string }).branch || 'الفرع الرئيسي',
       });
 
       // Handle Remember Me

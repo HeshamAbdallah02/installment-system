@@ -23,7 +23,6 @@ export const queryKeys = {
   dashboard: {
     metrics: ['dashboard', 'metrics'] as const,
     collectionTrends: (months: number) => ['dashboard', 'collection-trends', months] as const,
-    branchDistribution: (period: string) => ['dashboard', 'branch-distribution', period] as const,
     topProducts: ['dashboard', 'top-products'] as const,
     activities: (limit: number) => ['dashboard', 'activities', limit] as const,
   },

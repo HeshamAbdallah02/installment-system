@@ -120,7 +120,6 @@ export function useRealtimeUpdates() {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['metrics'] }),
           queryClient.invalidateQueries({ queryKey: ['collectionTrends'] }),
-          queryClient.invalidateQueries({ queryKey: ['branchDistribution'] }),
         ]);
       } catch (error) {
         console.error('Error handling payment event:', error);

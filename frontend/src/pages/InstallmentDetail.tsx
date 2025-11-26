@@ -16,13 +16,8 @@ import EarlySettlementModal from '../components/installments/EarlySettlementModa
 import ModifyTermsModal from '../components/installments/ModifyTermsModal';
 import PrintableAgreement from '../components/installments/PrintableAgreement';
 import ErrorDisplay from '../components/common/ErrorDisplay';
-import { InstallmentStats, Activity } from '../types/installment';
 import { prepareAgreementData, triggerPrint } from '../utils/printAgreement';
 import { useInstallmentDetail } from '../hooks/useInstallmentDetail';
-import type { ScheduleItem } from '../components/installments/NextPaymentDueCard';
-import type { PaymentRecord } from '../types/payment';
-import type { CustomerInfo } from '../components/installments/CustomerInfoCard';
-import type { ProductInfo } from '../components/installments/ProductInfoCard';
 
 /**
  * Status badge component
@@ -119,13 +114,13 @@ const InstallmentDetailPage: React.FC = () => {
   > | null>(null);
 
   // Extract data from installment detail
-  const nextPayment = installment?.nextDuePayment || null;
-  const paymentSchedule: ScheduleItem[] = installment?.schedule || [];
-  const paymentHistory: PaymentRecord[] = installment?.payments || [];
-  const customerInfo: CustomerInfo | null = installment?.customer || null;
-  const productInfo: ProductInfo | null = installment?.product || null;
-  const statistics: InstallmentStats | null = installment?.statistics || null;
-  const activities: Activity[] = installment?.activities || [];
+  const nextPayment = installment?.nextDuePayment ?? null;
+  const paymentSchedule = installment?.schedule ?? [];
+  const paymentHistory = installment?.payments ?? [];
+  const customerInfo = installment?.customer ?? null;
+  const productInfo = installment?.product ?? null;
+  const statistics = installment?.statistics ?? null;
+  const activities = installment?.activities ?? [];
 
   // Get pending payments for the modal
   const pendingPayments = paymentSchedule.filter(

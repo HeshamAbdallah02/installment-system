@@ -71,7 +71,7 @@ const PaymentDistributionPieChart: React.FC<PaymentDistributionPieChartProps> = 
     outerRadius?: number;
     percentage?: number;
   }) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percentage } = props;
+    const { cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percentage } = props;
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);

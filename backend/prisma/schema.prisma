@@ -7,19 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model branches {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(100)
-  code      String   @unique @db.VarChar(20)
-  address   String?
-  city      String?  @db.VarChar(50)
-  phone     String?  @db.VarChar(20)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  orders    orders[]
-  users     users[]
-}
-
 model customers {
   id                Int                 @id @default(autoincrement())
   fullName          String              @db.VarChar(100)
@@ -154,7 +141,6 @@ model orders {
   id                Int                @id @default(autoincrement())
   orderNumber       String             @unique @db.VarChar(50)
   customerId        Int
-  branchId          Int
   orderDate         DateTime           @default(now()) @db.Date
   totalAmount       Decimal            @db.Decimal(12, 2)
   paymentType       String             @db.VarChar(20)
@@ -164,7 +150,6 @@ model orders {
   updatedAt         DateTime
   installment_plans installment_plans?
   order_items       order_items[]
-  branches          branches           @relation(fields: [branchId], references: [id])
   users             users              @relation(fields: [createdBy], references: [id])
   customers         customers          @relation(fields: [customerId], references: [id])
   payments          payments[]
@@ -249,7 +234,6 @@ model users {
   fullName              String                  @db.VarChar(100)
   email                 String?                 @db.VarChar(100)
   role                  String                  @db.VarChar(20)
-  branchId              Int?
   isActive              Boolean                 @default(true)
   lastLoginAt           DateTime?
   createdAt             DateTime                @default(now())
@@ -261,5 +245,4 @@ model users {
   inventory_adjustments inventory_adjustments[]
   orders                orders[]
   payments              payments[]
-  branches              branches?               @relation(fields: [branchId], references: [id])
 }

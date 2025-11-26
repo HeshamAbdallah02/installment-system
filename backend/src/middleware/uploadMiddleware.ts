@@ -50,34 +50,42 @@ export const upload = multer({
 /**
  * Middleware to handle multer errors
  */
-export const handleUploadError = (err: Error, _req: Request, res: Response, next: NextFunction) => {
+export const handleUploadError = (
+  err: Error,
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           code: 'FILE_TOO_LARGE',
           message: 'حجم الصورة يجب أن يكون أقل من 5MB',
         },
       });
+      return;
     }
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: {
         code: 'UPLOAD_ERROR',
         message: 'خطأ في رفع الصورة',
       },
     });
+    return;
   }
 
   if (err) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: {
         code: 'INVALID_FILE',
         message: err.message || 'ملف غير صالح',
       },
     });
+    return;
   }
 
   next();

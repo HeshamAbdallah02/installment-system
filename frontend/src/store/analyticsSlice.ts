@@ -1,18 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface BranchPerformanceMetrics {
-  totalCollections: number;
-  installmentCount: number;
-  averageInstallmentValue: number;
-  collectionRate: number;
-}
-
-export interface BranchPerformance {
-  branchId: number;
-  branchName: string;
-  metrics: BranchPerformanceMetrics;
-}
-
 export interface PaymentDistributionItem {
   category: string;
   amount: number;
@@ -39,12 +26,10 @@ export interface RevenueForecastMonth {
 export interface AnalyticsFilters {
   startDate: string | null;
   endDate: string | null;
-  branchId: number | null;
   productCategory: string | null;
 }
 
 interface AnalyticsState {
-  branchPerformance: BranchPerformance[];
   paymentDistribution: PaymentDistributionItem[];
   customerPatterns: CustomerPattern[];
   revenueForecast: RevenueForecastMonth[];
@@ -53,14 +38,12 @@ interface AnalyticsState {
 }
 
 const initialState: AnalyticsState = {
-  branchPerformance: [],
   paymentDistribution: [],
   customerPatterns: [],
   revenueForecast: [],
   filters: {
     startDate: null,
     endDate: null,
-    branchId: null,
     productCategory: null,
   },
   lastUpdated: null,
@@ -70,12 +53,9 @@ const analyticsSlice = createSlice({
   name: 'analytics',
   initialState,
   reducers: {
-    setBranchPerformance: (state, action: PayloadAction<BranchPerformance[]>) => {
-      state.branchPerformance = action.payload;
-      state.lastUpdated = new Date().toISOString();
-    },
     setPaymentDistribution: (state, action: PayloadAction<PaymentDistributionItem[]>) => {
       state.paymentDistribution = action.payload;
+      state.lastUpdated = new Date().toISOString();
     },
     setCustomerPatterns: (state, action: PayloadAction<CustomerPattern[]>) => {
       state.customerPatterns = action.payload;
@@ -90,7 +70,6 @@ const analyticsSlice = createSlice({
       state.filters = initialState.filters;
     },
     clearAnalytics: (state) => {
-      state.branchPerformance = [];
       state.paymentDistribution = [];
       state.customerPatterns = [];
       state.revenueForecast = [];
@@ -101,7 +80,6 @@ const analyticsSlice = createSlice({
 });
 
 export const {
-  setBranchPerformance,
   setPaymentDistribution,
   setCustomerPatterns,
   setRevenueForecast,

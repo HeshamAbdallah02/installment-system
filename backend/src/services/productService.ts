@@ -96,7 +96,7 @@ class ProductService {
       const skip = (page - 1) * limit;
 
       // Build where clause
-      const where: Prisma.ProductWhereInput = {
+      const where: Prisma.productsWhereInput = {
         isActive: true,
       };
 
@@ -368,7 +368,16 @@ class ProductService {
       // Count active installments per product
       const productCounts = new Map<
         number,
-        { product: { id: number; name: string; code: string }; count: number }
+        {
+          product: {
+            id: number;
+            name: string;
+            code: string;
+            sellingPrice: unknown;
+            category: string | null;
+          };
+          count: number;
+        }
       >();
 
       installmentPlans.forEach((plan) => {
@@ -396,7 +405,7 @@ class ProductService {
         activeInstallmentsCount: data.count,
         sixMonthSoldQuantity: sixMonthSalesMap.get(productId) || 0,
         rank: index + 1,
-        cashPrice: Number(data.product.cashPrice),
+        sellingPrice: Number(data.product.sellingPrice),
         category: data.product.category,
       }));
     } catch (error) {
@@ -485,7 +494,10 @@ class ProductService {
 
       // Calculate total revenue (sum of all paid amounts)
       const totalRevenue = installmentPlans.reduce((sum, plan) => {
-        const paidAmount = plan.schedule.reduce((s, sch) => s + Number(sch.paidAmount), 0);
+        const paidAmount = plan.installment_schedule.reduce(
+          (s: number, sch: { paidAmount?: number | string | null }) => s + Number(sch.paidAmount || 0),
+          0
+        );
         return sum + paidAmount;
       }, 0);
 
@@ -649,6 +661,7 @@ class ProductService {
           stockStatus,
           status: 'ACTIVE',
           isActive: true,
+          updatedAt: new Date(),
         },
       });
 
@@ -905,7 +918,7 @@ class ProductService {
       // Prepare update data
       const updateData: Record<
         string,
-        string | number | number[] | Record<number, number> | undefined
+        string | number | number[] | Record<number, number> | Record<string, string> | undefined
       > = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.description !== undefined) updateData.description = data.description;
@@ -1044,7 +1057,7 @@ class ProductService {
       // Update product and create adjustment record in a transaction
       const result = await prisma.$transaction(async (tx) => {
         // Update product
-        const product = await tx.product.update({
+        const product = await tx.products.update({
           where: { id: productId },
           data: {
             stockQuantity: newQuantity,
@@ -1053,7 +1066,7 @@ class ProductService {
         });
 
         // Create adjustment record
-        const adjustment = await tx.inventoryAdjustment.create({
+        const adjustment = await tx.inventory_adjustments.create({
           data: {
             productId,
             type,
@@ -1064,7 +1077,7 @@ class ProductService {
             adjustedBy: userId,
           },
           include: {
-            adjustedByUser: {
+            users: {
               select: {
                 id: true,
                 fullName: true,
@@ -1074,7 +1087,7 @@ class ProductService {
         });
 
         // Log the adjustment in audit trail
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'INVENTORY_ADJUSTED',
             entityType: 'PRODUCT',
@@ -1108,7 +1121,7 @@ class ProductService {
           previousQuantity: result.adjustment.previousQuantity,
           newQuantity: result.adjustment.newQuantity,
           reason: result.adjustment.reason,
-          adjustedBy: result.adjustment.adjustedByUser.fullName,
+          adjustedBy: result.adjustment.users.fullName,
           createdAt: result.adjustment.createdAt,
         },
       };
@@ -1141,7 +1154,7 @@ class ProductService {
       const adjustments = await prisma.inventory_adjustments.findMany({
         where: { productId },
         include: {
-          adjustedByUser: {
+          users: {
             select: {
               id: true,
               fullName: true,
@@ -1160,7 +1173,7 @@ class ProductService {
         previousQuantity: adj.previousQuantity,
         newQuantity: adj.newQuantity,
         reason: adj.reason,
-        adjustedBy: adj.adjustedByUser.fullName,
+        adjustedBy: adj.users.fullName,
         createdAt: adj.createdAt,
       }));
     } catch (error) {
@@ -1265,7 +1278,7 @@ class ProductService {
         const updates = [];
 
         for (const change of priceChanges) {
-          const updated = await tx.product.update({
+          const updated = await tx.products.update({
             where: { id: change.productId },
             data: {
               installmentPrice: change.newPrice,
@@ -1273,7 +1286,7 @@ class ProductService {
           });
 
           // Log the change in audit trail
-          await tx.eventLog.create({
+          await tx.event_log.create({
             data: {
               eventType: 'PRODUCT_PRICE_UPDATED',
               entityType: 'PRODUCT',
@@ -1333,7 +1346,7 @@ class ProductService {
   ) {
     try {
       // Get products with filters (no pagination for export)
-      const where: Prisma.ProductWhereInput = {
+      const where: Prisma.productsWhereInput = {
         isActive: true,
       };
 
@@ -1350,12 +1363,12 @@ class ProductService {
       }
 
       if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-        where.cashPrice = {};
+        where.installmentPrice = {};
         if (filters.minPrice !== undefined) {
-          where.cashPrice.gte = filters.minPrice;
+          where.installmentPrice.gte = filters.minPrice;
         }
         if (filters.maxPrice !== undefined) {
-          where.cashPrice.lte = filters.maxPrice;
+          where.installmentPrice.lte = filters.maxPrice;
         }
       }
 
@@ -1398,33 +1411,23 @@ class ProductService {
 
       return {
         format,
-        products: productsWithInventory.map(
-          (p: {
-            id: number;
-            code: string;
-            name: string;
-            cashPrice: number;
-            minPrice: number;
-            availableTerms: number[];
-            customRates: Record<number, number> | null;
-            imageUrl: string | null;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            inventoryCount: number;
-          }) => ({
-            code: p.code,
-            name: p.name,
-            category: p.category,
-            cashPrice: Number(p.cashPrice),
-            stockQuantity: p.stockQuantity,
-            stockStatus: p.stockStatus,
-            status: p.status,
-            imageUrl: options.includeImages ? p.imageUrl : undefined,
-            statistics: options.includeStatistics ? p.statistics : undefined,
-            inventoryHistory: options.includeInventory ? p.inventoryHistory : undefined,
-          })
-        ),
+        products: productsWithInventory.map((p) => ({
+          code: p.code,
+          name: p.name,
+          category: p.category,
+          sellingPrice: Number(p.sellingPrice),
+          installmentPrice: Number(p.installmentPrice),
+          stockQuantity: p.stockQuantity,
+          stockStatus: p.stockStatus,
+          status: p.status,
+          imageUrl: options.includeImages ? p.imageUrl : undefined,
+          statistics: options.includeStatistics
+            ? (p as { statistics?: unknown }).statistics
+            : undefined,
+          inventoryHistory: options.includeInventory
+            ? (p as { inventoryHistory?: unknown }).inventoryHistory
+            : undefined,
+        })),
         totalCount: productsWithInventory.length,
         exportDate: new Date(),
       };

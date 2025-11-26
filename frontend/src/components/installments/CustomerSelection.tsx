@@ -214,9 +214,7 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                 <div className="font-medium text-brand-primary-900">
                   {customer.fullName} - {customer.nationalId}
                 </div>
-                <div className="text-sm text-brand-offwhite-700 mt-1">
-                  {customer.phone} • {customer.branchName}
-                </div>
+                <div className="text-sm text-brand-offwhite-700 mt-1">{customer.phone}</div>
                 {customer.activeInstallmentsCount > 0 && (
                   <div className="text-sm text-brand-secondary-700 mt-1">
                     {customer.activeInstallmentsCount} أقساط نشطة • رصيد مستحق:{' '}
@@ -254,12 +252,6 @@ const CustomerSelection: React.FC<CustomerSelectionProps> = ({
             <div>
               <span className="text-brand-offwhite-700">الهاتف: </span>
               <span className="text-brand-primary-900 font-medium">{selectedCustomer.phone}</span>
-            </div>
-            <div>
-              <span className="text-brand-offwhite-700">الفرع: </span>
-              <span className="text-brand-primary-900 font-medium">
-                {selectedCustomer.branchName}
-              </span>
             </div>
             {selectedCustomer.activeInstallmentsCount > 0 && (
               <>

@@ -44,26 +44,6 @@ export interface MonthlyCollection {
 }
 
 /**
- * Branch Distribution Response
- * Requirements: 3.9
- */
-export interface BranchDistribution {
-  branches: BranchPerformance[];
-  totalCollections: number;
-}
-
-/**
- * Individual branch performance data
- */
-export interface BranchPerformance {
-  branchId: number;
-  branchName: string;
-  amount: number;
-  percentage: number;
-  installmentCount: number;
-}
-
-/**
  * Top Products Response
  * Requirements: 4.8
  */

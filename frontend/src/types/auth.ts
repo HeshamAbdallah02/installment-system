@@ -4,7 +4,6 @@ export interface User {
   id: string;
   username: string;
   fullName: string;
-  branchName: string;
   isActive: boolean;
 }
 
@@ -20,7 +19,6 @@ export interface LoginResponse {
     id: string;
     name: string;
     role: 'SELLER' | 'MANAGER' | 'ADMIN';
-    branch: string;
   };
 }
 

@@ -129,19 +129,24 @@ export const validateInventoryQuantity = (quantity: number | string): string | n
  * @returns User-friendly error message in Arabic
  */
 export const extractErrorMessage = (error: unknown): string => {
+  const apiError = error as {
+    response?: { data?: { error?: { message?: string }; message?: string } };
+    message?: string;
+  };
+
   // Check if error has response data with error object
-  if (error?.response?.data?.error?.message) {
-    return error.response.data.error.message;
+  if (apiError?.response?.data?.error?.message) {
+    return apiError.response.data.error.message;
   }
 
   // Check if error has response data with message
-  if (error?.response?.data?.message) {
-    return error.response.data.message;
+  if (apiError?.response?.data?.message) {
+    return apiError.response.data.message;
   }
 
   // Check if error has a message property
-  if (error?.message) {
-    return error.message;
+  if (apiError?.message) {
+    return apiError.message;
   }
 
   // Default error message

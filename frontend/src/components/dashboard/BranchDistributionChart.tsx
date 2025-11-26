@@ -47,8 +47,9 @@ const CustomTooltip = ({
 };
 
 // Custom label to show percentage on bars
-const renderCustomLabel = (props: { x?: number; y?: number; width?: number; value?: number }) => {
-  const { x, y, width, value } = props;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const renderCustomLabel = (props: any) => {
+  const { x = 0, y = 0, width = 0, value } = props;
   return (
     <text
       x={x + width / 2}

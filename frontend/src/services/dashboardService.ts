@@ -2,7 +2,6 @@ import apiClient from './api';
 import type {
   DashboardMetrics,
   MonthlyCollection,
-  BranchData,
   ProductData,
   Activity,
 } from '../store/dashboardSlice';
@@ -17,11 +16,6 @@ interface CollectionTrendsData {
   months: MonthlyCollection[];
   totalCollected: number;
   averageMonthly: number;
-}
-
-interface BranchDistributionData {
-  branches: BranchData[];
-  totalCollections: number;
 }
 
 interface TopProductsData {
@@ -82,32 +76,6 @@ class DashboardService {
     } catch (error) {
       console.error('Error fetching collection trends:', error);
       throw new Error('فشل تحميل اتجاه التحصيل. يرجى المحاولة مرة أخرى');
-    }
-  }
-
-  /**
-   * Fetch branch distribution data for the specified period
-   * @param period - Time period (e.g., 'current_month', 'last_month', 'current_year')
-   * @returns Promise<BranchData[]>
-   * @throws Error with Arabic message if fetch fails
-   */
-  async getBranchDistribution(period: string = 'current_month'): Promise<BranchData[]> {
-    try {
-      const response = await apiClient.get<ApiResponse<BranchDistributionData>>(
-        '/api/dashboard/branch-distribution',
-        {
-          params: { period },
-        }
-      );
-
-      if (response.data.success && response.data.data?.branches) {
-        return response.data.data.branches;
-      }
-
-      throw new Error('فشل تحميل توزيع الفروع');
-    } catch (error) {
-      console.error('Error fetching branch distribution:', error);
-      throw new Error('فشل تحميل توزيع الفروع. يرجى المحاولة مرة أخرى');
     }
   }
 

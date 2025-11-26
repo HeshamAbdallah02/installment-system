@@ -136,13 +136,13 @@ class ActivitiesService {
 
       // Extract common fields
       if (data.customerName) {
-        metadata.customerName = data.customerName;
+        metadata.customerName = String(data.customerName);
       }
       if (data.amount !== undefined) {
         metadata.amount = Number(data.amount);
       }
       if (data.productName) {
-        metadata.productName = data.productName;
+        metadata.productName = String(data.productName);
       }
 
       // Include any other fields from eventData

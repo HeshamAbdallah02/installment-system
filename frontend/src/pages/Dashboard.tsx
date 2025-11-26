@@ -20,14 +20,12 @@ import ToastNotification from '../components/ToastNotification';
 // Lazy load chart components for code splitting - Requirement 9.6
 import {
   CollectionTrendsChart,
-  BranchDistributionChart,
   TopProductsChart,
   ChartLoader,
 } from '../components/dashboard/LazyCharts';
 import {
   useMetrics,
   useCollectionTrends,
-  useBranchDistribution,
   useTopProducts,
   useRecentActivities,
 } from '../hooks/useDashboard';
@@ -50,12 +48,6 @@ const Dashboard: React.FC = () => {
     error: trendsError,
     refetch: refetchTrends,
   } = useCollectionTrends(6);
-  const {
-    data: branchDistribution,
-    isLoading: branchLoading,
-    error: branchError,
-    refetch: refetchBranch,
-  } = useBranchDistribution('current_month');
   const {
     data: topProducts,
     isLoading: productsLoading,
@@ -133,11 +125,6 @@ const Dashboard: React.FC = () => {
       alert('فتح نافذة إرسال التذكيرات - قريباً');
       setLoadingAction(null);
     }, 500);
-  };
-
-  const handleBranchClick = (branchId: number) => {
-    // TODO: Navigate to branch-specific view when implemented
-    console.log('Branch clicked:', branchId);
   };
 
   const handleProductClick = (productId: number) => {
@@ -237,7 +224,7 @@ const Dashboard: React.FC = () => {
         />
       </section>
 
-      {/* Charts Section - 3 charts in grid with lazy loading */}
+      {/* Charts Section - 2 charts in grid with lazy loading */}
       {/* Requirement 8.2: Stack vertically on tablet, Requirement 8.4: 2-column grid on desktop */}
       <section className="grid grid-cols-1 desktop:grid-cols-2 gap-4 tablet:gap-6 mb-6 tablet:mb-8">
         <div className="desktop:col-span-2">
@@ -252,19 +239,7 @@ const Dashboard: React.FC = () => {
           </Suspense>
         </div>
 
-        <div>
-          <Suspense fallback={<ChartLoader />}>
-            <BranchDistributionChart
-              data={branchDistribution ?? []}
-              loading={branchLoading}
-              error={branchError ? 'فشل تحميل توزيع الفروع. يرجى المحاولة مرة أخرى' : undefined}
-              onRetry={() => refetchBranch()}
-              onBranchClick={handleBranchClick}
-            />
-          </Suspense>
-        </div>
-
-        <div>
+        <div className="desktop:col-span-2">
           <Suspense fallback={<ChartLoader />}>
             <TopProductsChart
               data={topProducts ?? []}

@@ -22,16 +22,13 @@ export default function UserDropdown({
 
   const selectedUser = users.find((user) => user.id === selectedUserId);
 
-  // Filter users by Arabic name or branch name
+  // Filter users by Arabic name
   const filteredUsers =
     query === ''
       ? users
       : users.filter((user) => {
           const searchText = query.toLowerCase();
-          return (
-            user.fullName.toLowerCase().includes(searchText) ||
-            user.branchName.toLowerCase().includes(searchText)
-          );
+          return user.fullName.toLowerCase().includes(searchText);
         });
 
   return (
@@ -49,9 +46,7 @@ export default function UserDropdown({
                   ? 'border-brand-primary-500 focus:ring-brand-primary-500 focus:border-brand-primary-500 bg-brand-primary-50'
                   : 'border-brand-offwhite-400 focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900'
               } ${disabled ? 'bg-brand-offwhite-200 cursor-not-allowed' : 'bg-brand-offwhite-100'}`}
-              displayValue={() =>
-                selectedUser ? `${selectedUser.fullName} (${selectedUser.branchName})` : ''
-              }
+              displayValue={() => (selectedUser ? selectedUser.fullName : '')}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ابحث عن المستخدم..."
               autoComplete="off"
@@ -92,7 +87,7 @@ export default function UserDropdown({
                         <span
                           className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
                         >
-                          {user.fullName} ({user.branchName})
+                          {user.fullName}
                         </span>
                         {selected ? (
                           <span

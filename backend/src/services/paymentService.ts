@@ -83,10 +83,10 @@ class PaymentService {
       const schedule = await prisma.installment_schedule.findUnique({
         where: { id: data.scheduleId },
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: true,
+              customers: true,
+              orders: true,
             },
           },
         },
@@ -116,11 +116,11 @@ class PaymentService {
       // Create payment and update schedule in transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create payment record
-        const payment = await tx.payment.create({
+        const payment = await tx.payments.create({
           data: {
             paymentNumber,
-            customerId: schedule.plan.customerId,
-            orderId: schedule.plan.orderId,
+            customerId: schedule.installment_plans.customerId,
+            orderId: schedule.installment_plans.orderId,
             amount: data.amount,
             paymentMethod: data.paymentMethod,
             paymentDate: data.paymentDate,
@@ -130,7 +130,7 @@ class PaymentService {
         });
 
         // Create payment allocation
-        await tx.paymentAllocation.create({
+        await tx.payment_allocations.create({
           data: {
             paymentId: payment.id,
             scheduleId: data.scheduleId,
@@ -143,7 +143,7 @@ class PaymentService {
         const newPaidAmount = Number(schedule.paidAmount) + data.amount;
         const newStatus = newPaidAmount >= Number(schedule.totalAmount) ? 'PAID' : 'PARTIAL';
 
-        await tx.installmentSchedule.update({
+        await tx.installment_schedule.update({
           where: { id: data.scheduleId },
           data: {
             paidAmount: newPaidAmount,
@@ -153,7 +153,7 @@ class PaymentService {
         });
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'PAYMENT_RECORDED',
             entityType: 'PAYMENT',
@@ -177,8 +177,8 @@ class PaymentService {
         channel: 'payments',
         data: {
           payment: result,
-          customerId: schedule.plan.customerId,
-          customerName: schedule.plan.customer.fullName,
+          customerId: schedule.installment_plans.customerId,
+          customerName: schedule.installment_plans.customers.fullName,
           installmentPlanId: schedule.planId,
         },
       });
@@ -189,7 +189,7 @@ class PaymentService {
         amount: Number(result.amount),
         paymentMethod: result.paymentMethod,
         paymentDate: result.paymentDate,
-        customerName: schedule.plan.customer.fullName,
+        customerName: schedule.installment_plans.customers.fullName,
       };
     } catch (error) {
       if (error instanceof PaymentError) {
@@ -209,10 +209,10 @@ class PaymentService {
       const schedules = await prisma.installment_schedule.findMany({
         where: { id: { in: data.scheduleIds } },
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: true,
+              customers: true,
+              orders: true,
             },
           },
         },
@@ -227,7 +227,7 @@ class PaymentService {
       }
 
       // Validate all schedules belong to same customer
-      const customerIds = new Set(schedules.map((s) => s.plan.customerId));
+      const customerIds = new Set(schedules.map((s) => s.installment_plans.customerId));
       if (customerIds.size > 1) {
         throw new PaymentError('DIFFERENT_CUSTOMERS', 'الأقساط المحددة تنتمي لعملاء مختلفين');
       }
@@ -251,11 +251,11 @@ class PaymentService {
           const paymentNumber = await this.generatePaymentNumber();
 
           // Create payment record
-          const payment = await tx.payment.create({
+          const payment = await tx.payments.create({
             data: {
               paymentNumber,
-              customerId: schedule.plan.customerId,
-              orderId: schedule.plan.orderId,
+              customerId: schedule.installment_plans.customerId,
+              orderId: schedule.installment_plans.orderId,
               amount: remainingAmount,
               paymentMethod: data.paymentMethod,
               paymentDate: data.paymentDate,
@@ -306,14 +306,14 @@ class PaymentService {
 
         // Batch create payment allocations
         if (paymentAllocations.length > 0) {
-          await tx.paymentAllocation.createMany({
+          await tx.payment_allocations.createMany({
             data: paymentAllocations,
           });
         }
 
         // Batch update installment schedules
         for (const update of scheduleUpdates) {
-          await tx.installmentSchedule.update({
+          await tx.installment_schedule.update({
             where: { id: update.id },
             data: {
               paidAmount: update.paidAmount,
@@ -325,7 +325,7 @@ class PaymentService {
 
         // Batch create event logs
         if (eventLogs.length > 0) {
-          await tx.eventLog.createMany({
+          await tx.event_log.createMany({
             data: eventLogs,
           });
         }
@@ -340,8 +340,8 @@ class PaymentService {
         channel: 'payments',
         data: {
           payments,
-          customerId: firstSchedule.plan.customerId,
-          customerName: firstSchedule.plan.customer.fullName,
+          customerId: firstSchedule.installment_plans.customerId,
+          customerName: firstSchedule.installment_plans.customers.fullName,
           installmentPlanId: firstSchedule.planId,
           count: payments.length,
         },
@@ -351,7 +351,7 @@ class PaymentService {
         payments,
         totalAmount: payments.reduce((sum, p) => sum + p.amount, 0),
         count: payments.length,
-        customerName: firstSchedule.plan.customer.fullName,
+        customerName: firstSchedule.installment_plans.customers.fullName,
       };
     } catch (error) {
       if (error instanceof PaymentError) {
@@ -363,16 +363,16 @@ class PaymentService {
   }
 
   /**
-   * Get current month's dues for a branch
+   * Get current month's dues
    */
-  async getTodaysDues(branchId?: number) {
+  async getTodaysDues() {
     try {
       const today = new Date();
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       endOfMonth.setHours(23, 59, 59, 999);
 
-      const where: prisma.installment_scheduleWhereInput = {
+      const where: Prisma.installment_scheduleWhereInput = {
         dueDate: {
           gte: startOfMonth,
           lte: endOfMonth,
@@ -382,25 +382,17 @@ class PaymentService {
         },
       };
 
-      if (branchId) {
-        where.plan = {
-          order: {
-            branchId,
-          },
-        };
-      }
-
       const dues = await prisma.installment_schedule.findMany({
         where,
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: {
+              customers: true,
+              orders: {
                 include: {
-                  orderItems: {
+                  order_items: {
                     include: {
-                      product: true,
+                      products: true,
                     },
                   },
                 },
@@ -409,8 +401,8 @@ class PaymentService {
           },
         },
         orderBy: {
-          plan: {
-            customer: {
+          installment_plans: {
+            customers: {
               fullName: 'asc',
             },
           },
@@ -424,17 +416,18 @@ class PaymentService {
           return remainingAmount > 0;
         })
         .map((schedule) => {
-          const productName = schedule.plan.order.orderItems[0]?.product.name || 'Unknown Product';
+          const productName =
+            schedule.installment_plans.orders.order_items[0]?.products.name || 'Unknown Product';
           const remainingAmount = Number(schedule.totalAmount) - Number(schedule.paidAmount);
 
           return {
             id: schedule.id,
-            customerId: schedule.plan.customerId,
-            customerName: schedule.plan.customer.fullName,
-            phone: schedule.plan.customer.phone,
+            customerId: schedule.installment_plans.customerId,
+            customerName: schedule.installment_plans.customers.fullName,
+            phone: schedule.installment_plans.customers.fullName,
             productName,
             installmentNumber: schedule.sequenceNumber,
-            totalInstallments: schedule.plan.periodMonths,
+            totalInstallments: schedule.installment_plans.periodMonths,
             amountDue: remainingAmount,
             dueDate: schedule.dueDate,
             installmentPlanId: schedule.planId,
@@ -465,9 +458,7 @@ class PaymentService {
 
       const upcomingInstallments = await prisma.installment_schedule.findMany({
         where: {
-          plan: {
-            customerId,
-          },
+          installment_plans: { customerId },
           dueDate: {
             gt: today,
           },
@@ -476,14 +467,14 @@ class PaymentService {
           },
         },
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: {
+              customers: true,
+              orders: {
                 include: {
-                  orderItems: {
+                  order_items: {
                     include: {
-                      product: true,
+                      products: true,
                     },
                   },
                 },
@@ -497,14 +488,15 @@ class PaymentService {
       });
 
       const formattedInstallments = upcomingInstallments.map((schedule) => {
-        const productName = schedule.plan.order.orderItems[0]?.product.name || 'Unknown Product';
+        const productName =
+          schedule.installment_plans.orders.order_items[0]?.products.name || 'Unknown Product';
         const remainingAmount = Number(schedule.totalAmount) - Number(schedule.paidAmount);
 
         return {
           id: schedule.id,
           scheduleId: schedule.id,
           installmentNumber: schedule.sequenceNumber,
-          totalInstallments: schedule.plan.periodMonths,
+          totalInstallments: schedule.installment_plans.periodMonths,
           dueDate: schedule.dueDate,
           amountDue: remainingAmount,
           productName,
@@ -523,14 +515,14 @@ class PaymentService {
   }
 
   /**
-   * Get overdue payments for a branch
+   * Get overdue payments
    */
-  async getOverdueDues(branchId?: number) {
+  async getOverdueDues() {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const where: prisma.installment_scheduleWhereInput = {
+      const where: Prisma.installment_scheduleWhereInput = {
         dueDate: {
           lt: today,
         },
@@ -539,25 +531,17 @@ class PaymentService {
         },
       };
 
-      if (branchId) {
-        where.plan = {
-          order: {
-            branchId,
-          },
-        };
-      }
-
       const overdues = await prisma.installment_schedule.findMany({
         where,
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: {
+              customers: true,
+              orders: {
                 include: {
-                  orderItems: {
+                  order_items: {
                     include: {
-                      product: true,
+                      products: true,
                     },
                   },
                 },
@@ -577,7 +561,8 @@ class PaymentService {
           return remainingAmount > 0;
         })
         .map((schedule) => {
-          const productName = schedule.plan.order.orderItems[0]?.product.name || 'Unknown Product';
+          const productName =
+            schedule.installment_plans.orders.order_items[0]?.products.name || 'Unknown Product';
           const remainingAmount = Number(schedule.totalAmount) - Number(schedule.paidAmount);
           const daysOverdue = Math.ceil(
             (today.getTime() - new Date(schedule.dueDate).getTime()) / (1000 * 60 * 60 * 24)
@@ -585,12 +570,12 @@ class PaymentService {
 
           return {
             id: schedule.id,
-            customerId: schedule.plan.customerId,
-            customerName: schedule.plan.customer.fullName,
-            phone: schedule.plan.customer.phone,
+            customerId: schedule.installment_plans.customerId,
+            customerName: schedule.installment_plans.customers.fullName,
+            phone: schedule.installment_plans.customers.fullName,
             productName,
             installmentNumber: schedule.sequenceNumber,
-            totalInstallments: schedule.plan.periodMonths,
+            totalInstallments: schedule.installment_plans.periodMonths,
             amountDue: remainingAmount,
             dueDate: schedule.dueDate,
             installmentPlanId: schedule.planId,
@@ -622,7 +607,6 @@ class PaymentService {
     startDate?: Date;
     endDate?: Date;
     paymentMethod?: string;
-    branchId?: number;
     collectorId?: number;
   }) {
     try {
@@ -630,13 +614,13 @@ class PaymentService {
       const limit = filters.limit || 20;
       const skip = (page - 1) * limit;
 
-      const where: Prisma.PaymentWhereInput = {};
+      const where: Prisma.paymentsWhereInput = {};
 
       // Search by customer name or receipt number
       if (filters.search) {
         where.OR = [
           {
-            customer: {
+            customers: {
               fullName: { contains: filters.search, mode: 'insensitive' },
             },
           },
@@ -662,13 +646,6 @@ class PaymentService {
         where.paymentMethod = filters.paymentMethod;
       }
 
-      // Filter by branch
-      if (filters.branchId) {
-        where.order = {
-          branchId: filters.branchId,
-        };
-      }
-
       // Filter by collector
       if (filters.collectorId) {
         where.collectedBy = filters.collectorId;
@@ -680,11 +657,11 @@ class PaymentService {
           skip,
           take: limit,
           include: {
-            customer: true,
-            collectedByUser: true,
-            allocations: {
+            customers: true,
+            users: true,
+            payment_allocations: {
               include: {
-                schedule: true,
+                installment_schedule: true,
               },
             },
           },
@@ -699,8 +676,8 @@ class PaymentService {
         let status: 'COMPLETED' | 'PARTIAL' | 'REVERSED' = 'COMPLETED';
         if (payment.isReversal || payment.reversedPaymentId) {
           status = 'REVERSED';
-        } else if (payment.allocations.length > 0) {
-          const schedule = payment.allocations[0].schedule;
+        } else if (payment.payment_allocations.length > 0) {
+          const schedule = payment.payment_allocations[0].installment_schedule;
           if (schedule.status === 'PARTIAL') {
             status = 'PARTIAL';
           }
@@ -710,10 +687,10 @@ class PaymentService {
           id: payment.id,
           paymentNumber: payment.paymentNumber,
           date: payment.paymentDate,
-          customerName: payment.customer.fullName,
+          customerName: payment.customers.fullName,
           amount: Number(payment.amount),
           paymentMethod: payment.paymentMethod,
-          collectorName: payment.collectedByUser.fullName,
+          collectorName: payment.users.fullName,
           status,
           isReversal: payment.isReversal,
           reversalReason: payment.reversalReason,
@@ -748,28 +725,26 @@ class PaymentService {
       const payment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
             },
           },
-          collectedByUser: true,
-          allocations: {
+          users: true,
+          payment_allocations: {
             include: {
-              schedule: {
-                include: {
-                  plan: true,
-                },
+              installment_schedule: {
+                include: { installment_plans: true },
               },
             },
           },
-          reversedPayment: true,
-          reversals: true,
+          payments: true,
+          other_payments: true,
         },
       });
 
@@ -777,8 +752,8 @@ class PaymentService {
         throw new PaymentError('PAYMENT_NOT_FOUND', 'الدفع غير موجود');
       }
 
-      const allocation = payment.allocations[0];
-      const productName = payment.order.orderItems[0]?.product.name || 'Unknown Product';
+      const allocation = payment.payment_allocations[0];
+      const productName = payment.orders.order_items[0]?.products.name || 'Unknown Product';
 
       return {
         id: payment.id,
@@ -787,33 +762,33 @@ class PaymentService {
         paymentMethod: payment.paymentMethod,
         paymentDate: payment.paymentDate,
         customer: {
-          id: payment.customer.id,
-          fullName: payment.customer.fullName,
-          nationalId: payment.customer.nationalId,
-          phone: payment.customer.phone,
+          id: payment.customers.id,
+          fullName: payment.customers.fullName,
+          nationalId: payment.customers.nationalId,
+          phone: payment.customers.phone,
         },
         product: {
           name: productName,
         },
         installment: allocation
           ? {
-              sequenceNumber: allocation.schedule.sequenceNumber,
-              totalInstallments: allocation.schedule.plan.periodMonths,
+              sequenceNumber: allocation.installment_schedule.sequenceNumber,
+              totalInstallments: allocation.installment_schedule.installment_plans.periodMonths,
             }
           : null,
         collector: {
-          id: payment.collectedByUser.id,
-          fullName: payment.collectedByUser.fullName,
+          id: payment.users.id,
+          fullName: payment.users.fullName,
         },
         isReversal: payment.isReversal,
         reversalReason: payment.reversalReason,
-        reversedPayment: payment.reversedPayment
+        payments: payment.payments
           ? {
-              id: payment.reversedPayment.id,
-              paymentNumber: payment.reversedPayment.paymentNumber,
+              id: payment.payments.id,
+              paymentNumber: payment.payments.paymentNumber,
             }
           : null,
-        reversals: payment.reversals.map((r) => ({
+        other_payments: payment.other_payments.map((r) => ({
           id: r.id,
           paymentNumber: r.paymentNumber,
           reason: r.reversalReason,
@@ -839,10 +814,10 @@ class PaymentService {
       const schedule = await prisma.installment_schedule.findUnique({
         where: { id: data.scheduleId },
         include: {
-          plan: {
+          installment_plans: {
             include: {
-              customer: true,
-              order: true,
+              customers: true,
+              orders: true,
             },
           },
         },
@@ -882,11 +857,11 @@ class PaymentService {
       // Create payment and update schedule in transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create payment record
-        const payment = await tx.payment.create({
+        const payment = await tx.payments.create({
           data: {
             paymentNumber,
-            customerId: schedule.plan.customerId,
-            orderId: schedule.plan.orderId,
+            customerId: schedule.installment_plans.customerId,
+            orderId: schedule.installment_plans.orderId,
             amount: data.amount,
             paymentMethod: data.paymentMethod,
             paymentDate: data.paymentDate,
@@ -896,7 +871,7 @@ class PaymentService {
         });
 
         // Create payment allocation with PREPAYMENT type
-        await tx.paymentAllocation.create({
+        await tx.payment_allocations.create({
           data: {
             paymentId: payment.id,
             scheduleId: data.scheduleId,
@@ -909,7 +884,7 @@ class PaymentService {
         const newPaidAmount = Number(schedule.paidAmount) + data.amount;
         const newStatus = newPaidAmount >= Number(schedule.totalAmount) ? 'PAID' : 'PARTIAL';
 
-        await tx.installmentSchedule.update({
+        await tx.installment_schedule.update({
           where: { id: data.scheduleId },
           data: {
             paidAmount: newPaidAmount,
@@ -919,7 +894,7 @@ class PaymentService {
         });
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'ADVANCE_PAYMENT_RECORDED',
             entityType: 'PAYMENT',
@@ -944,8 +919,8 @@ class PaymentService {
         channel: 'payments',
         data: {
           payment: result,
-          customerId: schedule.plan.customerId,
-          customerName: schedule.plan.customer.fullName,
+          customerId: schedule.installment_plans.customerId,
+          customerName: schedule.installment_plans.customers.fullName,
           installmentPlanId: schedule.planId,
         },
       });
@@ -956,7 +931,7 @@ class PaymentService {
         amount: Number(result.amount),
         paymentMethod: result.paymentMethod,
         paymentDate: result.paymentDate,
-        customerName: schedule.plan.customer.fullName,
+        customerName: schedule.installment_plans.customers.fullName,
         isAdvance: true,
       };
     } catch (error) {
@@ -977,24 +952,21 @@ class PaymentService {
       const payment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
-          customer: true,
-          order: {
+          customers: true,
+          orders: {
             include: {
-              orderItems: {
+              order_items: {
                 include: {
-                  product: true,
+                  products: true,
                 },
               },
-              branch: true,
             },
           },
-          collectedByUser: true,
-          allocations: {
+          users: true,
+          payment_allocations: {
             include: {
-              schedule: {
-                include: {
-                  plan: true,
-                },
+              installment_schedule: {
+                include: { installment_plans: true },
               },
             },
           },
@@ -1005,9 +977,8 @@ class PaymentService {
         throw new PaymentError('PAYMENT_NOT_FOUND', 'الدفع غير موجود');
       }
 
-      const allocation = payment.allocations[0];
-      const productName = payment.order.orderItems[0]?.product.name || 'Unknown Product';
-      const branchName = payment.order.branch?.name || 'No Branch';
+      const allocation = payment.payment_allocations[0];
+      const productName = payment.orders.order_items[0]?.products.name || 'Unknown Product';
 
       // Generate QR code data (payment reference)
       const qrData = `PAY:${payment.paymentNumber}:${payment.amount}:${payment.paymentDate.toISOString()}`;
@@ -1175,15 +1146,15 @@ class PaymentService {
       <div class="section-title">بيانات العميل</div>
       <div class="detail-row">
         <span class="detail-label">الاسم:</span>
-        <span class="detail-value">${payment.customer.fullName}</span>
+        <span class="detail-value">${payment.customers.fullName}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">الرقم القومي:</span>
-        <span class="detail-value">${payment.customer.nationalId}</span>
+        <span class="detail-value">${payment.customers.nationalId}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">الهاتف:</span>
-        <span class="detail-value">${payment.customer.phone}</span>
+        <span class="detail-value">${payment.customers.phone}</span>
       </div>
     </div>
 
@@ -1198,7 +1169,7 @@ class PaymentService {
           ? `
       <div class="detail-row">
         <span class="detail-label">القسط:</span>
-        <span class="detail-value">${allocation.schedule.sequenceNumber} من ${allocation.schedule.plan.periodMonths}</span>
+        <span class="detail-value">${allocation.installment_schedule.sequenceNumber} من ${allocation.installment_schedule.installment_plans.periodMonths}</span>
       </div>
       `
           : ''
@@ -1218,11 +1189,7 @@ class PaymentService {
       <div class="section-title">معلومات إضافية</div>
       <div class="detail-row">
         <span class="detail-label">المحصل:</span>
-        <span class="detail-value">${payment.collectedByUser.fullName}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">الفرع:</span>
-        <span class="detail-value">${branchName}</span>
+        <span class="detail-value">${payment.users.fullName}</span>
       </div>
     </div>
 
@@ -1234,11 +1201,11 @@ class PaymentService {
     <div class="signatures">
       <div class="signature-box">
         <div>توقيع المحصل</div>
-        <div class="signature-line">${payment.collectedByUser.fullName}</div>
+        <div class="signature-line">${payment.users.fullName}</div>
       </div>
       <div class="signature-box">
         <div>توقيع العميل</div>
-        <div class="signature-line">${payment.customer.fullName}</div>
+        <div class="signature-line">${payment.customers.fullName}</div>
       </div>
     </div>
 
@@ -1253,7 +1220,7 @@ class PaymentService {
       return {
         html: receiptHtml,
         paymentNumber: payment.paymentNumber,
-        customerName: payment.customer.fullName,
+        customerName: payment.customers.fullName,
       };
     } catch (error) {
       if (error instanceof PaymentError) {
@@ -1273,12 +1240,12 @@ class PaymentService {
       const originalPayment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
-          allocations: {
+          payment_allocations: {
             include: {
-              schedule: true,
+              installment_schedule: true,
             },
           },
-          reversals: true,
+          other_payments: true,
         },
       });
 
@@ -1287,7 +1254,7 @@ class PaymentService {
       }
 
       // Check if already reversed
-      if (originalPayment.reversals.length > 0) {
+      if (originalPayment.other_payments.length > 0) {
         throw new PaymentError('ALREADY_REVERSED', 'الدفع معكوس بالفعل');
       }
 
@@ -1302,7 +1269,7 @@ class PaymentService {
       // Create reversal in transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create reversal payment record
-        const reversalPayment = await tx.payment.create({
+        const reversalPayment = await tx.payments.create({
           data: {
             paymentNumber: reversalPaymentNumber,
             customerId: originalPayment.customerId,
@@ -1318,8 +1285,8 @@ class PaymentService {
         });
 
         // Update installment schedules
-        for (const allocation of originalPayment.allocations) {
-          const schedule = allocation.schedule;
+        for (const allocation of originalPayment.payment_allocations) {
+          const schedule = allocation.installment_schedule;
           const newPaidAmount = Number(schedule.paidAmount) - Number(allocation.amount);
 
           // Determine new status
@@ -1332,7 +1299,7 @@ class PaymentService {
             newStatus = 'PAID';
           }
 
-          await tx.installmentSchedule.update({
+          await tx.installment_schedule.update({
             where: { id: schedule.id },
             data: {
               paidAmount: Math.max(0, newPaidAmount),
@@ -1343,7 +1310,7 @@ class PaymentService {
         }
 
         // Log event
-        await tx.eventLog.create({
+        await tx.event_log.create({
           data: {
             eventType: 'PAYMENT_REVERSED',
             entityType: 'PAYMENT',

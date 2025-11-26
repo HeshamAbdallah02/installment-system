@@ -3,7 +3,7 @@ import prisma from '../prismaClient';
 
 const router = Router();
 
-router.post('/rename-deposit-to-minprice', async (req: Request, res: Response) => {
+router.post('/rename-deposit-to-minprice', async (_req: Request, res: Response) => {
   try {
     console.log('Running migration: Renaming minPrice to minPrice...');
 
@@ -24,7 +24,7 @@ router.post('/rename-deposit-to-minprice', async (req: Request, res: Response) =
   }
 });
 
-router.post('/fix-null-deposits', async (req: Request, res: Response) => {
+router.post('/fix-null-deposits', async (_req: Request, res: Response) => {
   try {
     console.log('Running migration: Fixing NULL minPrice values...');
 
@@ -46,7 +46,7 @@ router.post('/fix-null-deposits', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/add-selling-price', async (req: Request, res: Response) => {
+router.post('/add-selling-price', async (_req: Request, res: Response) => {
   try {
     console.log(
       'Running migration: Renaming cashPrice to installmentPrice and adding sellingPrice...'

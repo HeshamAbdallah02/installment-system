@@ -95,12 +95,6 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({ customer, onEdit })
           </div>
         )}
 
-        {/* Branch */}
-        <div>
-          <label className="block text-sm font-medium text-brand-offwhite-700 mb-1">الفرع</label>
-          <p className="text-brand-primary-900 font-semibold">{customer.branchName}</p>
-        </div>
-
         {/* Registration Date */}
         <div>
           <label className="block text-sm font-medium text-brand-offwhite-700 mb-1">

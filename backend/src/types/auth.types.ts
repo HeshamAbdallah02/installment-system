@@ -18,7 +18,6 @@ export interface LoginResponse {
     id: number;
     fullName: string;
     role: 'SELLER' | 'MANAGER' | 'ADMIN';
-    branch: string;
   };
 }
 
@@ -37,7 +36,6 @@ export interface UserListItem {
   id: string;
   username: string;
   fullName: string;
-  branchName: string;
   isActive: boolean;
 }
 
@@ -48,7 +46,6 @@ export interface JWTPayload {
   userId: number;
   username: string;
   role: string;
-  branchId: number | null;
   iat: number; // Issued at timestamp
   exp: number; // Expiration timestamp
 }

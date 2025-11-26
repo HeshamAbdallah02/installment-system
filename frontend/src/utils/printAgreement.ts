@@ -1,4 +1,4 @@
-import { InstallmentDetail } from '../types/installment';
+import { InstallmentDetail, InstallmentAgreement } from '../types/installment';
 import type { ScheduleItem } from '../components/installments/NextPaymentDueCard';
 
 /**
@@ -18,7 +18,7 @@ export interface PrintAgreementData {
 /**
  * Converts InstallmentDetail to InstallmentAgreement format for printing
  */
-export const prepareAgreementData = (data: PrintAgreementData) => {
+export const prepareAgreementData = (data: PrintAgreementData): InstallmentAgreement => {
   const { installment, schedule, branchName, branchAddress, branchPhone, sellerName } = data;
 
   return {

@@ -215,8 +215,7 @@ class PaymentController {
         return;
       }
 
-      const branchId = req.user.branchId || undefined;
-      const result = await paymentService.getTodaysDues(branchId);
+      const result = await paymentService.getTodaysDues();
 
       // Set cache control headers to prevent browser caching
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -257,8 +256,7 @@ class PaymentController {
         return;
       }
 
-      const branchId = req.user.branchId || undefined;
-      const result = await paymentService.getOverdueDues(branchId);
+      const result = await paymentService.getOverdueDues();
 
       // Set cache control headers to prevent browser caching
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -299,8 +297,7 @@ class PaymentController {
         return;
       }
 
-      const { page, limit, search, startDate, endDate, paymentMethod, branch, collector } =
-        req.query;
+      const { page, limit, search, startDate, endDate, paymentMethod, collector } = req.query;
 
       const filters = {
         page: page ? parseInt(page as string) : 1,
@@ -309,7 +306,6 @@ class PaymentController {
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         paymentMethod: paymentMethod as string,
-        branchId: branch ? parseInt(branch as string) : req.user.branchId || undefined,
         collectorId: collector ? parseInt(collector as string) : undefined,
       };
 

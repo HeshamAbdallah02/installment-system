@@ -2,7 +2,6 @@ import { dashboardService } from './dashboardService';
 import type {
   DashboardMetrics,
   MonthlyCollection,
-  BranchData,
   ProductData,
   Activity,
 } from '../store/dashboardSlice';
@@ -16,7 +15,6 @@ import type {
 export interface DashboardBatchData {
   metrics: DashboardMetrics;
   collectionTrends: MonthlyCollection[];
-  branchDistribution: BranchData[];
   topProducts: ProductData[];
   activities: Activity[];
 }
@@ -30,30 +28,25 @@ export interface DashboardBatchData {
  */
 export async function fetchDashboardDataParallel(options?: {
   trendsMonths?: number;
-  branchPeriod?: string;
   activitiesLimit?: number;
 }): Promise<DashboardBatchData> {
   const {
     trendsMonths = 6,
-    branchPeriod = 'current_month',
     activitiesLimit = 50, // Limit to 50 items - Requirement 9.3, 9.6
   } = options || {};
 
   try {
     // Execute all API calls in parallel - Requirement 9.3, 9.6
-    const [metrics, collectionTrends, branchDistribution, topProducts, activities] =
-      await Promise.all([
-        dashboardService.getMetrics(),
-        dashboardService.getCollectionTrends(trendsMonths),
-        dashboardService.getBranchDistribution(branchPeriod),
-        dashboardService.getTopProducts(),
-        dashboardService.getRecentActivities(activitiesLimit),
-      ]);
+    const [metrics, collectionTrends, topProducts, activities] = await Promise.all([
+      dashboardService.getMetrics(),
+      dashboardService.getCollectionTrends(trendsMonths),
+      dashboardService.getTopProducts(),
+      dashboardService.getRecentActivities(activitiesLimit),
+    ]);
 
     return {
       metrics,
       collectionTrends,
-      branchDistribution,
       topProducts,
       activities,
     };
@@ -70,26 +63,20 @@ export async function fetchDashboardDataParallel(options?: {
  * @param options - Configuration options
  * @returns Promise with chart data
  */
-export async function fetchChartDataParallel(options?: {
-  trendsMonths?: number;
-  branchPeriod?: string;
-}): Promise<{
+export async function fetchChartDataParallel(options?: { trendsMonths?: number }): Promise<{
   collectionTrends: MonthlyCollection[];
-  branchDistribution: BranchData[];
   topProducts: ProductData[];
 }> {
-  const { trendsMonths = 6, branchPeriod = 'current_month' } = options || {};
+  const { trendsMonths = 6 } = options || {};
 
   try {
-    const [collectionTrends, branchDistribution, topProducts] = await Promise.all([
+    const [collectionTrends, topProducts] = await Promise.all([
       dashboardService.getCollectionTrends(trendsMonths),
-      dashboardService.getBranchDistribution(branchPeriod),
       dashboardService.getTopProducts(),
     ]);
 
     return {
       collectionTrends,
-      branchDistribution,
       topProducts,
     };
   } catch (error) {
