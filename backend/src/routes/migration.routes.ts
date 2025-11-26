@@ -6,19 +6,18 @@ const router = Router();
 router.post('/rename-deposit-to-minprice', async (req: Request, res: Response) => {
   try {
     console.log('Running migration: Renaming minPrice to minPrice...');
-    
+
     // Rename minPrice to minPrice
     await prisma.$executeRawUnsafe(`
       ALTER TABLE products 
       RENAME COLUMN "minPrice" TO "minPrice";
     `);
     console.log('✓ Renamed minPrice to minPrice');
-    
-    res.json({ 
-      success: true, 
-      message: 'Renamed minPrice to minPrice successfully! Please run: npx prisma generate' 
+
+    res.json({
+      success: true,
+      message: 'Renamed minPrice to minPrice successfully! Please run: npx prisma generate',
     });
-    
   } catch (error) {
     console.error('Migration failed:', error);
     res.status(500).json({ success: false, error: String(error) });

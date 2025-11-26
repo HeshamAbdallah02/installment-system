@@ -464,8 +464,7 @@ class ProductController {
       if (name !== undefined) updateData.name = name;
       if (description !== undefined) updateData.description = description;
       if (cashPrice !== undefined) updateData.cashPrice = parseFloat(cashPrice);
-      if (minPrice !== undefined)
-        updateData.minPrice = parseFloat(minPrice);
+      if (minPrice !== undefined) updateData.minPrice = parseFloat(minPrice);
       if (minDepositPercentage !== undefined)
         updateData.minDepositPercentage = parseFloat(minDepositPercentage);
       if (category !== undefined) updateData.category = category;

@@ -604,14 +604,14 @@ class ProductService {
 
       // Validate minimum price
       if (data.minPrice < 0) {
-        throw new ProductError(
-          'INVALID_DEPOSIT',
-          'الحد الأدنى للسعر يجب أن يكون صفر أو أكثر'
-        );
+        throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للسعر يجب أن يكون صفر أو أكثر');
       }
 
       if (data.minPrice >= data.installmentPrice) {
-        throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للسعر يجب أن يكون أقل من سعر التقسيط');
+        throw new ProductError(
+          'INVALID_DEPOSIT',
+          'الحد الأدنى للسعر يجب أن يكون أقل من سعر التقسيط'
+        );
       }
 
       // Validate custom rates if provided
@@ -886,7 +886,10 @@ class ProductService {
         }
       } else if (data.minPrice !== undefined) {
         if (data.minPrice >= Number(existingProduct.installmentPrice)) {
-          throw new ProductError('INVALID_DEPOSIT', 'الحد الأدنى للسعر يجب أن يكون أقل من سعر التقسيط');
+          throw new ProductError(
+            'INVALID_DEPOSIT',
+            'الحد الأدنى للسعر يجب أن يكون أقل من سعر التقسيط'
+          );
         }
       }
 

@@ -433,9 +433,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                       min: { value: 0, message: 'المبلغ يجب أن يكون صفر أو أكثر' },
                     })}
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                      errors.minPrice
-                        ? 'border-brand-primary-700'
-                        : 'border-brand-offwhite-400'
+                      errors.minPrice ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
                     }`}
                     placeholder="0.00"
                     step="0.01"
@@ -446,9 +444,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                   </span>
                 </div>
                 {errors.minPrice && (
-                  <p className="mt-1 text-sm text-brand-primary-700">
-                    {errors.minPrice.message}
-                  </p>
+                  <p className="mt-1 text-sm text-brand-primary-700">{errors.minPrice.message}</p>
                 )}
               </div>
 

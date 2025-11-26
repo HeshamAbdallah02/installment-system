@@ -460,8 +460,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                       htmlFor="minPrice"
                       className="block text-sm font-medium text-brand-primary-900 mb-1"
                     >
-                      الحد الأدنى للسعر (ج.م){' '}
-                      <span className="text-brand-primary-700">*</span>
+                      الحد الأدنى للسعر (ج.م) <span className="text-brand-primary-700">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -472,9 +471,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                           min: { value: 0, message: 'المبلغ يجب أن يكون صفر أو أكثر' },
                         })}
                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 ${
-                          errors.minPrice
-                            ? 'border-brand-primary-700'
-                            : 'border-brand-offwhite-400'
+                          errors.minPrice ? 'border-brand-primary-700' : 'border-brand-offwhite-400'
                         }`}
                         placeholder="0.00"
                         step="0.01"
