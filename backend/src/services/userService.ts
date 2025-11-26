@@ -16,7 +16,7 @@ class UserService {
           isActive: true,
         },
         include: {
-          branch: true,
+          branches: true,
         },
         orderBy: {
           fullName: 'asc',
@@ -28,7 +28,7 @@ class UserService {
         id: user.id.toString(),
         username: user.username,
         fullName: user.fullName,
-        branchName: user.branch?.name || 'No Branch',
+        branchName: user.branches?.name || 'No Branch',
         isActive: user.isActive,
       }));
     } catch (error) {
@@ -46,7 +46,7 @@ class UserService {
       const user = await prisma.users.findUnique({
         where: { id },
         include: {
-          branch: true,
+          branches: true,
         },
       });
       return user;
