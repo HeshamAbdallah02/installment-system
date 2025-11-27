@@ -110,10 +110,7 @@ const Customers: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <SearchAndFilters
-          onSearchChange={handleSearchChange}
-          onStatusChange={handleStatusChange}
-        />
+        <SearchAndFilters onSearchChange={handleSearchChange} onStatusChange={handleStatusChange} />
 
         {/* Customers Table */}
         <CustomersTable

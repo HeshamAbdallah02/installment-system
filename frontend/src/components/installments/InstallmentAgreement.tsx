@@ -275,7 +275,6 @@ const InstallmentAgreement: React.FC = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </>

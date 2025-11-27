@@ -12,10 +12,7 @@ interface SearchAndFiltersProps {
  * Provides search input and filter dropdowns for customers
  * Requirements: 1.2, 1.3, 1.9
  */
-const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
-  onSearchChange,
-  onStatusChange,
-}) => {
+const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ onSearchChange, onStatusChange }) => {
   const [searchInput, setSearchInput] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
 

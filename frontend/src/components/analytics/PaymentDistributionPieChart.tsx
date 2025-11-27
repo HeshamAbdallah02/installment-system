@@ -104,7 +104,9 @@ const PaymentDistributionPieChart: React.FC<PaymentDistributionPieChartProps> = 
       <div className="flex flex-wrap justify-center gap-4 mt-4" dir="rtl">
         {payload?.map((entry, index: number) => (
           <div key={`legend-${index}`} className="flex items-center gap-2">
-            <div className={`w-4 h-4 rounded ${colorClassMap[entry.color] || 'bg-brand-primary-900'}`} />
+            <div
+              className={`w-4 h-4 rounded ${colorClassMap[entry.color] || 'bg-brand-primary-900'}`}
+            />
             <span className="text-sm text-brand-offwhite-900">{entry.value}</span>
           </div>
         ))}
