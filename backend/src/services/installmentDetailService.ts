@@ -280,7 +280,7 @@ class InstallmentDetailService {
 
       paidSchedules.forEach((s: { dueDate: Date | string; paidDate?: Date | string | null }) => {
         const dueDate = new Date(s.dueDate);
-        const paidDate = new Date(s.paidDate);
+        const paidDate = s.paidDate ? new Date(s.paidDate) : new Date();
         const daysDiff = Math.ceil(
           (paidDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -310,17 +310,12 @@ class InstallmentDetailService {
 
       // Calculate total interest paid vs remaining
       const paidInterest = paidSchedules.reduce(
-        (sum: number, s: { extraAmount?: number | string | null }) =>
-          sum + Number(s.extraAmount || 0),
+        (sum: number, s) => sum + Number(s.extraAmount || 0),
         0
       );
       const remainingInterest = installment_schedule
-        .filter((s: { status: string }) => s.status !== 'PAID')
-        .reduce(
-          (sum: number, s: { extraAmount?: number | string | null }) =>
-            sum + Number(s.extraAmount || 0),
-          0
-        );
+        .filter((s) => s.status !== 'PAID')
+        .reduce((sum: number, s) => sum + Number(s.extraAmount || 0), 0);
 
       // Estimate expected completion date based on payment pattern
       const pendingSchedules = installment_schedule.filter(
@@ -427,44 +422,33 @@ class InstallmentDetailService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return installment_schedule.map(
-      (item: {
-        id: number;
-        dueDate: Date | string;
-        status: string;
-        amount: number | string;
-        paidAmount?: number | string | null;
-        paidDate?: Date | string | null;
-        extraAmount?: number | string | null;
-        paymentMethod?: string | null;
-      }) => {
-        const dueDate = new Date(item.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
+    return installment_schedule.map((item) => {
+      const dueDate = new Date(item.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
 
-        let status = item.status;
-        let daysOverdue: number | undefined;
+      let status = item.status;
+      let daysOverdue: number | undefined;
 
-        // Calculate overdue days for pending/partial payments
-        if ((status === 'PENDING' || status === 'PARTIAL') && dueDate < today) {
-          status = 'OVERDUE';
-          daysOverdue = Math.ceil((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-        }
-
-        return {
-          id: item.id,
-          sequenceNumber: item.sequenceNumber,
-          dueDate: item.dueDate,
-          totalAmount: Number(item.totalAmount),
-          principalAmount: Number(item.principalAmount),
-          extraAmount: Number(item.extraAmount),
-          paidAmount: Number(item.paidAmount),
-          status,
-          paidDate: item.paidDate,
-          daysOverdue,
-          isNextDue: item.id === nextDueId,
-        };
+      // Calculate overdue days for pending/partial payments
+      if ((status === 'PENDING' || status === 'PARTIAL') && dueDate < today) {
+        status = 'OVERDUE';
+        daysOverdue = Math.ceil((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
       }
-    );
+
+      return {
+        id: item.id,
+        sequenceNumber: item.sequenceNumber,
+        dueDate: item.dueDate,
+        totalAmount: Number(item.totalAmount),
+        principalAmount: Number(item.principalAmount),
+        extraAmount: Number(item.extraAmount),
+        paidAmount: Number(item.paidAmount),
+        status,
+        paidDate: item.paidDate ?? null,
+        daysOverdue,
+        isNextDue: item.id === nextDueId,
+      };
+    });
   }
 
   /**

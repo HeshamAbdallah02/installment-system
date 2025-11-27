@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowDownTrayIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
-import BranchPerformanceComparison from '../components/analytics/BranchPerformanceComparison';
 import PaymentDistributionPieChart from '../components/analytics/PaymentDistributionPieChart';
 import CustomerPaymentPatternsScatter from '../components/analytics/CustomerPaymentPatternsScatter';
 import RevenueForecastTable from '../components/analytics/RevenueForecastTable';
@@ -94,9 +93,6 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* Analytics Components Grid */}
       <div className="space-y-6">
-        {/* Branch Performance Comparison */}
-        <BranchPerformanceComparison startDate={startDate} endDate={endDate} />
-
         {/* Charts Row */}
         <div className="grid grid-cols-1 desktop:grid-cols-2 gap-6">
           <PaymentDistributionPieChart startDate={startDate} endDate={endDate} />

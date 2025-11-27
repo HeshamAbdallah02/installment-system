@@ -4,10 +4,8 @@ import { useDebounce } from '../../hooks/useDebounce';
 
 interface InstallmentsFiltersProps {
   onSearchChange: (search: string) => void;
-  onBranchChange: (branch: string) => void;
   onStatusChange: (status: string) => void;
   onDateRangeChange: (startDate: string, endDate: string) => void;
-  branches?: { id: number; name: string }[];
 }
 
 /**
@@ -17,13 +15,10 @@ interface InstallmentsFiltersProps {
  */
 const InstallmentsFilters: React.FC<InstallmentsFiltersProps> = ({
   onSearchChange,
-  onBranchChange,
   onStatusChange,
   onDateRangeChange,
-  branches = [],
 }) => {
   const [searchInput, setSearchInput] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -45,12 +40,6 @@ const InstallmentsFilters: React.FC<InstallmentsFiltersProps> = ({
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
-  };
-
-  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedBranch(value);
-    onBranchChange(value);
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -105,26 +94,6 @@ const InstallmentsFilters: React.FC<InstallmentsFiltersProps> = ({
             <option value="on-track">في الموعد</option>
             <option value="due-soon">مستحق قريباً</option>
             <option value="overdue">متأخر</option>
-          </select>
-        </div>
-
-        {/* Branch Filter */}
-        <div>
-          <label htmlFor="branch" className="block text-sm font-medium text-brand-primary-900 mb-2">
-            الفرع
-          </label>
-          <select
-            id="branch"
-            value={selectedBranch}
-            onChange={handleBranchChange}
-            className="w-full px-4 py-2 border border-brand-offwhite-400 rounded-lg focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 text-brand-offwhite-900 bg-white"
-          >
-            <option value="">جميع الفروع</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id.toString()}>
-                {branch.name}
-              </option>
-            ))}
           </select>
         </div>
 

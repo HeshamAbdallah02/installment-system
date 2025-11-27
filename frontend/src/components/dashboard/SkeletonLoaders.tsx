@@ -96,7 +96,7 @@ export const DashboardSkeleton: React.FC = () => {
       {/* Charts skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartSkeleton title="اتجاه التحصيل الشهري" />
-        <ChartSkeleton title="توزيع التحصيلات حسب الفرع" />
+        <ChartSkeleton title="أفضل المنتجات" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

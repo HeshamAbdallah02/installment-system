@@ -155,7 +155,6 @@ const PaymentHistory: React.FC = () => {
       filters.startDate ||
       filters.endDate ||
       filters.paymentMethod ||
-      filters.branch ||
       filters.collector
     );
   }, [searchTerm, filters]);

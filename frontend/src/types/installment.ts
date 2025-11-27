@@ -92,7 +92,6 @@ export interface InstallmentListItem {
 
 export interface InstallmentFilters {
   status?: string;
-  branch?: string;
   search?: string;
   startDate?: string;
   endDate?: string;
@@ -129,11 +128,6 @@ export interface InstallmentAgreement {
     dueDate: Date;
     amount: number;
   }[];
-  branch: {
-    name: string;
-    address?: string;
-    phone?: string;
-  };
   seller: {
     fullName: string;
   };

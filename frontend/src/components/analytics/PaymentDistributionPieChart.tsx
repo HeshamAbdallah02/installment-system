@@ -91,12 +91,20 @@ const PaymentDistributionPieChart: React.FC<PaymentDistributionPieChartProps> = 
     );
   };
 
+  // Map chart colors to Tailwind background classes
+  const colorClassMap: Record<string, string> = {
+    '#560001': 'bg-brand-primary-900',
+    '#eacb95': 'bg-brand-secondary-400',
+    '#7f0002': 'bg-brand-primary-800',
+    '#d4b57f': 'bg-brand-secondary-500',
+  };
+
   const CustomLegend = ({ payload }: { payload?: Array<{ value: string; color: string }> }) => {
     return (
       <div className="flex flex-wrap justify-center gap-4 mt-4" dir="rtl">
         {payload?.map((entry, index: number) => (
           <div key={`legend-${index}`} className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: entry.color }} />
+            <div className={`w-4 h-4 rounded ${colorClassMap[entry.color] || 'bg-brand-primary-900'}`} />
             <span className="text-sm text-brand-offwhite-900">{entry.value}</span>
           </div>
         ))}

@@ -33,7 +33,6 @@ const Installments: React.FC = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [filters, setFilters] = useState<InstallmentFilters>({
     search: '',
-    branch: '',
     status: '',
     startDate: '',
     endDate: '',
@@ -93,11 +92,6 @@ const Installments: React.FC = () => {
   // Handle search change
   const handleSearchChange = useCallback((search: string) => {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
-  }, []);
-
-  // Handle branch filter change
-  const handleBranchChange = useCallback((branch: string) => {
-    setFilters((prev) => ({ ...prev, branch, page: 1 }));
   }, []);
 
   // Handle status filter change
@@ -255,7 +249,6 @@ const Installments: React.FC = () => {
         {/* Filters */}
         <InstallmentsFilters
           onSearchChange={handleSearchChange}
-          onBranchChange={handleBranchChange}
           onStatusChange={handleStatusChange}
           onDateRangeChange={handleDateRangeChange}
         />

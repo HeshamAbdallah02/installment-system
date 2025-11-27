@@ -3,7 +3,6 @@ import {
   ClipboardDocumentListIcon,
   ChartBarIcon,
   ShoppingBagIcon,
-  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 interface EmptyStateProps {
@@ -72,20 +71,6 @@ export const CollectionTrendsEmptyState: React.FC<{ onAddPayment?: () => void }>
       message="ابدأ بتسجيل دفعات لرؤية اتجاهات التحصيل الشهرية"
       actionText={onAddPayment ? 'تسجيل دفعة جديدة' : undefined}
       onAction={onAddPayment}
-    />
-  );
-};
-
-/**
- * Empty state for branch distribution chart
- * Shows when no branch data exists
- */
-export const BranchDistributionEmptyState: React.FC = () => {
-  return (
-    <EmptyState
-      icon={<BanknotesIcon className="w-8 h-8 text-brand-offwhite-500" />}
-      title="لا توجد تحصيلات"
-      message="لم يتم تسجيل أي تحصيلات في الفروع خلال هذه الفترة"
     />
   );
 };

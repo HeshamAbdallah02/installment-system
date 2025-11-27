@@ -97,7 +97,6 @@ export interface PaymentHistoryFilters {
   startDate?: Date;
   endDate?: Date;
   paymentMethod?: string;
-  branch?: number;
   collector?: number;
 }
 

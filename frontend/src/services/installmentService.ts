@@ -66,7 +66,6 @@ class InstallmentService {
     const params = new URLSearchParams();
 
     if (filters.status) params.append('status', filters.status);
-    if (filters.branch) params.append('branch', filters.branch);
     if (filters.search) params.append('search', filters.search);
     if (filters.startDate) params.append('startDate', filters.startDate);
     if (filters.endDate) params.append('endDate', filters.endDate);

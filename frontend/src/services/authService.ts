@@ -181,7 +181,7 @@ class AuthService {
    * Get current user information from localStorage
    * @returns User info or null if not found
    */
-  getCurrentUser(): { name: string; role: string; branch: string } | null {
+  getCurrentUser(): { name: string; role: string } | null {
     try {
       const userStr = localStorage.getItem('current_user');
       if (userStr) {
@@ -198,7 +198,7 @@ class AuthService {
    * Store current user information in localStorage
    * @param user - User information to store
    */
-  storeCurrentUser(user: { name: string; role: string; branch: string }): void {
+  storeCurrentUser(user: { name: string; role: string }): void {
     try {
       localStorage.setItem('current_user', JSON.stringify(user));
     } catch (error) {

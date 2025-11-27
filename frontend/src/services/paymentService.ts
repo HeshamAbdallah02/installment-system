@@ -82,7 +82,6 @@ export const getPaymentHistory = async (
   if (filters.startDate) params.append('startDate', filters.startDate.toISOString());
   if (filters.endDate) params.append('endDate', filters.endDate.toISOString());
   if (filters.paymentMethod) params.append('paymentMethod', filters.paymentMethod);
-  if (filters.branch) params.append('branch', filters.branch.toString());
   if (filters.collector) params.append('collector', filters.collector.toString());
 
   const response = await apiClient.get(`/api/payments?${params.toString()}`);

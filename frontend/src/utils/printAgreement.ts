@@ -9,9 +9,6 @@ import type { ScheduleItem } from '../components/installments/NextPaymentDueCard
 export interface PrintAgreementData {
   installment: InstallmentDetail;
   schedule: ScheduleItem[];
-  branchName: string;
-  branchAddress?: string;
-  branchPhone?: string;
   sellerName: string;
 }
 
@@ -19,7 +16,7 @@ export interface PrintAgreementData {
  * Converts InstallmentDetail to InstallmentAgreement format for printing
  */
 export const prepareAgreementData = (data: PrintAgreementData): InstallmentAgreement => {
-  const { installment, schedule, branchName, branchAddress, branchPhone, sellerName } = data;
+  const { installment, schedule, sellerName } = data;
 
   return {
     agreementNumber: installment.planId,
@@ -50,11 +47,6 @@ export const prepareAgreementData = (data: PrintAgreementData): InstallmentAgree
       dueDate: item.dueDate,
       amount: item.totalAmount,
     })),
-    branch: {
-      name: branchName,
-      address: branchAddress,
-      phone: branchPhone,
-    },
     seller: {
       fullName: sellerName,
     },

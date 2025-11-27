@@ -45,7 +45,6 @@ export interface PaymentHistoryItem {
 
 export interface CustomerFilters {
   search?: string;
-  branch?: string;
   status?: string;
   page?: number;
   limit?: number;

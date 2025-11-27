@@ -46,13 +46,6 @@ const PrintableAgreement: React.FC<PrintableAgreementProps> = ({ agreement }) =>
         </div>
       </div>
 
-      {/* Branch Information */}
-      <div className="mb-6 text-sm">
-        <p className="font-bold text-brand-primary-900">الفرع: {agreement.branch.name}</p>
-        {agreement.branch.address && <p>العنوان: {agreement.branch.address}</p>}
-        {agreement.branch.phone && <p>الهاتف: {agreement.branch.phone}</p>}
-      </div>
-
       {/* Agreement Parties */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-brand-primary-900 mb-4 border-b border-brand-offwhite-400 pb-2">
@@ -64,7 +57,6 @@ const PrintableAgreement: React.FC<PrintableAgreementProps> = ({ agreement }) =>
           <div>
             <h3 className="font-bold text-brand-primary-900 mb-2">الطرف الأول (البائع):</h3>
             <p className="mb-1">شركة صبايا للتجارة</p>
-            <p className="text-sm text-brand-offwhite-700">الفرع: {agreement.branch.name}</p>
             <p className="text-sm text-brand-offwhite-700">ممثلة بـ: {agreement.seller.fullName}</p>
           </div>
 

@@ -65,7 +65,6 @@ Provides empty state components with helpful messages:
 - **EmptyState**: Generic empty state component
 - **ActivitiesEmptyState**: Empty state for activities feed
 - **CollectionTrendsEmptyState**: Empty state for collection trends chart
-- **BranchDistributionEmptyState**: Empty state for branch distribution
 - **TopProductsEmptyState**: Empty state for top products chart
 - **DashboardEmptyState**: Empty state for entire dashboard
 - **AnalyticsEmptyState**: Empty state for analytics page
@@ -128,13 +127,6 @@ showInfo('معلومة مهمة');
 - Uses `CollectionTrendsEmptyState` for empty data
 - Props: `loading?: boolean`, `error?: string`, `onRetry?: () => void`, `onAddPayment?: () => void`
 
-### BranchDistributionChart
-
-- Uses `LoadingSpinner` for loading state
-- Uses `ErrorState` for error display
-- Uses `BranchDistributionEmptyState` for empty data
-- Props: `loading?: boolean`, `error?: string`, `onRetry?: () => void`
-
 ### TopProductsChart
 
 - Uses `LoadingSpinner` for loading state
@@ -153,14 +145,6 @@ The Dashboard page has been updated to use the new error handling:
   error={trendsError ? 'فشل تحميل اتجاه التحصيل. يرجى المحاولة مرة أخرى' : undefined}
   onRetry={() => refetchTrends()}
   onAddPayment={handleRecordPayment}
-/>
-
-<BranchDistributionChart
-  data={branchDistribution ?? []}
-  loading={branchLoading}
-  error={branchError ? 'فشل تحميل توزيع الفروع. يرجى المحاولة مرة أخرى' : undefined}
-  onRetry={() => refetchBranch()}
-  onBranchClick={handleBranchClick}
 />
 
 <TopProductsChart

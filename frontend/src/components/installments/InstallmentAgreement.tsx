@@ -276,12 +276,6 @@ const InstallmentAgreement: React.FC = () => {
             </div>
           </div>
 
-          {/* Branch Information */}
-          <div className="mt-8 text-center text-sm text-black border-t-2 border-black pt-4">
-            <p className="font-bold">{agreement.branch.name}</p>
-            {agreement.branch.address && <p>{agreement.branch.address}</p>}
-            {agreement.branch.phone && <p>هاتف: {agreement.branch.phone}</p>}
-          </div>
         </div>
       </div>
     </>

@@ -495,8 +495,7 @@ class ProductService {
       // Calculate total revenue (sum of all paid amounts)
       const totalRevenue = installmentPlans.reduce((sum, plan) => {
         const paidAmount = plan.installment_schedule.reduce(
-          (s: number, sch: { paidAmount?: number | string | null }) =>
-            s + Number(sch.paidAmount || 0),
+          (s: number, sch) => s + Number(sch.paidAmount || 0),
           0
         );
         return sum + paidAmount;

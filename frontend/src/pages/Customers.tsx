@@ -23,7 +23,6 @@ const Customers: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filters, setFilters] = useState<CustomerFilters>({
     search: '',
-    branch: '',
     status: '',
     page: 1,
     limit: 20,
@@ -56,11 +55,6 @@ const Customers: React.FC = () => {
   // Handle search change
   const handleSearchChange = useCallback((search: string) => {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
-  }, []);
-
-  // Handle branch filter change
-  const handleBranchChange = useCallback((branch: string) => {
-    setFilters((prev) => ({ ...prev, branch, page: 1 }));
   }, []);
 
   // Handle status filter change
@@ -118,7 +112,6 @@ const Customers: React.FC = () => {
         {/* Search and Filters */}
         <SearchAndFilters
           onSearchChange={handleSearchChange}
-          onBranchChange={handleBranchChange}
           onStatusChange={handleStatusChange}
         />
 

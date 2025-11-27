@@ -172,17 +172,12 @@ const InstallmentDetailPage: React.FC = () => {
   const handlePrintAgreement = () => {
     if (!installment) return;
 
-    // TODO: Get actual branch and seller info from context/API
-    const branchName = 'الفرع الرئيسي';
     const sellerName = installment.createdBy || 'البائع';
 
     // Prepare agreement data
     const agreement = prepareAgreementData({
       installment,
       schedule: paymentSchedule,
-      branchName,
-      branchAddress: undefined,
-      branchPhone: undefined,
       sellerName,
     });
 

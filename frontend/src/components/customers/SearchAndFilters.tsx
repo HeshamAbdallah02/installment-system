@@ -4,9 +4,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 
 interface SearchAndFiltersProps {
   onSearchChange: (search: string) => void;
-  onBranchChange: (branch: string) => void;
   onStatusChange: (status: string) => void;
-  branches?: { id: number; name: string }[];
 }
 
 /**
@@ -16,12 +14,9 @@ interface SearchAndFiltersProps {
  */
 const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   onSearchChange,
-  onBranchChange,
   onStatusChange,
-  branches = [],
 }) => {
   const [searchInput, setSearchInput] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
 
   // Debounce search input (300ms)
@@ -36,12 +31,6 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
     setSearchInput(e.target.value);
   };
 
-  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedBranch(value);
-    onBranchChange(value);
-  };
-
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedStatus(value);
@@ -50,7 +39,7 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-6" dir="rtl">
-      <div className="grid grid-cols-1 tablet:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 tablet:grid-cols-2 gap-4">
         {/* Search Input */}
         <div className="relative">
           <label htmlFor="search" className="block text-sm font-medium text-brand-primary-900 mb-2">
@@ -69,26 +58,6 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
               <MagnifyingGlassIcon className="w-5 h-5 text-brand-offwhite-500" />
             </div>
           </div>
-        </div>
-
-        {/* Branch Filter */}
-        <div>
-          <label htmlFor="branch" className="block text-sm font-medium text-brand-primary-900 mb-2">
-            الفرع
-          </label>
-          <select
-            id="branch"
-            value={selectedBranch}
-            onChange={handleBranchChange}
-            className="w-full px-4 py-2 border border-brand-offwhite-400 rounded-lg focus:ring-2 focus:ring-brand-primary-900 focus:border-brand-primary-900 text-brand-offwhite-900 bg-white"
-          >
-            <option value="">جميع الفروع</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id.toString()}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         {/* Status Filter */}

@@ -18,7 +18,6 @@ class CustomerService {
     const params = new URLSearchParams();
 
     if (filters.search) params.append('search', filters.search);
-    if (filters.branch) params.append('branch', filters.branch);
     if (filters.status) params.append('status', filters.status);
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());
